@@ -14,7 +14,7 @@ import { errorText } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
 
 const PHONE = /^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/;
-type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; plate: string };
+type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; plate: string; driverTermsAccepted: boolean };
 
 function InstallCard() {
   const { canPrompt, standalone, isIOS, install } = useInstall();
@@ -52,7 +52,7 @@ export default function Account({ profile }: { profile: Profile }) {
   const invalidate = useInvalidateRides();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, plate: profile.plate });
+  const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, plate: profile.plate, driverTermsAccepted: profile.driverTermsAccepted });
   const [errs, setErrs] = useState<Partial<Record<keyof Form, string>>>({});
   const [serverErr, setServerErr] = useState("");
   const filled = useRef(false);
@@ -75,11 +75,12 @@ export default function Account({ profile }: { profile: Profile }) {
     if (!f.province) er.province = "اختار محافظتك";
     if (f.role === "driver" && f.vehicle.trim().length < 2) er.vehicle = "اكتب نوع العربية ولونها";
     if (f.role === "driver" && f.plate.trim().length < 2) er.plate = "اكتب رقم اللوحة";
+    if (f.role === "driver" && !f.driverTermsAccepted) er.driverTermsAccepted = "وافق على إقرار النسخة التجريبية قبل تسجيل الكابتن";
     if (f.vehicle.length > 80) er.vehicle = "أقصى حد ٨٠ حرف";
     if (f.plate.length > 30) er.plate = "أقصى حد ٣٠ حرف";
     setErrs(er);
     if (Object.keys(er).length) return;
-    update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), plate: f.plate.trim() } }, {
+    update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted } }, {
       onSuccess: (p) => {
         qc.setQueryData(getGetProfileQueryKey(), p); invalidate();
         if (onboarding) { toast({ title: `أهلاً بيك يا ${p.name.split(" ")[0]}` }); setLocation("/book"); }
@@ -130,6 +131,17 @@ export default function Account({ profile }: { profile: Profile }) {
               <div><label className="mb-1.5 block text-sm font-semibold">العربية {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-vehicle" className={fieldCls} value={f.vehicle} maxLength={80} onChange={(e) => set("vehicle", e.target.value)} placeholder="مثلاً: هيونداي فيرنا فضي" /><Err k="vehicle" /></div>
               <div><label className="mb-1.5 block text-sm font-semibold">رقم اللوحة {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-plate" className={fieldCls} value={f.plate} maxLength={30} onChange={(e) => set("plate", e.target.value)} placeholder="مثلاً: س ط ر ٤٥٢٧" /><Err k="plate" /></div>
             </div>
+            {f.role === "driver" && (
+              <div className="rounded-2xl border border-card-border bg-card p-4">
+                <p className="font-semibold">إقرار الكابتن للنسخة التجريبية</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">أؤكد صحة بياناتي، وأفهم أن التسجيل لا يعني اعتماد الكابتن أو السماح بنقل ركاب حقيقيين. هذه نسخة اختبار وليست موافقة قانونية نهائية أو تصريح تشغيل.</p>
+                <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm">
+                  <input data-testid="checkbox-driver-terms" type="checkbox" className="mt-1 h-4 w-4 accent-[#10151d]" checked={f.driverTermsAccepted} onChange={(e) => set("driverTermsAccepted", e.target.checked)} />
+                  <span>قرأت إقرار التجربة وأوافق عليه</span>
+                </label>
+                <Err k="driverTermsAccepted" />
+              </div>
+            )}
           </fieldset>
           {serverErr && <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive" data-testid="text-profile-error">{serverErr}</p>}
           <Btn type="submit" variant={onboarding ? "yellow" : "dark"} className="h-14 w-full text-lg" data-testid="button-save-profile" disabled={locked || update.isPending}>
@@ -138,7 +150,11 @@ export default function Account({ profile }: { profile: Profile }) {
         </form>
         <aside className="space-y-4">
           {user?.primaryEmailAddress && <div className="rounded-2xl bg-muted p-4 text-sm"><p className="text-xs text-muted-foreground">داخل بـ</p><p className="font-num" dir="ltr">{user.primaryEmailAddress.emailAddress}</p></div>}
-          <PilotNotice compact text={f.role === "driver" ? "التسجيل ككابتن ذاتي للتجربة. مفيش مراجعة أوراق أو رخص لسه، ومفيش دفع من خلال بابلو." : undefined} />
+          {profile.role === "driver" && <div className="rounded-2xl border border-card-border bg-card p-4 text-sm">
+            <p className="font-semibold">حالة اعتماد الكابتن</p>
+            <p className="mt-1 text-muted-foreground">{profile.driverReviewStatus === "approved" ? "تم اعتماد الحساب." : profile.driverReviewStatus === "rejected" ? "الطلب مرفوض؛ راجع الإدارة." : profile.driverReviewStatus === "suspended" ? "الحساب موقوف مؤقتًا." : "الحساب بانتظار مراجعة الإدارة. قبول الرحلات الحقيقية غير متاح قبل الاعتماد."}</p>
+          </div>}
+          <PilotNotice compact text="نسخة تجريبية فقط: لا تستخدمها لنقل ركاب حقيقيين أو لتحصيل أموال. المدفوعات والتشغيل التجاري غير مفعّلين." />
           <InstallCard />
         </aside>
       </div>

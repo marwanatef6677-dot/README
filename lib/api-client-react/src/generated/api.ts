@@ -28,7 +28,7 @@ import type {
   AppConfig,
   DriverReview,
   DriverReviewInput,
-  FawryPaymentNotificationBody,
+  FawryNotificationInput,
   HealthStatus,
   LocationInput,
   Profile,
@@ -1780,7 +1780,7 @@ export const getFawryPaymentNotificationUrl = () => {
 /**
  * Validates FawryPay's signed server notification and applies a top-up once.
  */
-export const fawryPaymentNotification = async (fawryPaymentNotificationBody: FawryPaymentNotificationBody, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+export const fawryPaymentNotification = async (fawryNotificationInput: FawryNotificationInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -1801,7 +1801,7 @@ return customFetch<void>(getFawryPaymentNotificationUrl(),
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(fawryPaymentNotificationBody)
+    body: JSON.stringify(fawryNotificationInput)
   }
 );}
 
@@ -1839,9 +1839,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type FawryPaymentNotificationMutationResult = NonNullable<Awaited<ReturnType<typeof fawryPaymentNotification>>>
-    export type FawryPaymentNotificationMutationBody = BodyType<FawryPaymentNotificationBody>
+    export type FawryPaymentNotificationMutationBody = BodyType<FawryNotificationInput>
     export type FawryPaymentNotificationMutationError = ErrorType<unknown>
-    export type FawryPaymentNotificationMutationVariables = {data: BodyType<FawryPaymentNotificationBody>}
+    export type FawryPaymentNotificationMutationVariables = {data: BodyType<FawryNotificationInput>}
 
     export const useFawryPaymentNotification = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fawryPaymentNotification>>, TError,FawryPaymentNotificationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}

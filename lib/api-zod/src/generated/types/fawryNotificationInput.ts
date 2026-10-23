@@ -6,4 +6,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type FawryPaymentNotificationBody = { [key: string]: unknown };
+export interface FawryNotificationInput { [key: string]: unknown }

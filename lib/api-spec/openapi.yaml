@@ -266,8 +266,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/FawryNotificationInput"
       responses:
         "200":
           description: Notification acknowledged
@@ -497,4 +496,7 @@ components:
         vehicleRequirementsVerified: { type: boolean }
         operatorLicenseVerified: { type: boolean }
         randomTestProcessConfirmed: { type: boolean }
+    FawryNotificationInput:
+      type: object
+      additionalProperties: true
 

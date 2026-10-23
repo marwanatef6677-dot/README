@@ -441,5 +441,5 @@ export interface DriverReviewInput {
   randomTestProcessConfirmed: boolean;
 }
 
-export type FawryPaymentNotificationBody = { [key: string]: unknown };
+export interface FawryNotificationInput { [key: string]: unknown }
 

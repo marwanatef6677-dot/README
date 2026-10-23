@@ -12,7 +12,7 @@ export * from './driverReview';
 export * from './driverReviewDriverReviewStatus';
 export * from './driverReviewInput';
 export * from './driverReviewInputDecision';
-export * from './fawryPaymentNotificationBody';
+export * from './fawryNotificationInput';
 export * from './healthStatus';
 export * from './locationInput';
 export * from './profile';
