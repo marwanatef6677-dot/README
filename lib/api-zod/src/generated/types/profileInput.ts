@@ -28,6 +28,8 @@ export interface ProfileInput {
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;
+  /** @maxLength 80 */
+  driverTermsSignature?: string;
   customerAge18Attested?: boolean;
   customerTermsAccepted?: boolean;
   /** @maxLength 80 */

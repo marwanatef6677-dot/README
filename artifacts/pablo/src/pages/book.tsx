@@ -120,7 +120,11 @@ function CustomerBook({ profile }: { profile: Profile }) {
 }
 
 function DriverBook({ profile }: { profile: Profile }) {
-  const queue = useQueue(true);
+  const documentsReady = profile.hasDriverLicenseFront && profile.hasDriverLicenseBack
+    && profile.hasVehicleLicenseFront && profile.hasVehicleLicenseBack;
+  const approvedToAccept = profile.driverReviewStatus === "approved" && profile.driverTermsAccepted
+    && documentsReady && profile.hasCaptainVehiclePhoto && profile.captainPhotoVerified;
+  const queue = useQueue(approvedToAccept);
   const rides = useMyRides();
   const act = useActOnRide();
   const invalidate = useInvalidateRides();
@@ -149,14 +153,18 @@ function DriverBook({ profile }: { profile: Profile }) {
         </div>
         <div className="mt-6 space-y-3">
           {myJob && <><p className="text-sm text-muted-foreground">عندك رحلة شغالة. خلّصها الأول قبل ما تقبل طلب جديد.</p><ActiveBanner ride={myJob} viewer="driver" /></>}
-          {queue.isLoading ? <ListSkeleton /> : queue.isError ? <ErrorState message={errorText(queue.error)} onRetry={() => queue.refetch()} /> :
+          {!approvedToAccept ? <div className="rounded-2xl border border-amber-800/20 bg-[#ffd000]/15 p-4 text-sm leading-relaxed text-[#665000]" data-testid="notice-driver-awaiting-approval">
+            <p className="font-display font-bold">قبول الطلبات مقفول مؤقتًا</p>
+            <p className="mt-1">لازم ترفع صور وجهي الرخصتين، وتكمل الإقرار، وتنتظر مراجعة واعتماد الإدارة قبل ما تشوف طلبات الرحلات أو تقبلها.</p>
+            <Link href="/account" data-testid="link-driver-approval-account" className="mt-2 inline-block font-bold underline">راجع بيانات ومستندات الكابتن</Link>
+          </div> : queue.isLoading ? <ListSkeleton /> : queue.isError ? <ErrorState message={errorText(queue.error)} onRetry={() => queue.refetch()} /> :
             !queue.data?.length ? (
               <EmptyState title="مفيش طلبات دلوقتي" body={`أول ما راكب في ${profile.province} يطلب مشوار هيظهر هنا. خلّي الصفحة مفتوحة.`} />
              ) : queue.data.filter((request) => profile.vehicleType === "motorcycle"
                ? request.rideType === "motorcycle"
                : request.serviceType === "passenger" && request.rideType !== "motorcycle").map((r, i) => (
               <RideCard key={r.id} ride={r} i={i} viewerRole="driver" action={
-                <button data-testid={`button-accept-${r.id}`} disabled={!!myJob || busy !== null} onClick={() => accept(r.id)}
+                  <button data-testid={`button-accept-${r.id}`} disabled={!approvedToAccept || !!myJob || busy !== null} onClick={() => accept(r.id)}
                   className="press relative z-10 inline-flex items-center gap-1.5 rounded-full bg-[#ffd000] px-4 py-2 font-display text-sm font-bold text-[#10151d] disabled:opacity-40">
                   {busy === r.id && <Loader2 className="h-4 w-4 animate-spin" />} اقبل
                 </button>

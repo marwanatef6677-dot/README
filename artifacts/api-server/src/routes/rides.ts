@@ -3,7 +3,10 @@ import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { db, profiles, rides, rideLocations, walletLedger } from "@workspace/db";
 import { CreateRideBody, CreateRideResponse, ListRidesResponse, ListAvailableRidesResponse, GetRideParams, GetRideResponse, ActOnRideParams, ActOnRideBody, ActOnRideResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
-import { activeFor, belongsTo, provinces, rideJson, AppError, hasCurrentCustomerTerms } from "../lib/pablo";
+import {
+  activeFor, belongsTo, provinces, rideJson, AppError, hasCurrentCustomerTerms,
+  hasCurrentDriverTerms, hasDriverLicenseDocuments,
+} from "../lib/pablo";
 import { calculateFarePiasters, getMinimumFarePiasters, getRoutePreview } from "../lib/routing";
 
 const router: IRouter = Router();
@@ -16,9 +19,10 @@ router.get("/rides", async (_req, res): Promise<void> => {
 });
 router.get("/rides/available", async (_req, res): Promise<void> => {
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, res.locals.userId));
-  if (profile.role !== "driver" || !profile.onboarded) throw new AppError(403, "كمّل بيانات حساب الكابتن الأول.");
-  if (!profile.captainVehiclePhotoPath || !profile.captainPhotoVerified) {
-    throw new AppError(403, "ارفع صورة ليك مع المركبة وانتظر اعتمادها قبل استقبال الطلبات.");
+  if (!profile.onboarded || profile.role !== "driver") throw new AppError(403, "كمّل بيانات حساب الكابتن الأول.");
+  if (profile.driverReviewStatus !== "approved" || !hasCurrentDriverTerms(profile)
+    || !hasDriverLicenseDocuments(profile) || !profile.captainVehiclePhotoPath || !profile.captainPhotoVerified) {
+    throw new AppError(403, "مش هتشوف طلبات أو تقبلها قبل رفع المستندات ومراجعة الإدارة واعتماد الحساب.");
   }
   const [active] = await db.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
   const vehicleFilter = profile.vehicleType === "motorcycle"
@@ -113,7 +117,7 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
         throw new AppError(403, "ارفع صورة ليك مع المركبة وانتظر اعتمادها قبل قبول الرحلات.");
       }
       if (!profile.onboarded || profile.role !== "driver" || profile.driverReviewStatus !== "approved"
-        || !profile.driverTermsAcceptedAt || customer || profile.province !== ride.province
+        || !hasCurrentDriverTerms(profile) || !hasDriverLicenseDocuments(profile) || customer || profile.province !== ride.province
         || ((profile.vehicleType === "motorcycle") !== (ride.rideType === "motorcycle"))) {
         throw new AppError(403, "قبول الرحلات متاح للكابتن بعد مراجعة واعتماد أوراقه وموافقته على الشروط.");
       }

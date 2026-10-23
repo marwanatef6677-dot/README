@@ -111,7 +111,11 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
   const driverNext: { action: RideActionAction; label: string } | null =
     isDriver ? (r.status === "accepted" ? { action: "arrive", label: "وصلت لنقطة الركوب" } : r.status === "arrived" ? { action: "start", label: "ابدأ الرحلة" } : r.status === "in_progress" ? { action: "complete", label: "خلّص الرحلة" } : null) : null;
-  const canAccept = !isCustomer && !r.driverId && r.status === "pending" && profile.role === "driver";
+  const driverDocumentsReady = profile.hasDriverLicenseFront && profile.hasDriverLicenseBack
+    && profile.hasVehicleLicenseFront && profile.hasVehicleLicenseBack;
+  const canAccept = !isCustomer && !r.driverId && r.status === "pending" && profile.role === "driver"
+    && profile.driverReviewStatus === "approved" && profile.driverTermsAccepted
+    && driverDocumentsReady && profile.hasCaptainVehiclePhoto && profile.captainPhotoVerified;
   const canCancel = (isCustomer && ["pending", "accepted", "arrived"].includes(r.status)) || (isDriver && ["accepted", "arrived"].includes(r.status));
   const canRate = isCustomer && r.status === "completed" && r.rating == null;
   const other = isCustomer ? { title: "الكابتن", name: r.driverName, phone: r.driverPhone } : { title: "الراكب", name: r.customerName, phone: r.customerPhone };

@@ -80,6 +80,10 @@ export interface Profile {
   customerTermsAcceptedAt: string | null;
   hasAvatarPhoto: boolean;
   hasCaptainVehiclePhoto: boolean;
+  hasDriverLicenseFront: boolean;
+  hasDriverLicenseBack: boolean;
+  hasVehicleLicenseFront: boolean;
+  hasVehicleLicenseBack: boolean;
   captainPhotoVerified: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;
@@ -140,6 +144,8 @@ export interface ProfileInput {
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;
+  /** @maxLength 80 */
+  driverTermsSignature?: string;
   customerAge18Attested?: boolean;
   customerTermsAccepted?: boolean;
   /** @maxLength 80 */
@@ -203,6 +209,69 @@ export interface ProfilePhotoCompleteRequest {
 export interface ProfilePhotoCompleteResponse {
   hasAvatarPhoto: boolean;
   hasCaptainVehiclePhoto: boolean;
+}
+
+export type DriverDocumentUploadRequestDocumentType = typeof DriverDocumentUploadRequestDocumentType[keyof typeof DriverDocumentUploadRequestDocumentType];
+
+
+export const DriverDocumentUploadRequestDocumentType = {
+  driver_license_front: 'driver_license_front',
+  driver_license_back: 'driver_license_back',
+  vehicle_license_front: 'vehicle_license_front',
+  vehicle_license_back: 'vehicle_license_back',
+} as const;
+
+export type DriverDocumentUploadRequestContentType = typeof DriverDocumentUploadRequestContentType[keyof typeof DriverDocumentUploadRequestContentType];
+
+
+export const DriverDocumentUploadRequestContentType = {
+  'image/jpeg': 'image/jpeg',
+  'image/png': 'image/png',
+  'image/webp': 'image/webp',
+} as const;
+
+export interface DriverDocumentUploadRequest {
+  documentType: DriverDocumentUploadRequestDocumentType;
+  /**
+     * @minimum 1
+     * @maximum 5242880
+     */
+  size: number;
+  contentType: DriverDocumentUploadRequestContentType;
+}
+
+export type DriverDocumentCompleteRequestDocumentType = typeof DriverDocumentCompleteRequestDocumentType[keyof typeof DriverDocumentCompleteRequestDocumentType];
+
+
+export const DriverDocumentCompleteRequestDocumentType = {
+  driver_license_front: 'driver_license_front',
+  driver_license_back: 'driver_license_back',
+  vehicle_license_front: 'vehicle_license_front',
+  vehicle_license_back: 'vehicle_license_back',
+} as const;
+
+export interface DriverDocumentCompleteRequest {
+  documentType: DriverDocumentCompleteRequestDocumentType;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  objectPath: string;
+}
+
+export type DriverDocumentCompleteResponseDocumentType = typeof DriverDocumentCompleteResponseDocumentType[keyof typeof DriverDocumentCompleteResponseDocumentType];
+
+
+export const DriverDocumentCompleteResponseDocumentType = {
+  driver_license_front: 'driver_license_front',
+  driver_license_back: 'driver_license_back',
+  vehicle_license_front: 'vehicle_license_front',
+  vehicle_license_back: 'vehicle_license_back',
+} as const;
+
+export interface DriverDocumentCompleteResponse {
+  documentType: DriverDocumentCompleteResponseDocumentType;
+  uploaded: boolean;
 }
 
 export type RideInputRideType = typeof RideInputRideType[keyof typeof RideInputRideType];
@@ -722,6 +791,10 @@ export interface DriverReview {
   /** @nullable */
   driverReviewedAt: string | null;
   captainVehiclePhotoAvailable: boolean;
+  driverLicenseFrontAvailable: boolean;
+  driverLicenseBackAvailable: boolean;
+  vehicleLicenseFrontAvailable: boolean;
+  vehicleLicenseBackAvailable: boolean;
   captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;

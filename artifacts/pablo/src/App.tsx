@@ -21,6 +21,7 @@ import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
 import Account from "@/pages/account";
 import CustomerTerms from "@/pages/customer-terms";
+import DriverTerms from "@/pages/driver-terms";
 import OwnerAdminPage from "@/pages/owner-admin";
 import { OwnerSignInPage, SignInPage, SignUpPage } from "@/pages/auth";
 
@@ -174,6 +175,7 @@ function Routes() {
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route path="/terms" component={CustomerTerms} />
+      <Route path="/driver-terms" component={DriverTerms} />
       <Route>
         <Shell>
           <RoutedErrorBoundary>

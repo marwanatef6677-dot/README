@@ -24,6 +24,10 @@ export interface Profile {
   customerTermsAcceptedAt: string | null;
   hasAvatarPhoto: boolean;
   hasCaptainVehiclePhoto: boolean;
+  hasDriverLicenseFront: boolean;
+  hasDriverLicenseBack: boolean;
+  hasVehicleLicenseFront: boolean;
+  hasVehicleLicenseBack: boolean;
   captainPhotoVerified: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;

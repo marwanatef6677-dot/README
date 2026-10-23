@@ -111,6 +111,7 @@ export default function Home() {
           <span className="flex items-center gap-2"><Monogram className="h-6 w-6" /> بابلو — رحلتك أسهل .. مع بابلو</span>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/terms" data-testid="link-footer-terms" className="underline underline-offset-4">شروط استخدام العميل</Link>
+            <Link href="/driver-terms" data-testid="link-footer-driver-terms" className="underline underline-offset-4">إقرار الكابتن</Link>
             <span>نسخة تجريبية · مفيش دفع أونلاين</span>
           </div>
         </div>

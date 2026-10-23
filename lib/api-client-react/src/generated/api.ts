@@ -26,6 +26,9 @@ import type {
 
 import type {
   AppConfig,
+  DriverDocumentCompleteRequest,
+  DriverDocumentCompleteResponse,
+  DriverDocumentUploadRequest,
   DriverReview,
   DriverReviewInput,
   FawryNotificationInput,
@@ -895,6 +898,273 @@ export function useGetProfileAvatarPhoto<TData = Awaited<ReturnType<typeof getPr
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetProfileAvatarPhotoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRequestDriverDocumentUploadUrl = () => {
+
+
+
+
+  return `/api/storage/driver-documents/request-upload`
+}
+
+export const requestDriverDocumentUpload = async (driverDocumentUploadRequest: DriverDocumentUploadRequest, options?: Parameters<typeof customFetch>[1]): Promise<ProfilePhotoUploadResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProfilePhotoUploadResponse>(getRequestDriverDocumentUploadUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(driverDocumentUploadRequest)
+  }
+);}
+
+
+
+
+
+export const getRequestDriverDocumentUploadMutationKey = () => ['requestDriverDocumentUpload'] as const;
+
+export const getRequestDriverDocumentUploadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestDriverDocumentUpload>>, TError,RequestDriverDocumentUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestDriverDocumentUpload>>, TError,RequestDriverDocumentUploadMutationVariables, TContext> => {
+
+const mutationKey = getRequestDriverDocumentUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestDriverDocumentUpload>>, RequestDriverDocumentUploadMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestDriverDocumentUpload(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestDriverDocumentUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestDriverDocumentUpload>>>
+    export type RequestDriverDocumentUploadMutationBody = BodyType<DriverDocumentUploadRequest>
+    export type RequestDriverDocumentUploadMutationError = ErrorType<unknown>
+    export type RequestDriverDocumentUploadMutationVariables = {data: BodyType<DriverDocumentUploadRequest>}
+
+    export const useRequestDriverDocumentUpload = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestDriverDocumentUpload>>, TError,RequestDriverDocumentUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestDriverDocumentUpload>>,
+        TError,
+        RequestDriverDocumentUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestDriverDocumentUploadMutationOptions(options), queryClient);
+    }
+
+export const getCompleteDriverDocumentUploadUrl = () => {
+
+
+
+
+  return `/api/storage/driver-documents/complete`
+}
+
+export const completeDriverDocumentUpload = async (driverDocumentCompleteRequest: DriverDocumentCompleteRequest, options?: Parameters<typeof customFetch>[1]): Promise<DriverDocumentCompleteResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<DriverDocumentCompleteResponse>(getCompleteDriverDocumentUploadUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(driverDocumentCompleteRequest)
+  }
+);}
+
+
+
+
+
+export const getCompleteDriverDocumentUploadMutationKey = () => ['completeDriverDocumentUpload'] as const;
+
+export const getCompleteDriverDocumentUploadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeDriverDocumentUpload>>, TError,CompleteDriverDocumentUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeDriverDocumentUpload>>, TError,CompleteDriverDocumentUploadMutationVariables, TContext> => {
+
+const mutationKey = getCompleteDriverDocumentUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeDriverDocumentUpload>>, CompleteDriverDocumentUploadMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  completeDriverDocumentUpload(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteDriverDocumentUploadMutationResult = NonNullable<Awaited<ReturnType<typeof completeDriverDocumentUpload>>>
+    export type CompleteDriverDocumentUploadMutationBody = BodyType<DriverDocumentCompleteRequest>
+    export type CompleteDriverDocumentUploadMutationError = ErrorType<unknown>
+    export type CompleteDriverDocumentUploadMutationVariables = {data: BodyType<DriverDocumentCompleteRequest>}
+
+    export const useCompleteDriverDocumentUpload = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeDriverDocumentUpload>>, TError,CompleteDriverDocumentUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof completeDriverDocumentUpload>>,
+        TError,
+        CompleteDriverDocumentUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCompleteDriverDocumentUploadMutationOptions(options), queryClient);
+    }
+
+export const getGetAdminDriverDocumentUrl = (id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back',) => {
+
+
+
+
+  return `/api/storage/admin/drivers/${id}/documents/${documentType}`
+}
+
+export const getAdminDriverDocument = async (id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetAdminDriverDocumentUrl(id,documentType),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminDriverDocumentQueryKey = (id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back',) => {
+    return [
+    `/api/storage/admin/drivers/${id}/documents/${documentType}`
+    ] as const;
+    }
+
+
+export const getGetAdminDriverDocumentQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDriverDocument>>, TError = ErrorType<void>>(id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminDriverDocumentQueryKey(id,documentType);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDriverDocument>>> = ({ signal }) => getAdminDriverDocument(id,documentType, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && documentType !== null && documentType !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminDriverDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDriverDocument>>>
+export type GetAdminDriverDocumentQueryError = ErrorType<void>
+
+
+export function useGetAdminDriverDocument<TData = Awaited<ReturnType<typeof getAdminDriverDocument>>, TError = ErrorType<void>>(
+ id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminDriverDocument>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminDriverDocument>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminDriverDocument<TData = Awaited<ReturnType<typeof getAdminDriverDocument>>, TError = ErrorType<void>>(
+ id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminDriverDocument>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminDriverDocument>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminDriverDocument<TData = Awaited<ReturnType<typeof getAdminDriverDocument>>, TError = ErrorType<void>>(
+ id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAdminDriverDocument<TData = Awaited<ReturnType<typeof getAdminDriverDocument>>, TError = ErrorType<void>>(
+ id: string,
+    documentType: 'driver_license_front' | 'driver_license_back' | 'vehicle_license_front' | 'vehicle_license_back', options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDriverDocument>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminDriverDocumentQueryOptions(id,documentType,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

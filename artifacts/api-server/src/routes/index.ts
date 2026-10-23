@@ -10,6 +10,7 @@ import rideMessagesRouter from "./ride-messages";
 import supportRouter from "./support";
 import openaiSupportRouter from "./openai-support";
 import profilePhotosRouter from "./profile-photos";
+import driverDocumentsRouter from "./driver-documents";
 import pabloFeedbackRouter from "./pablo-feedback";
 
 const router: IRouter = Router();
@@ -25,6 +26,7 @@ router.use(driverReviewRouter);
 router.use(supportRouter);
 router.use(openaiSupportRouter);
 router.use(profilePhotosRouter);
+router.use(driverDocumentsRouter);
 router.use(pabloFeedbackRouter);
 
 export default router;

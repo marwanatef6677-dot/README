@@ -3,7 +3,12 @@ import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bike, CarFront, Check, Download, ImagePlus, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
-import { getGetProfileQueryKey, getListDriverReviewsQueryKey, useCompleteProfilePhotoUpload, useRequestProfilePhotoUpload, useUpdateProfile } from "@workspace/api-client-react";
+import {
+  getGetProfileQueryKey, getListDriverReviewsQueryKey,
+  useCompleteDriverDocumentUpload, useCompleteProfilePhotoUpload,
+  useRequestDriverDocumentUpload, useRequestProfilePhotoUpload, useUpdateProfile,
+} from "@workspace/api-client-react";
+import type { DriverDocumentUploadRequestDocumentType } from "@workspace/api-client-react";
 import type { Profile, ProfileInputRole } from "@workspace/api-client-react";
 import { Btn, Monogram, PilotNotice, Skeleton } from "@/components/bits";
 import { fieldCls } from "@/components/booking-form";
@@ -16,11 +21,18 @@ import { cn } from "@/lib/utils";
 const PHONE = /^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/;
 type Form = {
   name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string;
-  vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean;
+  vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean; driverTermsSignature: string;
   customerAge18Attested: boolean; customerTermsAccepted: boolean; customerTermsSignature: string;
 };
-type FormErrors = Partial<Record<keyof Form | "vehiclePhoto", string>>;
+type FormErrors = Partial<Record<keyof Form | "vehiclePhoto" | "driverDocuments", string>>;
+type UploadPurpose = "avatar" | "captain_vehicle" | DriverDocumentUploadRequestDocumentType;
 const normalizeSignature = (value: string) => value.normalize("NFKC").replace(/\s+/g, " ").trim();
+const DRIVER_DOCUMENTS = [
+  { type: "driver_license_front", label: "رخصة القيادة — الوجه الأمامي", flag: "hasDriverLicenseFront" },
+  { type: "driver_license_back", label: "رخصة القيادة — الوجه الخلفي", flag: "hasDriverLicenseBack" },
+  { type: "vehicle_license_front", label: "رخصة المركبة — الوجه الأمامي", flag: "hasVehicleLicenseFront" },
+  { type: "vehicle_license_back", label: "رخصة المركبة — الوجه الخلفي", flag: "hasVehicleLicenseBack" },
+] as const;
 
 function InstallCard() {
   const { canPrompt, standalone, isIOS, install } = useInstall();
@@ -54,6 +66,8 @@ export default function Account({ profile }: { profile: Profile }) {
   const config = useConfig();
   const summary = useSummary();
   const update = useUpdateProfile();
+  const requestDriverDocumentUpload = useRequestDriverDocumentUpload();
+  const completeDriverDocumentUpload = useCompleteDriverDocumentUpload();
   const requestPhotoUpload = useRequestProfilePhotoUpload();
   const completePhotoUpload = useCompleteProfilePhotoUpload();
   const qc = useQueryClient();
@@ -63,14 +77,14 @@ export default function Account({ profile }: { profile: Profile }) {
   const [f, setF] = useState<Form>({
     name: profile.name, phone: profile.phone, role: profile.role, province: profile.province,
     vehicle: profile.vehicle, vehicleType: profile.vehicleType, plate: profile.plate,
-    driverTermsAccepted: profile.driverTermsAccepted,
+    driverTermsAccepted: profile.driverTermsAccepted, driverTermsSignature: "",
     customerAge18Attested: profile.customerTermsAccepted,
     customerTermsAccepted: profile.customerTermsAccepted,
     customerTermsSignature: "",
   });
   const [errs, setErrs] = useState<FormErrors>({});
   const [serverErr, setServerErr] = useState("");
-  const [photoBusy, setPhotoBusy] = useState<"avatar" | "captain_vehicle" | null>(null);
+  const [photoBusy, setPhotoBusy] = useState<UploadPurpose | null>(null);
   const [photoError, setPhotoError] = useState("");
   const [photoRevision, setPhotoRevision] = useState(0);
   const filled = useRef(false);
@@ -95,6 +109,13 @@ export default function Account({ profile }: { profile: Profile }) {
     if (f.role === "driver" && f.plate.trim().length < 2) er.plate = "اكتب رقم اللوحة";
     if (f.role === "driver" && !profile.hasCaptainVehiclePhoto) er.vehiclePhoto = "ارفع صورة ليك واقف جنب عربيتك أو موتوسيكل قبل تسجيل الكابتن";
     if (f.role === "driver" && !f.driverTermsAccepted) er.driverTermsAccepted = "وافق على إقرار النسخة التجريبية قبل تسجيل الكابتن";
+    if (f.role === "driver" && DRIVER_DOCUMENTS.some((doc) => !profile[doc.flag])) {
+      er.driverDocuments = "ارفع صور الوجهين لرخصة القيادة ورخصة المركبة قبل إرسال طلب الاعتماد.";
+    }
+    if (f.role === "driver" && !profile.driverTermsAccepted
+      && normalizeSignature(f.driverTermsSignature) !== normalizeSignature(name)) {
+      er.driverTermsSignature = "اكتب اسمك المسجل بالكامل كتوقيع.";
+    }
     if (f.role === "customer" && !profile.customerTermsAccepted) {
       if (!f.customerAge18Attested) er.customerAge18Attested = "أكد أن عمرك ١٨ سنة أو أكثر.";
       if (!f.customerTermsAccepted) er.customerTermsAccepted = "وافق على شروط استخدام بابلو.";
@@ -111,7 +132,10 @@ export default function Account({ profile }: { profile: Profile }) {
        customerTermsAccepted: f.customerTermsAccepted,
        customerTermsSignature: f.customerTermsSignature.trim(),
      } : {};
-     update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), vehicleType: f.vehicleType, plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted, ...customerTerms } }, {
+     const driverTerms = f.role === "driver" && !profile.driverTermsAccepted
+       ? { driverTermsSignature: f.driverTermsSignature.trim() }
+       : {};
+     update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), vehicleType: f.vehicleType, plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted, ...driverTerms, ...customerTerms } }, {
       onSuccess: (p) => {
         qc.setQueryData(getGetProfileQueryKey(), p); invalidate();
          if (onboarding || (f.role === "customer" && p.customerTermsAccepted)) { toast({ title: `أهلاً بيك يا ${p.name.split(" ")[0]}` }); setLocation("/book"); }
@@ -149,10 +173,44 @@ export default function Account({ profile }: { profile: Profile }) {
     }
   }
 
+  async function uploadDriverDocument(file: File | undefined, documentType: DriverDocumentUploadRequestDocumentType) {
+    if (!file) return;
+    setPhotoError("");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoError("اختار صورة JPG أو PNG أو WebP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("حجم كل صورة لازم يكون ٥ ميجابايت أو أقل.");
+      return;
+    }
+    setPhotoBusy(documentType);
+    try {
+      const upload = await requestDriverDocumentUpload.mutateAsync({
+        data: { documentType, size: file.size, contentType: file.type as "image/jpeg" | "image/png" | "image/webp" },
+      });
+      const response = await fetch(upload.uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!response.ok) throw new Error("ماقدرناش نرفع المستند. حاول تاني.");
+      await completeDriverDocumentUpload.mutateAsync({ data: { documentType, objectPath: upload.objectPath } });
+      await qc.invalidateQueries({ queryKey: getGetProfileQueryKey() });
+      await qc.invalidateQueries({ queryKey: getListDriverReviewsQueryKey() });
+      setPhotoRevision((current) => current + 1);
+    } catch (error) {
+      setPhotoError(errorText(error, "ماقدرناش نرفع المستند. حاول تاني."));
+    } finally {
+      setPhotoBusy(null);
+    }
+  }
+
   const Err = ({ k }: { k: keyof Form }) => errs[k] ? <p className="mt-1 text-xs text-destructive">{errs[k]}</p> : null;
-  const canSubmitTermsWhileLocked = f.role === "customer" && !profile.customerTermsAccepted
+  const canSubmitTermsWhileLocked = (f.role === "customer" && !profile.customerTermsAccepted
     && f.customerAge18Attested && f.customerTermsAccepted
-    && normalizeSignature(f.customerTermsSignature) === normalizeSignature(f.name);
+    && normalizeSignature(f.customerTermsSignature) === normalizeSignature(f.name))
+    || (f.role === "driver" && !profile.driverTermsAccepted
+      && f.driverTermsAccepted
+      && normalizeSignature(f.driverTermsSignature) === normalizeSignature(f.name)
+      && DRIVER_DOCUMENTS.every((doc) => profile[doc.flag]));
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -195,6 +253,33 @@ export default function Account({ profile }: { profile: Profile }) {
                 </div>
                 {!profile.hasCaptainVehiclePhoto && <p className="mt-3 text-xs font-semibold text-amber-800" data-testid="text-captain-photo-required">لازم ترفع الصورة قبل حفظ التسجيل ككابتن.</p>}
               </div>}
+              {f.role === "driver" && <section className="mt-4 border-t border-border/70 pt-4" data-testid="section-driver-documents">
+                <div>
+                  <h3 className="font-semibold">رخصة القيادة ورخصة المركبة <span className="text-destructive">*</span></h3>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">ارفع الوجه الأمامي والخلفي لكل رخصة. الصور محفوظة في مساحة خاصة ومتاحة للإدارة فقط للمراجعة وإعادة المراجعة، ولا تظهر للعملاء أو للكباتن الآخرين.</p>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {DRIVER_DOCUMENTS.map((doc) => {
+                    const uploaded = profile[doc.flag];
+                    return (
+                      <div key={doc.type} className="rounded-xl border border-border bg-background p-3" data-testid={`driver-document-${doc.type}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold">{doc.label}</p>
+                          <span className={cn("shrink-0 rounded-full px-2 py-1 text-[10px] font-bold", uploaded ? "bg-emerald-700/10 text-emerald-800" : "bg-amber-700/10 text-amber-800")}>
+                            {uploaded ? "تم الرفع" : "مطلوب"}
+                          </span>
+                        </div>
+                        <label className="press mt-2 inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border border-card-border bg-card px-3 text-xs font-bold">
+                          <ImagePlus className="h-4 w-4" /> {uploaded ? "استبدال الصورة" : "اختيار صورة"}
+                          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy !== null || locked} onChange={(event) => { void uploadDriverDocument(event.currentTarget.files?.[0], doc.type); event.currentTarget.value = ""; }} data-testid={`input-driver-document-${doc.type}`} />
+                        </label>
+                        {photoBusy === doc.type && <p className="mt-2 text-[11px] text-muted-foreground" role="status">جاري رفع الصورة...</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+                {errs.driverDocuments && <p className="mt-2 text-xs text-destructive" data-testid="error-driver-documents">{errs.driverDocuments}</p>}
+              </section>}
               {photoBusy === "avatar" && <p className="mt-2 text-xs text-muted-foreground" role="status" data-testid="status-avatar-upload">جاري رفع الصورة...</p>}
               {photoError && <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive" role="alert" data-testid="text-photo-upload-error">{photoError}</p>}
               <p className="mt-3 text-[11px] text-muted-foreground" data-testid="text-photo-file-requirements">الصور المسموح بها JPG أو PNG أو WebP، بحد أقصى ٥ ميجابايت.</p>
@@ -235,18 +320,28 @@ export default function Account({ profile }: { profile: Profile }) {
               <div><label className="mb-1.5 block text-sm font-semibold">{f.vehicleType === "motorcycle" ? "نوع الموتوسيكل ولونه" : "نوع العربية ولونها"} {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-vehicle" className={fieldCls} value={f.vehicle} maxLength={80} onChange={(e) => set("vehicle", e.target.value)} placeholder={f.vehicleType === "motorcycle" ? "مثلاً: سكوتر أسود" : "مثلاً: هيونداي فيرنا فضي"} /><Err k="vehicle" /></div>
               <div><label className="mb-1.5 block text-sm font-semibold">رقم اللوحة {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-plate" className={fieldCls} value={f.plate} maxLength={30} onChange={(e) => set("plate", e.target.value)} placeholder="مثلاً: س ط ر ٤٥٢٧" /><Err k="plate" /></div>
             </div>
-            {f.role === "driver" && (
-              <div className="rounded-2xl border border-card-border bg-card p-4">
-                <p className="font-semibold">إقرار الكابتن للنسخة التجريبية</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">أؤكد صحة بياناتي، وأفهم أن التسجيل لا يعني اعتماد الكابتن أو السماح بنقل ركاب حقيقيين. هذه نسخة اختبار وليست موافقة قانونية نهائية أو تصريح تشغيل.</p>
-                <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm">
-                  <input data-testid="checkbox-driver-terms" type="checkbox" className="mt-1 h-4 w-4 accent-[#10151d]" checked={f.driverTermsAccepted} onChange={(e) => set("driverTermsAccepted", e.target.checked)} />
-                  <span>قرأت إقرار التجربة وأوافق عليه</span>
-                </label>
-                <Err k="driverTermsAccepted" />
-              </div>
-            )}
           </fieldset>
+          {f.role === "driver" && !profile.driverTermsAccepted && <section className="space-y-4 rounded-2xl border border-[#ffd000]/50 bg-[#ffd000]/10 p-4" data-testid="section-driver-terms">
+            <div>
+              <h2 className="font-display text-lg font-bold">إقرار الكابتن</h2>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">اقرأ <Link href="/driver-terms" className="font-bold underline" data-testid="link-driver-terms">إقرار الكابتن والمستندات</Link> قبل الموافقة.</p>
+            </div>
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
+              <input data-testid="checkbox-driver-terms" type="checkbox" className="mt-1 h-4 w-4 accent-[#10151d]" checked={f.driverTermsAccepted} onChange={(e) => set("driverTermsAccepted", e.target.checked)} />
+              <span>أقر أن بياناتي والمستندات التي رفعتها تخصني وصحيحة، وأوافق على مراجعتها إداريًا. أفهم أن رفعها لا يعني اعتماد الحساب أو السماح بقبول الطلبات.</span>
+            </label>
+            <Err k="driverTermsAccepted" />
+            <div>
+              <label htmlFor="driver-terms-signature" className="mb-1.5 block text-sm font-semibold">اكتب اسمك المسجل كتوقيع إلكتروني</label>
+              <input id="driver-terms-signature" data-testid="input-driver-terms-signature" className={fieldCls} autoComplete="name" maxLength={80} value={f.driverTermsSignature} onChange={(e) => set("driverTermsSignature", e.target.value)} placeholder={f.name || "اسمك الكامل"} />
+              <Err k="driverTermsSignature" />
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">سيُحفظ الاسم المكتوب ووقت الموافقة وإصدار الإقرار. هذا سجل داخل التطبيق وليس تأكيدًا على الحجية القانونية للتوقيع.</p>
+          </section>}
+          {f.role === "driver" && profile.driverTermsAccepted && <div className="rounded-2xl border border-emerald-700/20 bg-emerald-700/5 p-4 text-sm" data-testid="text-driver-terms-signed">
+            <p className="font-semibold">تم تسجيل إقرار الكابتن.</p>
+            <Link href="/driver-terms" className="mt-2 inline-block text-xs font-bold underline">عرض الإقرار</Link>
+          </div>}
           {f.role === "customer" && !profile.customerTermsAccepted && <section className="space-y-4 rounded-2xl border border-[#ffd000]/50 bg-[#ffd000]/10 p-4" data-testid="section-customer-terms">
             <div>
               <h2 className="font-display text-lg font-bold">اتفاق استخدام العميل</h2>

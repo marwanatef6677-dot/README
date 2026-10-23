@@ -22,6 +22,10 @@ export interface DriverReview {
   /** @nullable */
   driverReviewedAt: string | null;
   captainVehiclePhotoAvailable: boolean;
+  driverLicenseFrontAvailable: boolean;
+  driverLicenseBackAvailable: boolean;
+  vehicleLicenseFrontAvailable: boolean;
+  vehicleLicenseBackAvailable: boolean;
   captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;

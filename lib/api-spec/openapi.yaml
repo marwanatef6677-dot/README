@@ -137,6 +137,61 @@ paths:
               schema: { type: string, format: binary }
         "404":
           description: No profile image is set
+  /storage/driver-documents/request-upload:
+    post:
+      operationId: requestDriverDocumentUpload
+      tags: [storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverDocumentUploadRequest"
+      responses:
+        "200":
+          description: Short-lived private upload URL for a captain document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfilePhotoUploadResponse"
+  /storage/driver-documents/complete:
+    post:
+      operationId: completeDriverDocumentUpload
+      tags: [storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverDocumentCompleteRequest"
+      responses:
+        "200":
+          description: The private document was validated and saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriverDocumentCompleteResponse"
+  /storage/admin/drivers/{id}/documents/{documentType}:
+    get:
+      operationId: getAdminDriverDocument
+      tags: [storage]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: documentType
+          in: path
+          required: true
+          schema: { type: string, enum: [driver_license_front, driver_license_back, vehicle_license_front, vehicle_license_back] }
+      responses:
+        "200":
+          description: Private document image, available to administrators only
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: Document not found
   /storage/profiles/{id}/vehicle:
     get:
       operationId: getProfileVehiclePhoto
@@ -543,7 +598,7 @@ components:
         seats: { type: integer }
     Profile:
       type: object
-      required: [id, name, phone, role, province, vehicle, vehicleType, plate, onboarded, customerTermsAccepted, customerTermsAcceptedAt, driverReviewStatus, driverTermsAccepted, hasAvatarPhoto, hasCaptainVehiclePhoto, captainPhotoVerified, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
+      required: [id, name, phone, role, province, vehicle, vehicleType, plate, onboarded, customerTermsAccepted, customerTermsAcceptedAt, driverReviewStatus, driverTermsAccepted, hasAvatarPhoto, hasCaptainVehiclePhoto, hasDriverLicenseFront, hasDriverLicenseBack, hasVehicleLicenseFront, hasVehicleLicenseBack, captainPhotoVerified, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
       properties:
         id: { type: string }
         name: { type: string }
@@ -558,6 +613,10 @@ components:
         customerTermsAcceptedAt: { type: [string, "null"] }
         hasAvatarPhoto: { type: boolean }
         hasCaptainVehiclePhoto: { type: boolean }
+        hasDriverLicenseFront: { type: boolean }
+        hasDriverLicenseBack: { type: boolean }
+        hasVehicleLicenseFront: { type: boolean }
+        hasVehicleLicenseBack: { type: boolean }
         captainPhotoVerified: { type: boolean }
         driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
         driverTermsAccepted: { type: boolean }
@@ -578,6 +637,7 @@ components:
         vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string, maxLength: 30 }
         driverTermsAccepted: { type: boolean }
+        driverTermsSignature: { type: string, maxLength: 80 }
         customerAge18Attested: { type: boolean }
         customerTermsAccepted: { type: boolean }
         customerTermsSignature: { type: string, maxLength: 80 }
@@ -607,6 +667,25 @@ components:
       properties:
         hasAvatarPhoto: { type: boolean }
         hasCaptainVehiclePhoto: { type: boolean }
+    DriverDocumentUploadRequest:
+      type: object
+      required: [documentType, size, contentType]
+      properties:
+        documentType: { type: string, enum: [driver_license_front, driver_license_back, vehicle_license_front, vehicle_license_back] }
+        size: { type: integer, minimum: 1, maximum: 5242880 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+    DriverDocumentCompleteRequest:
+      type: object
+      required: [documentType, objectPath]
+      properties:
+        documentType: { type: string, enum: [driver_license_front, driver_license_back, vehicle_license_front, vehicle_license_back] }
+        objectPath: { type: string, minLength: 1, maxLength: 500 }
+    DriverDocumentCompleteResponse:
+      type: object
+      required: [documentType, uploaded]
+      properties:
+        documentType: { type: string, enum: [driver_license_front, driver_license_back, vehicle_license_front, vehicle_license_back] }
+        uploaded: { type: boolean }
     RideInput:
       type: object
       required: [pickup, destination, province, rideType, serviceType, pickupLat, pickupLng, destinationLat, destinationLng]
@@ -812,7 +891,7 @@ components:
           items: { $ref: "#/components/schemas/WalletLedgerEntry" }
     DriverReview:
       type: object
-      required: [id, name, phone, province, vehicle, vehicleType, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, captainVehiclePhotoAvailable, captainPhotoVerified, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      required: [id, name, phone, province, vehicle, vehicleType, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, captainVehiclePhotoAvailable, driverLicenseFrontAvailable, driverLicenseBackAvailable, vehicleLicenseFrontAvailable, vehicleLicenseBackAvailable, captainPhotoVerified, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
       properties:
         id: { type: string }
         name: { type: string }
@@ -826,6 +905,10 @@ components:
         driverReviewNote: { type: string }
         driverReviewedAt: { type: [string, "null"] }
         captainVehiclePhotoAvailable: { type: boolean }
+        driverLicenseFrontAvailable: { type: boolean }
+        driverLicenseBackAvailable: { type: boolean }
+        vehicleLicenseFrontAvailable: { type: boolean }
+        vehicleLicenseBackAvailable: { type: boolean }
         captainPhotoVerified: { type: boolean }
         identityVerified: { type: boolean }
         drivingLicenseVerified: { type: boolean }

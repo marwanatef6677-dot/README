@@ -60,6 +60,10 @@ export const GetProfileResponse = zod.object({
   "customerTermsAcceptedAt": zod.string().nullable(),
   "hasAvatarPhoto": zod.boolean(),
   "hasCaptainVehiclePhoto": zod.boolean(),
+  "hasDriverLicenseFront": zod.boolean(),
+  "hasDriverLicenseBack": zod.boolean(),
+  "hasVehicleLicenseFront": zod.boolean(),
+  "hasVehicleLicenseBack": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
@@ -82,6 +86,8 @@ export const updateProfileBodyVehicleMax = 80;
 
 export const updateProfileBodyPlateMax = 30;
 
+export const updateProfileBodyDriverTermsSignatureMax = 80;
+
 export const updateProfileBodyCustomerTermsSignatureMax = 80;
 
 
@@ -95,6 +101,7 @@ export const UpdateProfileBody = zod.object({
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string().max(updateProfileBodyPlateMax),
   "driverTermsAccepted": zod.boolean(),
+  "driverTermsSignature": zod.string().max(updateProfileBodyDriverTermsSignatureMax).optional(),
   "customerAge18Attested": zod.boolean().optional(),
   "customerTermsAccepted": zod.boolean().optional(),
   "customerTermsSignature": zod.string().max(updateProfileBodyCustomerTermsSignatureMax).optional()
@@ -126,6 +133,10 @@ export const UpdateProfileResponse = zod.object({
   "customerTermsAcceptedAt": zod.string().nullable(),
   "hasAvatarPhoto": zod.boolean(),
   "hasCaptainVehiclePhoto": zod.boolean(),
+  "hasDriverLicenseFront": zod.boolean(),
+  "hasDriverLicenseBack": zod.boolean(),
+  "hasVehicleLicenseFront": zod.boolean(),
+  "hasVehicleLicenseBack": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
@@ -182,6 +193,45 @@ export const GetProfileAvatarPhotoParams = zod.object({
 })
 
 export const GetProfileAvatarPhotoResponse = zod.unknown()
+
+
+export const requestDriverDocumentUploadBodySizeMax = 5242880;
+
+
+
+export const RequestDriverDocumentUploadBody = zod.object({
+  "documentType": zod.enum(['driver_license_front', 'driver_license_back', 'vehicle_license_front', 'vehicle_license_back']),
+  "size": zod.number().int().min(1).max(requestDriverDocumentUploadBodySizeMax),
+  "contentType": zod.enum(['image/jpeg', 'image/png', 'image/webp'])
+})
+
+export const RequestDriverDocumentUploadResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string()
+})
+
+
+export const completeDriverDocumentUploadBodyObjectPathMax = 500;
+
+
+
+export const CompleteDriverDocumentUploadBody = zod.object({
+  "documentType": zod.enum(['driver_license_front', 'driver_license_back', 'vehicle_license_front', 'vehicle_license_back']),
+  "objectPath": zod.string().min(1).max(completeDriverDocumentUploadBodyObjectPathMax)
+})
+
+export const CompleteDriverDocumentUploadResponse = zod.object({
+  "documentType": zod.enum(['driver_license_front', 'driver_license_back', 'vehicle_license_front', 'vehicle_license_back']),
+  "uploaded": zod.boolean()
+})
+
+
+export const GetAdminDriverDocumentParams = zod.object({
+  "id": zod.coerce.string(),
+  "documentType": zod.enum(['driver_license_front', 'driver_license_back', 'vehicle_license_front', 'vehicle_license_back'])
+})
+
+export const GetAdminDriverDocumentResponse = zod.unknown()
 
 
 export const GetProfileVehiclePhotoParams = zod.object({
@@ -767,6 +817,10 @@ export const ListDriverReviewsResponseItem = zod.object({
   "driverReviewNote": zod.string(),
   "driverReviewedAt": zod.string().nullable(),
   "captainVehiclePhotoAvailable": zod.boolean(),
+  "driverLicenseFrontAvailable": zod.boolean(),
+  "driverLicenseBackAvailable": zod.boolean(),
+  "vehicleLicenseFrontAvailable": zod.boolean(),
+  "vehicleLicenseBackAvailable": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
   "identityVerified": zod.boolean(),
   "drivingLicenseVerified": zod.boolean(),
@@ -817,6 +871,10 @@ export const ReviewDriverResponse = zod.object({
   "driverReviewNote": zod.string(),
   "driverReviewedAt": zod.string().nullable(),
   "captainVehiclePhotoAvailable": zod.boolean(),
+  "driverLicenseFrontAvailable": zod.boolean(),
+  "driverLicenseBackAvailable": zod.boolean(),
+  "vehicleLicenseFrontAvailable": zod.boolean(),
+  "vehicleLicenseBackAvailable": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
   "identityVerified": zod.boolean(),
   "drivingLicenseVerified": zod.boolean(),

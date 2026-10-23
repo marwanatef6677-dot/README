@@ -5,6 +5,8 @@ const SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 export const MAX_PROFILE_PHOTO_BYTES = 5 * 1024 * 1024;
 export const PROFILE_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export type ProfilePhotoPurpose = "avatar" | "captain_vehicle";
+export type DriverDocumentType = "driver_license_front" | "driver_license_back" | "vehicle_license_front" | "vehicle_license_back";
+export type PrivateImagePurpose = ProfilePhotoPurpose | DriverDocumentType;
 
 const storage = new Storage({
   credentials: {
@@ -37,7 +39,7 @@ function parseStoragePath(path: string) {
 
 export async function createProfilePhotoUpload(
   ownerId: string,
-  purpose: ProfilePhotoPurpose,
+  purpose: PrivateImagePurpose,
 ) {
   if (!/^[A-Za-z0-9_-]+$/.test(ownerId)) throw new Error("Invalid account id.");
   const entityPath = `uploads/${ownerId}/${purpose}/${randomUUID()}`;

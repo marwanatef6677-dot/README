@@ -3,7 +3,11 @@ import { eq, sql } from "drizzle-orm";
 import { db, profiles, rides } from "@workspace/db";
 import { GetConfigResponse, GetProfileResponse, UpdateProfileBody, UpdateProfileResponse, GetSummaryResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
-import { provinces, activeFor, belongsTo, activeStates, AppError, CUSTOMER_TERMS_VERSION, hasCurrentCustomerTerms } from "../lib/pablo";
+import {
+  provinces, activeFor, belongsTo, activeStates, AppError,
+  CUSTOMER_TERMS_VERSION, DRIVER_TERMS_VERSION, hasCurrentCustomerTerms,
+  hasCurrentDriverTerms, hasDriverLicenseDocuments,
+} from "../lib/pablo";
 
 const router: IRouter = Router();
 const RIDES_PER_LEVEL = 10;
@@ -19,17 +23,25 @@ async function profileJson(profile: typeof profiles.$inferSelect) {
   const {
     avatarPhotoPath, captainVehiclePhotoPath, customerAge18Attested,
     customerTermsSignature, customerTermsAcceptedAt, customerTermsVersion,
+    driverTermsSignature, driverLicenseFrontPhotoPath, driverLicenseBackPhotoPath,
+    vehicleLicenseFrontPhotoPath, vehicleLicenseBackPhotoPath,
     ...safeProfile
   } = profile;
   return {
     ...safeProfile,
-    customerTermsAccepted: hasCurrentCustomerTerms({
-      customerAge18Attested, customerTermsSignature, customerTermsAcceptedAt, customerTermsVersion,
-    }),
+    customerTermsAccepted: hasCurrentCustomerTerms(profile),
     customerTermsAcceptedAt: customerTermsAcceptedAt?.toISOString() ?? null,
     hasAvatarPhoto: Boolean(avatarPhotoPath),
     hasCaptainVehiclePhoto: Boolean(captainVehiclePhotoPath),
-    driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
+    hasDriverLicenseFront: Boolean(driverLicenseFrontPhotoPath),
+    hasDriverLicenseBack: Boolean(driverLicenseBackPhotoPath),
+    hasVehicleLicenseFront: Boolean(vehicleLicenseFrontPhotoPath),
+    hasVehicleLicenseBack: Boolean(vehicleLicenseBackPhotoPath),
+    driverTermsAccepted: hasCurrentDriverTerms(profile),
+    driverReviewStatus: profile.driverReviewStatus === "approved"
+      && (!hasCurrentDriverTerms(profile) || !hasDriverLicenseDocuments(profile)
+        || !profile.captainVehiclePhotoPath || !profile.captainPhotoVerified)
+      ? "pending" : profile.driverReviewStatus,
     driverCompletedRides: completedRides,
     driverRating: stats?.driverRating == null ? null : Number(stats.driverRating),
     driverLevel,
@@ -68,6 +80,7 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
     customerAge18Attested,
     customerTermsAccepted,
     customerTermsSignature,
+    driverTermsSignature,
     ...profileData
   } = data;
   if (!provinces.includes(data.province)) throw new AppError(400, "اختار محافظة من القائمة.");
@@ -78,7 +91,9 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
   const result = await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
     const alreadyAcceptedCurrentTerms = hasCurrentCustomerTerms(existing);
+    const alreadyAcceptedCurrentDriverTerms = hasCurrentDriverTerms(existing);
     let customerTermsUpdate: Partial<typeof profiles.$inferInsert> = {};
+    let driverTermsUpdate: Partial<typeof profiles.$inferInsert> = {};
     if (data.role === "customer" && !alreadyAcceptedCurrentTerms) {
       if (customerAge18Attested !== true || customerTermsAccepted !== true) {
         throw new AppError(400, "أقر أن عمرك ١٨ سنة أو أكثر ووافق على شروط العميل قبل المتابعة.");
@@ -95,6 +110,23 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
         customerTermsVersion: CUSTOMER_TERMS_VERSION,
       };
     }
+    if (data.role === "driver") {
+      if (!hasDriverLicenseDocuments(existing)) {
+        throw new AppError(400, "ارفع وجهي رخصة القيادة ورخصة المركبة قبل إرسال طلب اعتمادك.");
+      }
+      if (!alreadyAcceptedCurrentDriverTerms) {
+        const signedName = (driverTermsSignature ?? "").trim();
+        const normalizeName = (value: string) => value.normalize("NFKC").replace(/\s+/g, " ").trim();
+        if (!signedName || normalizeName(signedName) !== normalizeName(data.name)) {
+          throw new AppError(400, "اكتب اسمك الكامل كتوقيع مطابق للاسم المسجل في إقرار الكابتن.");
+        }
+        driverTermsUpdate = {
+          driverTermsAcceptedAt: new Date(),
+          driverTermsVersion: DRIVER_TERMS_VERSION,
+          driverTermsSignature: signedName,
+        };
+      }
+    }
     if (data.role === "driver" && !existing.captainVehiclePhotoPath) {
       throw new AppError(400, "ارفع صورة واضحة ليك مع العربية أو الموتوسيكل قبل تسجيل حساب الكابتن.");
     }
@@ -106,21 +138,20 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
       && data.vehicle === existing.vehicle
       && data.vehicleType === existing.vehicleType
       && data.plate === existing.plate;
-    const termsOnlyAcceptance = Boolean(customerTermsUpdate.customerTermsAcceptedAt) && profileUnchangedDuringConsent;
+    const termsOnlyAcceptance = (Boolean(customerTermsUpdate.customerTermsAcceptedAt)
+      || Boolean(driverTermsUpdate.driverTermsAcceptedAt)) && profileUnchangedDuringConsent;
     if (active && !termsOnlyAcceptance) throw new AppError(409, "كمّل أو الغي الرحلة الحالية قبل تعديل بيانات الحساب.");
     const needsReview = data.role === "driver" && (
       existing.role !== "driver" || existing.name !== data.name || existing.phone !== data.phone
       || existing.province !== data.province || existing.vehicle !== data.vehicle
       || existing.vehicleType !== data.vehicleType || existing.plate !== data.plate
+      || Boolean(driverTermsUpdate.driverTermsAcceptedAt)
     );
     const [updated] = await tx.update(profiles).set({
       ...profileData,
       ...customerTermsUpdate,
+      ...driverTermsUpdate,
       onboarded: true,
-      driverTermsAcceptedAt: data.role === "driver" && driverTermsAccepted
-        ? new Date() : existing.driverTermsAcceptedAt,
-      driverTermsVersion: data.role === "driver" && driverTermsAccepted
-        ? "pablo-captain-terms-v1" : existing.driverTermsVersion,
       ...(needsReview ? {
         driverReviewStatus: "pending",
         driverReviewNote: "",

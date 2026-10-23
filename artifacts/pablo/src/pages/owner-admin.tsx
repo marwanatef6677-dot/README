@@ -42,6 +42,12 @@ const CHECKLIST = [
   { key: "operatorLicenseVerified", label: "ترخيص المشغّل", icon: BadgeCheck },
   { key: "randomTestProcessConfirmed", label: "تأكيد إجراءات الاختبار العشوائي", icon: ClipboardCheck },
 ] as const;
+const DRIVER_DOCUMENTS = [
+  { type: "driver_license_front", label: "رخصة القيادة — الوجه الأمامي", availability: "driverLicenseFrontAvailable" },
+  { type: "driver_license_back", label: "رخصة القيادة — الوجه الخلفي", availability: "driverLicenseBackAvailable" },
+  { type: "vehicle_license_front", label: "رخصة المركبة — الوجه الأمامي", availability: "vehicleLicenseFrontAvailable" },
+  { type: "vehicle_license_back", label: "رخصة المركبة — الوجه الخلفي", availability: "vehicleLicenseBackAvailable" },
+] as const satisfies Array<{ type: string; label: string; availability: keyof DriverReview }>;
 
 type ChecklistKey = (typeof CHECKLIST)[number]["key"];
 type Draft = Pick<DriverReviewInput, ChecklistKey | "note">;
@@ -95,6 +101,10 @@ export default function OwnerAdmin() {
   const submitReview = (review: DriverReview, decision: DriverReviewInput["decision"]) => {
     const draft = drafts[review.id] ?? makeDraft(review);
     if (decision === "approved" && (!review.driverTermsAccepted || CHECKLIST.some(({ key }) => !draft[key]))) return;
+    if (decision === "approved" && DRIVER_DOCUMENTS.some(({ availability }) => !review[availability])) {
+      setFeedback({ id: review.id, tone: "error", text: "ارفع وراجع صور وجهي الرخصتين قبل اعتماد الكابتن." });
+      return;
+    }
     const note = draft.note.trim();
     if (note.length > 500) {
       setFeedback({ id: review.id, tone: "error", text: "الملاحظة لازم تكون ٥٠٠ حرف أو أقل." });
@@ -194,7 +204,8 @@ export default function OwnerAdmin() {
             {reviews.map((review) => {
               const draft = drafts[review.id] ?? makeDraft(review);
               const verifiedCount = CHECKLIST.filter(({ key }) => draft[key]).length;
-              const canApprove = verifiedCount === CHECKLIST.length && review.driverTermsAccepted && review.captainVehiclePhotoAvailable;
+              const documentsReady = DRIVER_DOCUMENTS.every(({ availability }) => review[availability]);
+              const canApprove = verifiedCount === CHECKLIST.length && review.driverTermsAccepted && review.captainVehiclePhotoAvailable && documentsReady;
               const isMutatingThis = reviewMutation.isPending && reviewMutation.variables?.id === review.id;
               const reviewDate = formatDate(review.driverReviewedAt);
               const status = STATUS[review.driverReviewStatus];
@@ -239,6 +250,31 @@ export default function OwnerAdmin() {
                         <p className="rounded-xl border border-dashed border-border bg-muted/45 px-3 py-5 text-center text-sm text-muted-foreground" data-testid={`text-captain-photo-missing-${review.id}`}>لا توجد صورة لمراجعتها حتى الآن.</p>
                       )}
                     </section>
+                    <section className="mt-4 rounded-2xl border border-border/75 bg-card p-3" data-testid={`section-driver-documents-admin-${review.id}`}>
+                      <div className="mb-3">
+                        <h4 className="text-sm font-bold">صور الرخص — للإدارة فقط</h4>
+                        <p className="mt-1 text-xs text-muted-foreground">لا تظهر هذه الصور للعميل أو للكباتن الآخرين. راجع الوجهين لكل رخصة قبل تحديد حالة التحقق.</p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {DRIVER_DOCUMENTS.map(({ type, label, availability }) => {
+                          const available = review[availability];
+                          const url = `/api/storage/admin/drivers/${encodeURIComponent(review.id)}/documents/${type}`;
+                          return (
+                            <div key={type} className="rounded-xl border border-border bg-background p-3" data-testid={`admin-document-${type}-${review.id}`}>
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="text-xs font-semibold">{label}</p>
+                                <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${available ? "bg-emerald-700/10 text-emerald-800" : "bg-amber-700/10 text-amber-800"}`}>{available ? "مرفوعة" : "مفقودة"}</span>
+                              </div>
+                              {available ? (
+                                <a href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg" data-testid={`admin-document-link-${type}-${review.id}`}>
+                                  <img src={url} alt={label} className="max-h-56 w-full bg-muted object-contain" data-testid={`admin-document-image-${type}-${review.id}`} onError={(event) => { event.currentTarget.hidden = true; }} />
+                                </a>
+                              ) : <p className="rounded-lg border border-dashed border-border bg-muted/45 px-3 py-5 text-center text-xs text-muted-foreground">لم تُرفع الصورة.</p>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
                     {reviewDate && <p className="mt-3 text-xs text-muted-foreground" data-testid={`text-review-date-${review.id}`}>آخر مراجعة: {reviewDate}</p>}
                   </div>
 
@@ -255,13 +291,17 @@ export default function OwnerAdmin() {
                     <div className="grid gap-2 sm:grid-cols-2">
                       {CHECKLIST.map(({ key, label, icon: Icon }) => {
                         const checked = draft[key];
+                        const licenseDocumentsAvailable = review.driverLicenseFrontAvailable && review.driverLicenseBackAvailable;
+                        const vehicleDocumentsAvailable = review.vehicleLicenseFrontAvailable && review.vehicleLicenseBackAvailable;
+                        const missingDocuments = (key === "drivingLicenseVerified" && !licenseDocumentsAvailable)
+                          || (key === "vehicleVerified" && !vehicleDocumentsAvailable);
                         return (
                           <label key={key} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${checked ? "border-emerald-700/25 bg-emerald-700/[0.055]" : "border-border bg-background/50 hover:bg-muted/60"}`} data-testid={`check-row-${key}-${review.id}`}>
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={(event) => setDraftField(review.id, key, event.target.checked)}
-                               disabled={isMutatingThis || (key === "captainPhotoVerified" && !review.captainVehiclePhotoAvailable)}
+                               disabled={isMutatingThis || (key === "captainPhotoVerified" && !review.captainVehiclePhotoAvailable) || missingDocuments}
                               className="h-4 w-4 accent-[#1f7a5f]"
                               data-testid={`checkbox-${key}-${review.id}`}
                             />
@@ -279,6 +319,9 @@ export default function OwnerAdmin() {
                         <span>الموافقة غير متاحة قبل قبول الكابتن لشروط السائق.</span>
                       </div>
                     )}
+                    {!documentsReady && <div className="mt-3 rounded-xl border border-amber-800/20 bg-[#ffd000]/15 p-3 text-sm leading-6 text-[#665000]" data-testid={`notice-missing-driver-documents-${review.id}`}>
+                      لازم ترفع الإدارة صور الوجهين لرخصة القيادة ورخصة المركبة وتراجعها قبل اعتماد الكابتن.
+                    </div>}
 
                     <label className="mt-4 block text-sm font-bold" htmlFor={`review-note-${review.id}`}>ملاحظة المراجعة <span className="font-normal text-muted-foreground">(اختياري)</span></label>
                     <textarea

@@ -8,6 +8,13 @@
 
 export * from './appConfig';
 export * from './appConfigFareDescriptions';
+export * from './driverDocumentCompleteRequest';
+export * from './driverDocumentCompleteRequestDocumentType';
+export * from './driverDocumentCompleteResponse';
+export * from './driverDocumentCompleteResponseDocumentType';
+export * from './driverDocumentUploadRequest';
+export * from './driverDocumentUploadRequestContentType';
+export * from './driverDocumentUploadRequestDocumentType';
 export * from './driverLocation';
 export * from './driverReview';
 export * from './driverReviewDriverReviewStatus';
