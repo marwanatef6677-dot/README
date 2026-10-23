@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
-import { Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Users, X } from "lucide-react";
+import { Bike, Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Users, X } from "lucide-react";
 import { useCreateRide, usePreviewRoute } from "@workspace/api-client-react";
-import type { RideTypeId, RoutePreview } from "@workspace/api-client-react";
+import type { RideTypeId, RoutePreview, RouteInputServiceType } from "@workspace/api-client-react";
 import { PabloMap, type LatLng } from "@/components/pablo-map";
 import { useConfig, useInvalidateRides } from "@/hooks/use-pablo";
 import { useToast } from "@/hooks/use-toast";
@@ -11,10 +11,11 @@ import { Btn, Skeleton } from "@/components/bits";
 import { clearDraft, errorText, loadDraft, saveDraft, type Draft } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
 
-const typeIcon: Record<RideTypeId, typeof Car> = { economy: Car, family: Users, premium: Crown };
+const typeIcon: Record<RideTypeId, typeof Car> = { economy: Car, family: Users, premium: Crown, motorcycle: Bike };
 
 export const fieldCls = "h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none transition-shadow placeholder:text-muted-foreground/70 focus:border-[#10151d] focus:shadow-[0_0_0_4px_rgba(255,208,0,.45)]";
-const MIN_FARE_PIASTERS = 4_000;
+const MIN_FARE_CAR_PIASTERS = 4_000;
+const MIN_FARE_MOTORCYCLE_PIASTERS = 3_000;
 const FARE_STEP_PIASTERS = 500;
 const MAX_ADJUSTMENT_PIASTERS = 1_000_000;
 const formatEgp = (piasters: number) => `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(piasters / 100)} جنيه`;
@@ -31,6 +32,9 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const [geoMsg, setGeoMsg] = useState("");
   const [serverErr, setServerErr] = useState("");
   const [fareAdjustmentPiasters, setFareAdjustmentPiasters] = useState(() => loadDraft().fareAdjustmentPiasters ?? 0);
+  const serviceType: RouteInputServiceType = d.serviceType ?? "passenger";
+  const isDelivery = serviceType === "delivery";
+  const minimumFarePiasters = d.rideType === "motorcycle" ? MIN_FARE_MOTORCYCLE_PIASTERS : MIN_FARE_CAR_PIASTERS;
   const restored = useRef(!!loadDraft().pickup || !!loadDraft().destination);
 
   useEffect(() => {
@@ -70,6 +74,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const [route, setRoute] = useState<{ s: "idle" | "loading" | "ok" | "err"; data?: RoutePreview }>({ s: "idle" });
   const [retry, setRetry] = useState(0);
   const routeKey = `${d.pickupLat ?? ""}|${d.pickupLng ?? ""}|${d.destinationLat ?? ""}|${d.destinationLng ?? ""}`;
+  const fareKey = `${d.rideType}|${serviceType}`;
   const previousRouteKey = useRef(routeKey);
   useEffect(() => {
     const id = ++seq.current;
@@ -79,7 +84,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
     }
     if (d.pickupLat == null || d.pickupLng == null || d.destinationLat == null || d.destinationLng == null) { setRoute({ s: "idle" }); return; }
     setRoute({ s: "loading" });
-    const body = { pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng };
+    const body = { pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng, rideType: d.rideType, serviceType };
     const t = setTimeout(() => {
       previewRef.current({ data: body }, {
         onSuccess: (r) => { if (seq.current === id) setRoute({ s: "ok", data: r }); },
@@ -87,7 +92,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
       });
     }, 700);
     return () => clearTimeout(t);
-  }, [routeKey, retry]);
+  }, [routeKey, fareKey, retry]);
   useEffect(() => () => { seq.current++; }, []);
 
   function locate() {
@@ -114,6 +119,11 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
     if (d.destinationLat == null || d.destinationLng == null) e.destinationLat = "حط دبوس الوصول على الخريطة";
     if (!d.province) e.province = "اختار المحافظة";
     if (d.notes.length > 500) e.notes = "الملاحظات طويلة شوية (أقصى حد ٥٠٠ حرف)";
+    if (isDelivery) {
+      if ((d.deliveryDescription ?? "").trim().length < 3) e.deliveryDescription = "اكتب وصف الحاجة اللي هتتبعت";
+      if ((d.recipientName ?? "").trim().length < 2) e.recipientName = "اكتب اسم المستلم";
+      if (!/^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/.test((d.recipientPhone ?? "").replace(/\s|-/g, ""))) e.recipientPhone = "اكتب رقم موبايل مصري صحيح";
+    }
     setErrs(e);
     return Object.keys(e).length === 0;
   }
@@ -130,7 +140,8 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
     if (d.pickupLat == null || d.pickupLng == null || d.destinationLat == null || d.destinationLng == null) return;
     create.mutate({
       data: {
-        pickup: d.pickup.trim(), destination: d.destination.trim(), province: d.province, rideType: d.rideType,
+        pickup: d.pickup.trim(), destination: d.destination.trim(), province: d.province, rideType: d.rideType, serviceType,
+        ...(isDelivery ? { deliveryDescription: d.deliveryDescription?.trim(), recipientName: d.recipientName?.trim(), recipientPhone: d.recipientPhone?.replace(/\s|-/g, "") } : {}),
         ...(d.notes.trim() ? { notes: d.notes.trim() } : {}),
         pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng,
         fareAdjustmentPiasters,
@@ -151,6 +162,16 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
       {restored.current && signedIn && (
         <p className="rounded-xl bg-accent px-3 py-2 text-sm" data-testid="text-draft-restored">رجّعنا لك الطلب اللي كنت بتكتبه. راجعه واطلب لما تكون جاهز.</p>
       )}
+      <div className="grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1" role="radiogroup" aria-label="نوع الخدمة">
+        {([{ value: "passenger", label: "مشوار راكب", hint: "تنقّل بالعربية أو الموتوسيكل" }, { value: "delivery", label: "توصيل طلب", hint: "إرسال حاجة مع كابتن موتوسيكل" }] as const).map((option) => (
+          <button type="button" key={option.value} role="radio" aria-checked={serviceType === option.value} data-testid={`button-service-${option.value}`} onClick={() => {
+            setD((current) => ({ ...current, serviceType: option.value, rideType: option.value === "delivery" ? "motorcycle" : current.rideType === "motorcycle" ? "economy" : current.rideType }));
+            setFareAdjustmentPiasters(0);
+          }} className={cn("rounded-xl px-3 py-3 text-right transition-colors", serviceType === option.value ? "bg-[#10151d] text-[#ffd000]" : "text-foreground/65 hover:bg-card")}>
+            <span className="block text-sm font-bold">{option.label}</span><span className={cn("mt-1 block text-[10px]", serviceType === option.value ? "text-white/65" : "text-muted-foreground")}>{option.hint}</span>
+          </button>
+        ))}
+      </div>
       <div className="overflow-hidden rounded-[2rem] bg-[#10151d] p-2 shadow-[0_24px_60px_-30px_rgba(16,21,29,.7)]">
         <div className="flex gap-1.5 p-1.5" role="radiogroup" aria-label="بتحدد إيه على الخريطة">
           {(["pickup", "destination"] as const).map((k) => (
@@ -183,11 +204,11 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
                 <span><span className="font-num text-xl font-bold text-[#ffd000]">{Math.max(1, Math.round(route.data.durationSeconds / 60))}</span> <span className="text-xs">دقيقة سواقة تقديرياً</span></span>
               </div>
               <div className="rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 p-3" data-testid="fare-preview">
-                <p className="text-xs text-[#f6f1e4]/70">السعر الأساسي حسب المسافة والوقت</p>
-                <p className="mt-1 font-display text-sm font-bold">٢٠ جنيه بداية + ١٠ جنيه لكل كم + ١ جنيه لكل دقيقة، بحد أدنى ٤٠ جنيه</p>
+                 <p className="text-xs text-[#f6f1e4]/70">السعر الأساسي حسب المسافة والوقت</p>
+                 <p className="mt-1 font-display text-sm font-bold">{config.data?.fareDescriptions?.[isDelivery ? "delivery" : d.rideType === "motorcycle" ? "motorcycle" : "car"] ?? (isDelivery ? "٣٠ جنيه بداية + ٨ جنيه لكل كم" : d.rideType === "motorcycle" ? "١٥ جنيه بداية + ٨ جنيه لكل كم + جنيه لكل دقيقة، بحد أدنى ٣٠ جنيه" : "٢٠ جنيه بداية + ١٠ جنيه لكل كم + جنيه لكل دقيقة، بحد أدنى ٤٠ جنيه")}</p>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <button type="button" data-testid="button-fare-minus" aria-label="قلل السعر ٥ جنيهات"
-                    disabled={route.data.estimatedFarePiasters + fareAdjustmentPiasters - FARE_STEP_PIASTERS < MIN_FARE_PIASTERS || fareAdjustmentPiasters <= -MAX_ADJUSTMENT_PIASTERS}
+                     disabled={route.data.estimatedFarePiasters + fareAdjustmentPiasters - FARE_STEP_PIASTERS < minimumFarePiasters || fareAdjustmentPiasters <= -MAX_ADJUSTMENT_PIASTERS}
                     onClick={() => setFareAdjustmentPiasters((value) => Math.max(-MAX_ADJUSTMENT_PIASTERS, value - FARE_STEP_PIASTERS))}
                     className="press h-10 rounded-xl border border-[#f6f1e4]/20 px-3 text-sm font-bold disabled:opacity-40">− ٥ جنيه</button>
                   <div className="text-center" aria-live="polite">
@@ -252,16 +273,16 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
         {errs.province && <p className="mt-1 text-xs text-destructive">{errs.province}</p>}
       </div>
 
-      <div>
-        <p className="mb-1.5 text-sm font-semibold">نوع العربية</p>
+       <div>
+         <p className="mb-1.5 text-sm font-semibold">{isDelivery ? "نوع المركبة" : "نوع العربية أو المركبة"}</p>
         {config.isLoading ? <div className="grid grid-cols-3 gap-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28" />)}</div> : config.isError ? (
           <p className="text-sm text-destructive">مش قادرين نجيب أنواع العربيات. <button type="button" className="underline" onClick={() => config.refetch()}>جرّب تاني</button></p>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {types?.map((t) => {
+           <div className={cn("grid gap-2", isDelivery ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-4")}>
+             {types?.filter((t) => isDelivery ? t.id === "motorcycle" : true).map((t) => {
               const Icon = typeIcon[t.id]; const on = d.rideType === t.id;
               return (
-                <button type="button" key={t.id} data-testid={`button-ridetype-${t.id}`} onClick={() => set("rideType", t.id)}
+                <button type="button" key={t.id} data-testid={`button-ridetype-${t.id}`} onClick={() => { set("rideType", t.id); setFareAdjustmentPiasters(0); }}
                   className={cn("press relative rounded-2xl border-2 p-3 text-right transition-colors", on ? "border-[#10151d] bg-[#ffd000]" : "border-transparent bg-card hover:border-foreground/15")}>
                   <Icon className="h-5 w-5" />
                   <p className="mt-2 font-display text-sm font-bold">{t.name}</p>
@@ -273,6 +294,15 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
           </div>
         )}
       </div>
+
+      {isDelivery && <section className="space-y-3 rounded-3xl border border-[#d8cfae] bg-[#fffdf7] p-4" data-testid="section-delivery-details">
+        <div><h3 className="font-display font-bold">تفاصيل التوصيل</h3><p className="mt-1 text-xs text-muted-foreground">بيانات المستلم بتظهر للكابتن بعد ما يقبل الطلب.</p></div>
+        <div><label className="mb-1 block text-sm font-semibold">إيه اللي هيتبعت؟</label><textarea data-testid="input-delivery-description" rows={2} maxLength={300} className={cn(fieldCls, "h-auto py-3")} value={d.deliveryDescription ?? ""} onChange={(e) => set("deliveryDescription", e.target.value)} placeholder="مثلاً: ظرف مستندات أو طلب من الصيدلية" />{errs.deliveryDescription && <p className="mt-1 text-xs text-destructive">{errs.deliveryDescription}</p>}</div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div><label className="mb-1 block text-sm font-semibold">اسم المستلم</label><input data-testid="input-recipient-name" className={fieldCls} maxLength={80} value={d.recipientName ?? ""} onChange={(e) => set("recipientName", e.target.value)} placeholder="الاسم" />{errs.recipientName && <p className="mt-1 text-xs text-destructive">{errs.recipientName}</p>}</div>
+          <div><label className="mb-1 block text-sm font-semibold">موبايل المستلم</label><input data-testid="input-recipient-phone" dir="ltr" inputMode="tel" className={cn(fieldCls, "text-right font-num")} value={d.recipientPhone ?? ""} onChange={(e) => set("recipientPhone", e.target.value)} placeholder="01012345678" />{errs.recipientPhone && <p className="mt-1 text-xs text-destructive">{errs.recipientPhone}</p>}</div>
+        </div>
+      </section>}
 
       <div>
         <label className="mb-1.5 block text-sm font-semibold">ملاحظات للكابتن <span className="font-normal text-muted-foreground">(اختياري)</span></label>

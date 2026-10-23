@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CarFront, Check, Download, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
+import { Bike, CarFront, Check, Download, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
 import { getGetProfileQueryKey, useUpdateProfile } from "@workspace/api-client-react";
 import type { Profile, ProfileInputRole } from "@workspace/api-client-react";
 import { Btn, Monogram, PilotNotice, Skeleton } from "@/components/bits";
@@ -14,7 +14,7 @@ import { errorText } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
 
 const PHONE = /^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/;
-type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; plate: string; driverTermsAccepted: boolean };
+type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean };
 
 function InstallCard() {
   const { canPrompt, standalone, isIOS, install } = useInstall();
@@ -52,7 +52,7 @@ export default function Account({ profile }: { profile: Profile }) {
   const invalidate = useInvalidateRides();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, plate: profile.plate, driverTermsAccepted: profile.driverTermsAccepted });
+  const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, vehicleType: profile.vehicleType, plate: profile.plate, driverTermsAccepted: profile.driverTermsAccepted });
   const [errs, setErrs] = useState<Partial<Record<keyof Form, string>>>({});
   const [serverErr, setServerErr] = useState("");
   const filled = useRef(false);
@@ -80,7 +80,7 @@ export default function Account({ profile }: { profile: Profile }) {
     if (f.plate.length > 30) er.plate = "أقصى حد ٣٠ حرف";
     setErrs(er);
     if (Object.keys(er).length) return;
-    update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted } }, {
+     update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), vehicleType: f.vehicleType, plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted } }, {
       onSuccess: (p) => {
         qc.setQueryData(getGetProfileQueryKey(), p); invalidate();
         if (onboarding) { toast({ title: `أهلاً بيك يا ${p.name.split(" ")[0]}` }); setLocation("/book"); }
@@ -127,8 +127,19 @@ export default function Account({ profile }: { profile: Profile }) {
               <Err k="province" />
               {f.role === "driver" && <p className="mt-1 text-xs text-muted-foreground">هتشوف طلبات المحافظة دي بس.</p>}
             </div>
+            {f.role === "driver" && <div>
+              <p className="mb-2 text-sm font-semibold">نوع المركبة</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([{ value: "car", label: "عربية", Icon: CarFront }, { value: "motorcycle", label: "موتوسيكل", Icon: Bike }] as const).map(({ value, label, Icon }) => (
+                  <button type="button" key={value} data-testid={`button-vehicle-type-${value}`} aria-pressed={f.vehicleType === value} onClick={() => set("vehicleType", value)}
+                    className={cn("press flex min-h-12 items-center gap-2 rounded-2xl border-2 px-4 text-sm font-bold transition-colors", f.vehicleType === value ? "border-[#10151d] bg-[#ffd000]" : "border-card-border bg-card hover:border-foreground/20")}>
+                    <Icon className="h-5 w-5" />{label}
+                  </button>
+                ))}
+              </div>
+            </div>}
             <div className={cn("grid gap-3 sm:grid-cols-2", f.role !== "driver" && "opacity-70")}>
-              <div><label className="mb-1.5 block text-sm font-semibold">العربية {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-vehicle" className={fieldCls} value={f.vehicle} maxLength={80} onChange={(e) => set("vehicle", e.target.value)} placeholder="مثلاً: هيونداي فيرنا فضي" /><Err k="vehicle" /></div>
+              <div><label className="mb-1.5 block text-sm font-semibold">{f.vehicleType === "motorcycle" ? "نوع الموتوسيكل ولونه" : "نوع العربية ولونها"} {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-vehicle" className={fieldCls} value={f.vehicle} maxLength={80} onChange={(e) => set("vehicle", e.target.value)} placeholder={f.vehicleType === "motorcycle" ? "مثلاً: سكوتر أسود" : "مثلاً: هيونداي فيرنا فضي"} /><Err k="vehicle" /></div>
               <div><label className="mb-1.5 block text-sm font-semibold">رقم اللوحة {f.role !== "driver" && <span className="font-normal text-muted-foreground">(للكباتن)</span>}</label><input data-testid="input-plate" className={fieldCls} value={f.plate} maxLength={30} onChange={(e) => set("plate", e.target.value)} placeholder="مثلاً: س ط ر ٤٥٢٧" /><Err k="plate" /></div>
             </div>
             {f.role === "driver" && (

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { AlertTriangle, ChevronLeft, FlaskConical, RotateCw } from "lucide-react";
+import { AlertTriangle, Bike, ChevronLeft, FlaskConical, Package, RotateCw } from "lucide-react";
 import type { Ride, RideStatus } from "@workspace/api-client-react";
 import { STATUS_LABEL, RIDE_TYPE_FALLBACK, relTime } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,15 @@ export function RideCard({ ride, i = 0, action }: { ride: Ride; i?: number; acti
         <StatusPill status={ride.status} />
         <span className="text-xs text-muted-foreground">{relTime(ride.createdAt)}</span>
       </div>
+      <div className="mb-3 flex flex-wrap gap-2" data-testid={`badges-ride-service-${ride.id}`}>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#10151d] px-2.5 py-1 text-[11px] font-bold text-[#ffd000]">
+          {ride.serviceType === "delivery" ? <Package className="h-3.5 w-3.5" /> : ride.rideType === "motorcycle" ? <Bike className="h-3.5 w-3.5" /> : null}
+          {ride.serviceType === "delivery" ? "توصيل طلب · موتوسيكل" : ride.rideType === "motorcycle" ? "مشوار راكب · موتوسيكل" : `مشوار راكب · ${RIDE_TYPE_FALLBACK[ride.rideType]}`}
+        </span>
+      </div>
       <RouteLine from={ride.pickup} to={ride.destination} />
+      {ride.serviceType === "delivery" && ride.deliveryDescription && <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-xs leading-5" data-testid={`text-delivery-description-${ride.id}`}>الطلب: {ride.deliveryDescription}</p>}
+      {ride.serviceType === "delivery" && (ride.recipientName || ride.recipientPhone) && <p className="mt-2 text-xs text-muted-foreground" data-testid={`text-delivery-recipient-${ride.id}`}>{ride.recipientName ? `المستلم: ${ride.recipientName}` : ""}{ride.recipientName && ride.recipientPhone ? " · " : ""}{ride.recipientPhone ? `موبايل: ${ride.recipientPhone}` : ""}</p>}
       {ride.farePiasters != null && (
         <div className="mt-3 flex items-center justify-between rounded-xl bg-[#ffd000]/15 px-3 py-2" data-testid={`ride-fare-${ride.id}`}>
           <span className="text-xs text-muted-foreground">السعر المعروض للكابتن</span>

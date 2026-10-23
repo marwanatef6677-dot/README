@@ -14,13 +14,13 @@ const limiter = rateLimit({
 router.post("/routes/preview", limiter, async (req, res): Promise<void> => {
   const parsed = PreviewRouteBody.safeParse(req.body);
   if (!parsed.success) throw new AppError(400, "حدد مكان الركوب والوجهة على الخريطة.");
-  const { pickupLat, pickupLng, destinationLat, destinationLng } = parsed.data;
+  const { pickupLat, pickupLng, destinationLat, destinationLng, rideType, serviceType } = parsed.data;
   try {
     const route = await getRoutePreview({ pickupLat, pickupLng, destinationLat, destinationLng });
     res.setHeader("Cache-Control", "no-store");
     res.json(PreviewRouteResponse.parse({
       distanceMeters: route.distanceMeters, durationSeconds: route.durationSeconds, coordinates: route.coordinates,
-      estimatedFarePiasters: calculateFarePiasters(route.distanceMeters, route.durationSeconds),
+      estimatedFarePiasters: calculateFarePiasters(route.distanceMeters, route.durationSeconds, rideType, serviceType),
     }));
   } catch (error) {
     if (error instanceof AppError) throw error;

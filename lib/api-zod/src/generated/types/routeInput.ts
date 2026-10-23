@@ -5,6 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RouteInputRideType } from './routeInputRideType';
+import type { RouteInputServiceType } from './routeInputServiceType';
 
 export interface RouteInput {
   /**
@@ -27,4 +29,6 @@ export interface RouteInput {
      * @maximum 180
      */
   destinationLng: number;
+  rideType: RouteInputRideType;
+  serviceType: RouteInputServiceType;
 }

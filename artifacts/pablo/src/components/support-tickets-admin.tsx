@@ -11,7 +11,7 @@ import { AlertTriangle, Check, Clock3, LifeBuoy, LoaderCircle, RefreshCw, UserRo
 import { EmptyState, ErrorState, Skeleton } from "@/components/bits";
 import { errorText } from "@/lib/pablo";
 
-type TicketDraft = { status: SupportTicketUpdate["status"]; ownerNote: string };
+type TicketDraft = { status: SupportTicketUpdate["status"]; ownerNote: string; customerReply: string };
 const STATUS: Record<SupportTicketAdmin["status"], { label: string; style: string }> = {
   open: { label: "مفتوحة", style: "bg-amber-900/10 text-amber-900 border-amber-900/15" },
   in_progress: { label: "قيد المتابعة", style: "bg-[#315b68]/10 text-[#315b68] border-[#315b68]/20" },
@@ -36,18 +36,18 @@ export function SupportTicketsAdmin() {
   const tickets = ticketsQuery.data ?? [];
   const pendingCount = tickets.filter((ticket) => ticket.status !== "resolved").length;
 
-  const draftFor = (ticket: SupportTicketAdmin): TicketDraft => drafts[ticket.id] ?? { status: ticket.status, ownerNote: ticket.ownerNote ?? "" };
+  const draftFor = (ticket: SupportTicketAdmin): TicketDraft => drafts[ticket.id] ?? { status: ticket.status, ownerNote: ticket.ownerNote ?? "", customerReply: ticket.customerReply ?? "" };
   const setDraft = (ticket: SupportTicketAdmin, patch: Partial<TicketDraft>) => {
     setDrafts((current) => ({ ...current, [ticket.id]: { ...draftFor(ticket), ...patch } }));
     setFeedback((current) => { const next = { ...current }; delete next[ticket.id]; return next; });
   };
   const saveTicket = (ticket: SupportTicketAdmin) => {
     const draft = draftFor(ticket);
-    if (draft.ownerNote.trim().length > 1000) {
-      setFeedback((current) => ({ ...current, [ticket.id]: { tone: "error", text: "الملاحظة لا تتعدى ١٠٠٠ حرف." } }));
+    if (draft.ownerNote.trim().length > 1000 || draft.customerReply.trim().length > 2000) {
+      setFeedback((current) => ({ ...current, [ticket.id]: { tone: "error", text: "الملاحظة الداخلية لا تتعدى ١٠٠٠ حرف، والرد لا يتعدى ٢٠٠٠ حرف." } }));
       return;
     }
-    updateTicket.mutate({ id: ticket.id, data: { status: draft.status, ownerNote: draft.ownerNote.trim() } }, {
+    updateTicket.mutate({ id: ticket.id, data: { status: draft.status, ownerNote: draft.ownerNote.trim(), customerReply: draft.customerReply.trim() } }, {
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: getListAdminSupportTicketsQueryKey() });
         setDrafts((current) => { const next = { ...current }; delete next[ticket.id]; return next; });
@@ -110,6 +110,11 @@ export function SupportTicketsAdmin() {
                         placeholder="سجل سياق المتابعة للفريق..."
                         className="mt-2 w-full resize-y rounded-xl border border-[#10151d]/15 bg-[#f6f3e9] px-3 py-2.5 text-sm leading-6 outline-none focus:border-[#9a7800] focus:ring-2 focus:ring-[#ffd000]/30 disabled:opacity-60" />
                       <p className="mt-1 text-start font-num text-[10px] text-[#10151d]/40" dir="ltr">{draft.ownerNote.length}/1000</p>
+                      <label htmlFor={`customer-reply-${ticket.id}`} className="mt-4 block text-sm font-bold">رد للعميل</label>
+                      <textarea id={`customer-reply-${ticket.id}`} value={draft.customerReply} maxLength={2000} rows={3} onChange={(event) => setDraft(ticket, { customerReply: event.target.value })} disabled={isSaving} data-testid={`textarea-admin-ticket-reply-${ticket.id}`}
+                        placeholder="اكتب ردًا واضحًا سيظهر للعميل في طلب الدعم..."
+                        className="mt-2 w-full resize-y rounded-xl border border-[#315b68]/25 bg-[#315b68]/[.045] px-3 py-2.5 text-sm leading-6 outline-none focus:border-[#315b68] focus:ring-2 focus:ring-[#315b68]/15 disabled:opacity-60" />
+                      <p className="mt-1 text-start font-num text-[10px] text-[#10151d]/40" dir="ltr">{draft.customerReply.length}/2000</p>
                     </div>
                     <div className="flex flex-col justify-end gap-3">
                       <label htmlFor={`owner-status-${ticket.id}`} className="text-sm font-bold">حالة الطلب

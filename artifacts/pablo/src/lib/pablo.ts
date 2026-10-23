@@ -27,6 +27,7 @@ export const RIDE_TYPE_FALLBACK: Record<RideTypeId, string> = {
   economy: "اقتصادي",
   family: "عائلي",
   premium: "مميز",
+  motorcycle: "موتوسيكل",
 };
 
 export function errorText(err: unknown, fallback = "حصلت مشكلة. جرّب تاني كمان شوية."): string {
@@ -61,11 +62,15 @@ export function relTime(iso: string) {
 
 export type Draft = {
   pickup: string; destination: string; province: string; rideType: RideTypeId;
+  serviceType?: "passenger" | "delivery";
+  deliveryDescription?: string;
+  recipientName?: string;
+  recipientPhone?: string;
   notes: string; pickupLat?: number; pickupLng?: number; destinationLat?: number; destinationLng?: number;
   fareAdjustmentPiasters?: number;
 };
 const DRAFT_KEY = "pablo:draft";
-export const emptyDraft: Draft = { pickup: "", destination: "", province: "", rideType: "economy", notes: "" };
+export const emptyDraft: Draft = { pickup: "", destination: "", province: "", rideType: "economy", serviceType: "passenger", deliveryDescription: "", recipientName: "", recipientPhone: "", notes: "" };
 export function loadDraft(): Draft {
   try { const r = sessionStorage.getItem(DRAFT_KEY); if (r) return { ...emptyDraft, ...JSON.parse(r) }; } catch { /* ignore */ }
   return emptyDraft;

@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, MapPin, Navigation, Route, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MapPin, MessageCircle, Navigation, Phone, Route, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 
 type WelcomeProps = {
@@ -43,7 +43,9 @@ export default function Welcome({ onContinue }: WelcomeProps) {
             </motion.h1>
 
             <motion.p {...appear(0.25)} className="welcome-description" data-testid="text-welcome-description">
-              مكانك، وجهتك، وكابتن من منطقتك. بابلو يسهّل الطريق من أول دبوس لحد ما توصل.
+              اطلب ركبتك وإنت في فرشتك 👌🏻
+              <br />
+              مع بابلو، سلامتك تهمنا علشان مفيش أوفر مننا.
             </motion.p>
 
             <motion.div {...appear(0.35)} className="welcome-actions">
@@ -146,6 +148,13 @@ export default function Welcome({ onContinue }: WelcomeProps) {
             تخطّي المقدمة
           </button>
         </motion.div>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#15232a]/10 py-4" data-testid="section-welcome-support">
+          <span className="text-xs font-semibold text-[#15232a]/60">محتاج مساعدة؟ خدمة عملاء بابلو</span>
+          <div className="flex gap-2">
+            <a href="tel:+201210108856" data-testid="link-welcome-support-call" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#15232a] px-3 text-xs font-bold text-[#f7c928]"><Phone className="h-4 w-4" />اتصل</a>
+            <a href="https://wa.me/201210108856" target="_blank" rel="noreferrer" data-testid="link-welcome-support-whatsapp" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#15232a]/15 px-3 text-xs font-bold text-[#15232a]"><MessageCircle className="h-4 w-4" />واتساب</a>
+          </div>
+        </div>
       </div>
     </div>
   );

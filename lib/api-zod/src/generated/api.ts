@@ -25,6 +25,11 @@ export const GetConfigResponse = zod.object({
   "description": zod.string(),
   "seats": zod.number().int()
 })),
+  "fareDescriptions": zod.object({
+  "car": zod.string(),
+  "motorcycle": zod.string(),
+  "delivery": zod.string()
+}),
   "notice": zod.string()
 })
 
@@ -546,10 +551,12 @@ export const PreviewRouteBody = zod.object({
   "pickupLat": zod.number().min(previewRouteBodyPickupLatMin).max(previewRouteBodyPickupLatMax),
   "pickupLng": zod.number().min(previewRouteBodyPickupLngMin).max(previewRouteBodyPickupLngMax),
   "destinationLat": zod.number().min(previewRouteBodyDestinationLatMin).max(previewRouteBodyDestinationLatMax),
-  "destinationLng": zod.number().min(previewRouteBodyDestinationLngMin).max(previewRouteBodyDestinationLngMax)
+  "destinationLng": zod.number().min(previewRouteBodyDestinationLngMin).max(previewRouteBodyDestinationLngMax),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery'])
 })
 
-export const previewRouteResponseEstimatedFarePiastersMin = 4000;
+export const previewRouteResponseEstimatedFarePiastersMin = 3000;
 
 
 

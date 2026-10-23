@@ -210,7 +210,8 @@ export default function OwnerAdmin() {
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <InfoTile label="المحافظة" value={review.province} />
-                      <InfoTile label="المركبة" value={review.vehicle || "غير مسجل"} />
+                       <InfoTile label="نوع المركبة" value={review.vehicleType === "motorcycle" ? "موتوسيكل" : "عربية"} />
+                       <InfoTile label="المركبة" value={review.vehicle || "غير مسجل"} />
                       <InfoTile label="رقم اللوحة" value={review.plate || "غير مسجل"} />
                       <InfoTile label="موافقة الشروط" value={review.driverTermsAccepted ? "وافق عليها" : "لم يوافق"} alert={!review.driverTermsAccepted} />
                     </div>

@@ -7,6 +7,7 @@
  */
 
 export * from './appConfig';
+export * from './appConfigFareDescriptions';
 export * from './driverLocation';
 export * from './driverReview';
 export * from './driverReviewDriverReviewStatus';
@@ -40,6 +41,8 @@ export * from './rideStatus';
 export * from './rideType';
 export * from './rideTypeId';
 export * from './routeInput';
+export * from './routeInputRideType';
+export * from './routeInputServiceType';
 export * from './routePreview';
 export * from './summary';
 export * from './supportChatInput';

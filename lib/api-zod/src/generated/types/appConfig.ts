@@ -5,10 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AppConfigFareDescriptions } from './appConfigFareDescriptions';
 import type { RideType } from './rideType';
 
 export interface AppConfig {
   provinces: string[];
   rideTypes: RideType[];
+  fareDescriptions: AppConfigFareDescriptions;
   notice: string;
 }

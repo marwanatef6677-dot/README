@@ -4,7 +4,7 @@ import { db, profiles, rides, rideLocations, walletLedger } from "@workspace/db"
 import { CreateRideBody, CreateRideResponse, ListRidesResponse, ListAvailableRidesResponse, GetRideParams, GetRideResponse, ActOnRideParams, ActOnRideBody, ActOnRideResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
 import { activeFor, belongsTo, provinces, rideJson, AppError } from "../lib/pablo";
-import { calculateFarePiasters, getRoutePreview } from "../lib/routing";
+import { calculateFarePiasters, getMinimumFarePiasters, getRoutePreview } from "../lib/routing";
 
 const router: IRouter = Router();
 router.use("/rides", requirePabloAuth);
@@ -52,10 +52,10 @@ router.post("/rides", async (req, res): Promise<void> => {
   const route = await getRoutePreview(rideData);
   const routeDistanceMeters = Math.round(route.distanceMeters);
   const routeDurationSeconds = Math.round(route.durationSeconds);
-  const estimatedFarePiasters = calculateFarePiasters(route.distanceMeters, route.durationSeconds);
+  const estimatedFarePiasters = calculateFarePiasters(route.distanceMeters, route.durationSeconds, rideData.rideType, rideData.serviceType);
   const farePiasters = estimatedFarePiasters + fareAdjustmentPiasters;
-  if (fareAdjustmentPiasters % 500 !== 0 || farePiasters < 4_000) {
-    throw new AppError(400, "التخفيض لا يمكن أن ينزل بالأجرة عن الحد الأدنى ٤٠ جنيهًا.");
+  if (fareAdjustmentPiasters % 500 !== 0 || farePiasters < getMinimumFarePiasters(rideData.rideType, rideData.serviceType)) {
+    throw new AppError(400, "التخفيض لا يمكن أن ينزل بالأجرة عن الحد الأدنى للخدمة.");
   }
   const record = await db.transaction(async (tx) => {
     const [profile] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
@@ -167,10 +167,14 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
         changes.checkInStatus = checkInStatus;
       } else if (action === "rate") {
         if (!customer || ride.status !== "completed" || ride.rating !== null || rating === undefined) throw new AppError(409, "التقييم متاح للعميل مرة واحدة بعد انتهاء الرحلة.");
-        const detailedRatings = [captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating];
+        const detailedRatings = ride.rideType === "motorcycle"
+          ? [captainRating, drivingRating, cleanlinessRating, comfortRating]
+          : [captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating];
         const hasDetailedFeedback = detailedRatings.some((value) => value !== undefined) || feedbackNote !== undefined;
         if (hasDetailedFeedback && detailedRatings.some((value) => value === undefined)) {
-          throw new AppError(400, "كمّل تقييم الكابتن والقيادة ونظافة العربية والراحة والتكييف.");
+          throw new AppError(400, ride.rideType === "motorcycle"
+            ? "كمّل تقييم الكابتن والقيادة ونظافة المركبة وراحة المشوار."
+            : "كمّل تقييم الكابتن والقيادة ونظافة المركبة والراحة والتكييف.");
         }
         changes.rating = rating;
         if (hasDetailedFeedback) {
@@ -179,7 +183,7 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
             drivingRating,
             cleanlinessRating,
             comfortRating,
-            airConditioningRating,
+            ...(ride.rideType === "motorcycle" ? {} : { airConditioningRating }),
             feedbackNote: feedbackNote?.trim() ?? "",
             feedbackSubmittedAt: new Date(),
           });

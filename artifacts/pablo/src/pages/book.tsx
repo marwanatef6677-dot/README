@@ -152,7 +152,9 @@ function DriverBook({ profile }: { profile: Profile }) {
           {queue.isLoading ? <ListSkeleton /> : queue.isError ? <ErrorState message={errorText(queue.error)} onRetry={() => queue.refetch()} /> :
             !queue.data?.length ? (
               <EmptyState title="مفيش طلبات دلوقتي" body={`أول ما راكب في ${profile.province} يطلب مشوار هيظهر هنا. خلّي الصفحة مفتوحة.`} />
-            ) : queue.data.map((r, i) => (
+             ) : queue.data.filter((request) => profile.vehicleType === "motorcycle"
+               ? request.rideType === "motorcycle"
+               : request.serviceType === "passenger" && request.rideType !== "motorcycle").map((r, i) => (
               <RideCard key={r.id} ride={r} i={i} action={
                 <button data-testid={`button-accept-${r.id}`} disabled={!!myJob || busy !== null} onClick={() => accept(r.id)}
                   className="press relative z-10 inline-flex items-center gap-1.5 rounded-full bg-[#ffd000] px-4 py-2 font-display text-sm font-bold text-[#10151d] disabled:opacity-40">
@@ -167,7 +169,7 @@ function DriverBook({ profile }: { profile: Profile }) {
         <Stats />
         <div className="rounded-2xl border border-card-border bg-card p-4 text-sm">
           <p className="font-display font-bold">عربيتك</p>
-          <p className="mt-1">{profile.vehicle} · <span className="font-num">{profile.plate}</span></p>
+           <p className="mt-1">{profile.vehicleType === "motorcycle" ? "موتوسيكل" : "عربية"} · {profile.vehicle} · <span className="font-num">{profile.plate}</span></p>
           <Link href="/account" data-testid="link-edit-vehicle" className="mt-2 inline-block text-xs underline">تعديل</Link>
         </div>
         <PilotNotice compact text="طلبات تجربة بس. اتفق على الأجرة مع الراكب مباشرة، ومفيش دفع من خلال التطبيق." />

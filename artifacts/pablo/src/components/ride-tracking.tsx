@@ -37,12 +37,12 @@ export function RideMap({ ride }: { ride: Ride }) {
     if (!pickup || !destination) return;
     let alive = true;
     setRouteErr(false);
-    previewRef.current({ data: { pickupLat: pickup.lat, pickupLng: pickup.lng, destinationLat: destination.lat, destinationLng: destination.lng } }, {
+    previewRef.current({ data: { pickupLat: pickup.lat, pickupLng: pickup.lng, destinationLat: destination.lat, destinationLng: destination.lng, rideType: ride.rideType, serviceType: ride.serviceType } }, {
       onSuccess: (r) => { if (alive) setRoute(r); },
       onError: () => { if (alive) setRouteErr(true); },
     });
     return () => { alive = false; };
-  }, [pickup, destination, retry]);
+  }, [pickup, destination, ride.rideType, ride.serviceType, retry]);
 
   const l = live ? loc.data?.location ?? null : null;
   const age = l ? now - new Date(l.updatedAt).getTime() : Infinity;

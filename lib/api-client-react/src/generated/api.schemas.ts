@@ -9,6 +9,12 @@ export interface HealthStatus {
   status: string;
 }
 
+export type AppConfigFareDescriptions = {
+  car: string;
+  motorcycle: string;
+  delivery: string;
+};
+
 export type RideTypeId = typeof RideTypeId[keyof typeof RideTypeId];
 
 
@@ -29,6 +35,7 @@ export interface RideType {
 export interface AppConfig {
   provinces: string[];
   rideTypes: RideType[];
+  fareDescriptions: AppConfigFareDescriptions;
   notice: string;
 }
 
@@ -419,6 +426,24 @@ export interface Ride {
   promoCommissionWaived: boolean;
 }
 
+export type RouteInputRideType = typeof RouteInputRideType[keyof typeof RouteInputRideType];
+
+
+export const RouteInputRideType = {
+  economy: 'economy',
+  family: 'family',
+  premium: 'premium',
+  motorcycle: 'motorcycle',
+} as const;
+
+export type RouteInputServiceType = typeof RouteInputServiceType[keyof typeof RouteInputServiceType];
+
+
+export const RouteInputServiceType = {
+  passenger: 'passenger',
+  delivery: 'delivery',
+} as const;
+
 export interface RouteInput {
   /**
      * @minimum -90
@@ -440,12 +465,14 @@ export interface RouteInput {
      * @maximum 180
      */
   destinationLng: number;
+  rideType: RouteInputRideType;
+  serviceType: RouteInputServiceType;
 }
 
 export interface RoutePreview {
   distanceMeters: number;
   durationSeconds: number;
-  /** @minimum 4000 */
+  /** @minimum 3000 */
   estimatedFarePiasters: number;
   /** GeoJSON longitude then latitude pairs */
   coordinates: number[][];

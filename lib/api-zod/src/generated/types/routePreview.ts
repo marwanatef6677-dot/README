@@ -9,7 +9,7 @@
 export interface RoutePreview {
   distanceMeters: number;
   durationSeconds: number;
-  /** @minimum 4000 */
+  /** @minimum 3000 */
   estimatedFarePiasters: number;
   /** GeoJSON longitude then latitude pairs */
   coordinates: number[][];

@@ -8,7 +8,7 @@ import {
   useListSupportTickets,
   type SupportTicketInput,
 } from "@workspace/api-client-react";
-import { LifeBuoy, X, Send, ArrowRight, MessageCircle, Ticket, ShieldCheck, LoaderCircle, RefreshCw, ChevronDown } from "lucide-react";
+import { LifeBuoy, X, Send, ArrowRight, MessageCircle, Ticket, ShieldCheck, LoaderCircle, RefreshCw, ChevronDown, Phone } from "lucide-react";
 import { errorText } from "@/lib/pablo";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -18,7 +18,7 @@ const FAQS = [
   {
     id: "fare",
     title: "إزاي الأجرة بتتحسب؟",
-    answer: "الأجرة في التجربة: ٢٠ جنيه بداية المشوار + ١٠ جنيه لكل كيلومتر + جنيه لكل دقيقة، والحد الأدنى ٤٠ جنيه.",
+    answer: "أسعار التجربة: مشوار العربية ٢٠ جنيه بداية + ١٠ جنيه لكل كم + جنيه لكل دقيقة (حد أدنى ٤٠). مشوار الراكب بالموتوسيكل ١٥ جنيه بداية + ٨ جنيه لكل كم + جنيه لكل دقيقة (حد أدنى ٣٠). التوصيل بالموتوسيكل ٣٠ جنيه بداية + ٨ جنيه لكل كم. السعر النهائي التقديري بيظهر قبل إرسال الطلب.",
   },
   {
     id: "cash",
@@ -47,6 +47,7 @@ const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
 ];
 
 const STATUS_LABEL: Record<string, string> = { open: "مفتوحة", in_progress: "قيد المتابعة", resolved: "تم الحل" };
+const SUPPORT_PHONE = "+201210108856";
 
 function dateLabel(value: string) {
   const date = new Date(value);
@@ -69,7 +70,7 @@ export function CustomerSupport() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const queryClient = useQueryClient();
-  const ticketsQuery = useListSupportTickets({ query: { queryKey: getListSupportTicketsQueryKey(), enabled: isOpen } });
+  const ticketsQuery = useListSupportTickets({ query: { queryKey: getListSupportTicketsQueryKey(), enabled: isOpen, refetchInterval: isOpen ? 15000 : false, refetchOnWindowFocus: true } });
   const ridesQuery = useListRides({ query: { queryKey: getListRidesQueryKey(), enabled: isOpen && view === "ticket" } });
   const createTicket = useCreateSupportTicket();
 
@@ -237,6 +238,15 @@ export function CustomerSupport() {
                       <p className="text-xs leading-6 text-[#10151d]/75">الأسئلة المفتوحة تُرسل لخدمة الذكاء الاصطناعي لإعداد الرد. ما تبعتش كلمات مرور أو أكواد تحقق أو بيانات دفع. المساعد للإرشاد فقط؛ ما يقدرش يغيّر الرحلات أو يوعد باسترداد فلوس. لو في مشكلة مستمرة، سجّل طلب دعم.</p>
                     </div>
                   </div>
+                  <section className="rounded-2xl border border-[#10151d]/10 bg-[#fffdf7] p-4" data-testid="section-support-contact">
+                    <p className="text-sm font-bold">محتاج تتكلم مع حد؟</p>
+                    <p className="mt-1 text-xs leading-5 text-[#10151d]/60">فريق بابلو على الخط من خلال الاتصال أو واتساب.</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <a href={`tel:${SUPPORT_PHONE}`} data-testid="link-support-call" className="press inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#10151d] px-3 text-xs font-bold text-[#ffd000]"><Phone className="h-4 w-4" />اتصال</a>
+                      <a href={`https://wa.me/201210108856`} target="_blank" rel="noreferrer" data-testid="link-support-whatsapp" className="press inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#10151d]/15 px-3 text-xs font-bold text-[#10151d]"><MessageCircle className="h-4 w-4" />واتساب</a>
+                    </div>
+                    <p className="mt-2 text-center font-num text-[11px] text-[#10151d]/50" dir="ltr">{SUPPORT_PHONE}</p>
+                  </section>
                   {ticketFeedback && <p role="status" data-testid="status-support-ticket-success" className="rounded-xl border border-emerald-800/15 bg-emerald-800/5 px-3 py-2.5 text-sm font-semibold text-emerald-900">{ticketFeedback}</p>}
                   <div>
                     <div className="mb-3 flex items-center justify-between"><h3 className="font-display text-base font-extrabold">طلباتك السابقة</h3><button type="button" onClick={() => void ticketsQuery.refetch()} data-testid="button-refresh-support-tickets" aria-label="تحديث الطلبات" className="rounded-lg p-2 text-[#10151d]/55 hover:bg-black/5"><RefreshCw className="h-4 w-4" /></button></div>
@@ -246,6 +256,7 @@ export function CustomerSupport() {
                       : <div className="space-y-2">{tickets.slice(0, 4).map((ticket) => <article key={ticket.id} className="rounded-xl border border-[#10151d]/10 bg-[#fffdf7] px-3 py-3" data-testid={`card-customer-ticket-${ticket.id}`}>
                         <div className="flex items-start justify-between gap-2"><h4 className="text-sm font-bold leading-5">{ticket.subject}</h4><span className="shrink-0 rounded-full bg-[#10151d]/[.06] px-2 py-1 text-[10px] font-bold" data-testid={`status-customer-ticket-${ticket.id}`}>{STATUS_LABEL[ticket.status] ?? ticket.status}</span></div>
                         <p className="mt-1 text-[11px] text-[#10151d]/50">{dateLabel(ticket.createdAt)}{ticket.rideId ? ` · رحلة #${ticket.rideId}` : ""}</p>
+                        {ticket.customerReply && <div className="mt-3 rounded-xl border-r-2 border-[#315b68] bg-[#315b68]/[.07] px-3 py-2.5" data-testid={`text-customer-ticket-reply-${ticket.id}`}><p className="text-[10px] font-bold text-[#315b68]">رد فريق بابلو</p><p className="mt-1 whitespace-pre-wrap text-xs leading-5 text-[#10151d]/80">{ticket.customerReply}</p></div>}
                       </article>)}</div>}
                   </div>
                 </div>

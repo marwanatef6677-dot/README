@@ -7,6 +7,9 @@ export type RoutePointInput = {
   destinationLng: number;
 };
 
+type RideType = "economy" | "family" | "premium" | "motorcycle";
+type ServiceType = "passenger" | "delivery";
+
 export async function getRoutePreview(input: RoutePointInput) {
   const coordinates = `${input.pickupLng},${input.pickupLat};${input.destinationLng},${input.destinationLat}`;
   const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=simplified&geometries=geojson&steps=false`;
@@ -27,14 +30,31 @@ export async function getRoutePreview(input: RoutePointInput) {
   }
 }
 
-export function calculateFarePiasters(distanceMeters: number, durationSeconds: number): number {
+export function getMinimumFarePiasters(rideType: RideType, serviceType: ServiceType): number {
+  if (serviceType === "delivery") return 3_000;
+  return rideType === "motorcycle" ? 3_000 : 4_000;
+}
+
+export function calculateFarePiasters(
+  distanceMeters: number,
+  durationSeconds: number,
+  rideType: RideType,
+  serviceType: ServiceType,
+): number {
   if (!Number.isFinite(distanceMeters) || !Number.isFinite(durationSeconds) || distanceMeters <= 0 || durationSeconds <= 0) {
     throw new AppError(422, "المسافة أو مدة الرحلة غير صالحة لحساب الأجرة.");
   }
-  // EGP 20 start + EGP 10/km + EGP 1/minute, minimum EGP 40.
-  const distancePiasters = Math.round(distanceMeters);
-  const timePiasters = Math.round((durationSeconds * 100) / 60);
-  return Math.max(4_000, 2_000 + distancePiasters + timePiasters);
+  if (serviceType === "delivery" && rideType !== "motorcycle") {
+    throw new AppError(400, "توصيل المنتجات متاح بالموتوسيكل فقط.");
+  }
+  const policy = serviceType === "delivery"
+    ? { startPiasters: 3_000, perKmPiasters: 800, perMinutePiasters: 0 }
+    : rideType === "motorcycle"
+      ? { startPiasters: 1_500, perKmPiasters: 800, perMinutePiasters: 100 }
+      : { startPiasters: 2_000, perKmPiasters: 1_000, perMinutePiasters: 100 };
+  const distancePiasters = Math.round((distanceMeters * policy.perKmPiasters) / 1_000);
+  const timePiasters = Math.round((durationSeconds * policy.perMinutePiasters) / 60);
+  return Math.max(getMinimumFarePiasters(rideType, serviceType), policy.startPiasters + distancePiasters + timePiasters);
 }
 
 export function moneyEgp(piasters: number): string {

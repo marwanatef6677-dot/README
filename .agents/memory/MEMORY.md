@@ -1,4 +1,5 @@
 - [React dependency cache](react-dependency-cache.md) — after React upgrades, Vite can retain an old React DOM bundle despite matching installed versions.
 - [Pablo fare and contact rules](pablo-fare-contact.md) — preserve the agreed distance/time fare, five-pound offer steps, and reveal contact details only after captain acceptance.
-- [Pablo captain levels and feedback](pablo-captain-progress.md) — levels rise on completed rides; each level earns a non-cash badge, with in-ride and post-ride feedback.
-- [Pablo customer support](pablo-support-bot.md) — combine guided answers and AI chat; unresolved issues become owner-reviewed tickets, and AI must not invent ride facts or promise refunds.
+- [Pablo captain levels and feedback](pablo-captain-progress.md) — level badges and ride feedback; motorcycle reviews must not ask about air conditioning.
+- [Pablo customer support](pablo-support-bot.md) — guided answers, AI chat, owner-reviewed tickets, in-app staff replies, and phone/WhatsApp; AI must not invent ride facts or promise refunds.
+- [Pablo motorcycle services](pablo-motorcycle-service.md) — motorcycle passenger rides and product delivery are in scope, but detailed motorcycle fares remain unapproved.

@@ -174,7 +174,7 @@ paths:
               $ref: "#/components/schemas/RouteInput"
       responses:
         "200":
-          description: Estimated driving route from OSRM, not a fare or traffic-aware ETA
+          description: Route distance, estimated time, and service-specific fare estimate; traffic is not included
           content:
             application/json:
               schema:
@@ -395,10 +395,17 @@ components:
         - status
     AppConfig:
       type: object
-      required: [provinces, rideTypes, notice]
+      required: [provinces, rideTypes, fareDescriptions, notice]
       properties:
         provinces: { type: array, items: { type: string } }
         rideTypes: { type: array, items: { $ref: "#/components/schemas/RideType" } }
+        fareDescriptions:
+          type: object
+          required: [car, motorcycle, delivery]
+          properties:
+            car: { type: string }
+            motorcycle: { type: string }
+            delivery: { type: string }
         notice: { type: string }
     RideType:
       type: object
@@ -533,19 +540,21 @@ components:
         promoCommissionWaived: { type: boolean }
     RouteInput:
       type: object
-      required: [pickupLat, pickupLng, destinationLat, destinationLng]
+      required: [pickupLat, pickupLng, destinationLat, destinationLng, rideType, serviceType]
       properties:
         pickupLat: { type: number, minimum: -90, maximum: 90 }
         pickupLng: { type: number, minimum: -180, maximum: 180 }
         destinationLat: { type: number, minimum: -90, maximum: 90 }
         destinationLng: { type: number, minimum: -180, maximum: 180 }
+        rideType: { type: string, enum: [economy, family, premium, motorcycle] }
+        serviceType: { type: string, enum: [passenger, delivery] }
     RoutePreview:
       type: object
       required: [distanceMeters, durationSeconds, estimatedFarePiasters, coordinates]
       properties:
         distanceMeters: { type: number }
         durationSeconds: { type: number }
-        estimatedFarePiasters: { type: integer, minimum: 4000 }
+        estimatedFarePiasters: { type: integer, minimum: 3000 }
         coordinates:
           type: array
           description: GeoJSON longitude then latitude pairs

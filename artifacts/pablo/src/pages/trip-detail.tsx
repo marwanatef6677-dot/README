@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Loader2, Phone, Star } from "lucide-react";
+import { ArrowRight, Bike, Check, Loader2, Package, Phone, Star } from "lucide-react";
 import { DriverShare, RideMap } from "@/components/ride-tracking";
 import { RideChat } from "@/components/ride-chat";
 import { useActOnRide } from "@workspace/api-client-react";
@@ -19,12 +19,12 @@ import { cn } from "@/lib/utils";
 const STEP_LABEL = ["الطلب", "قبول", "وصول", "في الطريق", "خلصت"];
 const FEEDBACK_FIELDS = [
   { key: "captainRating", label: "تعامل الكابتن واحترامه" },
-  { key: "drivingRating", label: "أسلوب القيادة والأمان" },
-  { key: "cleanlinessRating", label: "نظافة العربية" },
+  { key: "drivingRating", label: "القيادة والأمان" },
+  { key: "cleanlinessRating", label: "نظافة المركبة" },
   { key: "comfortRating", label: "راحة المشوار" },
-  { key: "airConditioningRating", label: "التكييف والجو داخل العربية" },
 ] as const;
-type FeedbackKey = (typeof FEEDBACK_FIELDS)[number]["key"];
+const AIR_CONDITIONING_FIELD = { key: "airConditioningRating", label: "التكييف والجو داخل العربية" } as const;
+type FeedbackKey = (typeof FEEDBACK_FIELDS)[number]["key"] | (typeof AIR_CONDITIONING_FIELD)["key"];
 const DONE_MSG: Partial<Record<RideActionAction, string>> = {
   accept: "قبلت الطلب", arrive: "سجّلنا إنك وصلت", start: "الرحلة بدأت", complete: "الرحلة خلصت", cancel: "الطلب اتلغى", rate: "شكراً على تقييمك",
 };
@@ -68,7 +68,8 @@ export default function TripDetail({ profile }: { profile: Profile }) {
   }
 
   function submitFeedback() {
-    if (!stars || Object.values(feedbackRatings).some((value) => value === 0)) {
+    const requiredFields = r.rideType === "motorcycle" ? FEEDBACK_FIELDS : [...FEEDBACK_FIELDS, AIR_CONDITIONING_FIELD];
+    if (!stars || requiredFields.some(({ key }) => feedbackRatings[key] === 0)) {
       setErr("اختار تقييم لكل بند قبل الإرسال.");
       return;
     }
@@ -78,7 +79,11 @@ export default function TripDetail({ profile }: { profile: Profile }) {
       data: {
         action: "rate",
         rating: stars,
-        ...feedbackRatings,
+        captainRating: feedbackRatings.captainRating,
+        drivingRating: feedbackRatings.drivingRating,
+        cleanlinessRating: feedbackRatings.cleanlinessRating,
+        comfortRating: feedbackRatings.comfortRating,
+        ...(r.rideType === "motorcycle" ? {} : { airConditioningRating: feedbackRatings.airConditioningRating }),
         feedbackNote: feedbackNote.trim(),
       },
     }, {
@@ -115,6 +120,10 @@ export default function TripDetail({ profile }: { profile: Profile }) {
         <StatusPill status={r.status} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{fmtTime(r.createdAt)} · {r.province} · {RIDE_TYPE_FALLBACK[r.rideType]}</p>
+      <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#10151d] px-3 py-1.5 text-xs font-bold text-[#ffd000]" data-testid="text-trip-service">
+        {r.serviceType === "delivery" ? <Package className="h-3.5 w-3.5" /> : r.rideType === "motorcycle" ? <Bike className="h-3.5 w-3.5" /> : null}
+        {r.serviceType === "delivery" ? "توصيل طلب · موتوسيكل" : r.rideType === "motorcycle" ? "مشوار راكب · موتوسيكل" : "مشوار راكب"}
+      </div>
       {r.farePiasters != null && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 px-4 py-3" data-testid="trip-fare-summary">
           <span className="text-sm font-semibold">العرض اللي شافه الكابتن</span>
@@ -165,6 +174,11 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
       <div className="mt-4 rounded-[2rem] bg-[#10151d] p-6 text-[#f6f1e4]">
         <RouteLine from={r.pickup} to={r.destination} size="lg" />
+        {r.serviceType === "delivery" && r.deliveryDescription && <p className="mt-4 rounded-xl bg-[#f6f1e4]/10 p-3 text-sm" data-testid="text-trip-delivery-description">تفاصيل الطلب: {r.deliveryDescription}</p>}
+        {r.serviceType === "delivery" && (r.recipientName || r.recipientPhone) && <div className="mt-3 rounded-xl border border-[#ffd000]/25 bg-[#ffd000]/[.08] p-3 text-sm" data-testid="panel-trip-recipient">
+          {r.recipientName && <p>المستلم: {r.recipientName}</p>}
+          {r.recipientPhone && <a href={`tel:${r.recipientPhone}`} className="mt-1 inline-flex items-center gap-2 text-[#ffd000]" data-testid="link-call-recipient"><Phone className="h-4 w-4" />{r.recipientPhone}</a>}
+        </div>}
         {r.notes && <p className="mt-4 rounded-xl bg-[#f6f1e4]/5 p-3 text-sm text-[#f6f1e4]/80">ملاحظة: {r.notes}</p>}
         <p className="mt-5 border-t border-dashed border-[#f6f1e4]/15 pt-4 text-sm text-[#f6f1e4]/70" data-testid="text-status-hint">{STATUS_HINT[r.status]}</p>
       </div>
@@ -195,14 +209,14 @@ export default function TripDetail({ profile }: { profile: Profile }) {
         {canRate && (
           <div className="rounded-2xl border border-card-border bg-card p-5" data-testid="panel-final-feedback">
             <p className="font-display text-lg font-bold">وصلت بالسلامة؟ نحب نسمع رأيك</p>
-            <p className="mt-1 text-sm text-muted-foreground">قيّم التجربة والكابتن والعربية. كل البنود مطلوبة، والملاحظة الإضافية اختيارية.</p>
+            <p className="mt-1 text-sm text-muted-foreground">قيّم التجربة والكابتن والمركبة. كل البنود الظاهرة مطلوبة، والملاحظة الإضافية اختيارية.</p>
             <div className="mt-4 space-y-3">
               <FeedbackRow label="تقييم الرحلة عمومًا" value={stars} onChange={setStars} testId="overall" />
-              {FEEDBACK_FIELDS.map(({ key, label }) => (
+              {(r.rideType === "motorcycle" ? FEEDBACK_FIELDS : [...FEEDBACK_FIELDS, AIR_CONDITIONING_FIELD]).map(({ key, label }) => (
                 <FeedbackRow key={key} label={label} value={feedbackRatings[key]} onChange={(value) => setFeedbackRatings((current) => ({ ...current, [key]: value }))} testId={key} />
               ))}
             </div>
-            <label htmlFor="ride-feedback-note" className="mt-4 block text-sm font-semibold">ملاحظات أو اقتراحات <span className="font-normal text-muted-foreground">(اختياري)</span></label>
+            <label htmlFor="ride-feedback-note" className="mt-4 block text-sm font-semibold">ملاحظة عن الرحلة أو المركبة <span className="font-normal text-muted-foreground">(اختياري)</span></label>
             <textarea id="ride-feedback-note" data-testid="input-feedback-note" rows={3} maxLength={500} value={feedbackNote} onChange={(event) => setFeedbackNote(event.target.value)}
               placeholder="قول لنا إيه اللي عجبك أو محتاج يتحسن..." className="mt-2 w-full resize-y rounded-2xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#ffd000]/40" />
             <Btn className="mt-4 w-full" data-testid="button-rate" disabled={!stars || Object.values(feedbackRatings).some((value) => !value) || pending} onClick={submitFeedback}>

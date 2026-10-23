@@ -1,12 +1,12 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, CarFront, ClipboardCheck, Hand, Smartphone, Route as RouteIcon } from "lucide-react";
+import { ArrowLeft, Bike, CarFront, ClipboardCheck, Hand, MessageCircle, Phone, Smartphone, Route as RouteIcon } from "lucide-react";
 import { BookingForm } from "@/components/booking-form";
 import { Monogram, PilotNotice } from "@/components/bits";
 import { useConfig } from "@/hooks/use-pablo";
 
 const steps = [
-  { icon: RouteIcon, t: "حط الدبوسين", b: "اضغط على الخريطة لنقطة الركوب والوصول، واختار محافظتك ونوع العربية. ولو حابب نجيب مكانك من الموبايل." },
+  { icon: RouteIcon, t: "حط الدبوسين", b: "اضغط على الخريطة لنقطة الركوب والوصول، واختار محافظتك ونوع الخدمة: راكب أو توصيل طلب." },
   { icon: Hand, t: "كابتن يقبل", b: "الطلب بيظهر لكباتن التجربة المسجلين في نفس المحافظة. أول واحد يقبل بيظهر لك اسمه ورقمه وعربيته." },
   { icon: ClipboardCheck, t: "تابع خطوة بخطوة", b: "وصل، بدأ، خلص. الحالة بتتحدث لوحدها كل كام ثانية، وفي الآخر تقيّم الرحلة." },
 ];
@@ -68,9 +68,9 @@ export default function Home() {
       <section id="captains" className="grid-faint border-y border-foreground/10">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#10151d] px-3 py-1 text-xs text-[#ffd000]"><CarFront className="h-3.5 w-3.5" /> للكباتن</span>
-            <h2 className="mt-4 font-display text-4xl font-black leading-tight">عندك عربية؟<br />جرّب معانا.</h2>
-            <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">سجّل كابتن بنوع العربية ورقم اللوحة، وهتشوف طلبات التجربة اللي في محافظتك بس. اقبل الطلب وحدّث حالته لحد ما الرحلة تخلص. التسجيل ذاتي ومفيش مراجعة أوراق لسه في النسخة دي.</p>
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#10151d] px-3 py-1 text-xs text-[#ffd000]"><CarFront className="h-3.5 w-3.5" /><Bike className="h-3.5 w-3.5" /> للكباتن</span>
+            <h2 className="mt-4 font-display text-4xl font-black leading-tight">عندك عربية أو موتوسيكل؟<br />جرّب معانا.</h2>
+            <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">سجّل كابتن بنوع المركبة ورقم اللوحة، وهتشوف الطلبات المناسبة لمركبتك في محافظتك. العربية لطلبات الركاب، والموتوسيكل لمشاوير الركاب وتوصيل الطلبات.</p>
             <Link href="/sign-up" data-testid="link-captain-signup" className="press mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#10151d] px-5 py-3 font-display font-bold text-[#ffd000]">سجّل ككابتن <ArrowLeft className="h-4 w-4" /></Link>
           </div>
           <div className="relative mx-auto w-full max-w-sm rotate-2 rounded-[2rem] border-2 border-[#10151d] bg-[#ffd000] p-6 shadow-[10px_10px_0_#10151d]">
@@ -81,6 +81,17 @@ export default function Home() {
               <div className="rounded-xl bg-[#10151d] py-2 text-center font-display font-bold text-[#ffd000]">اقبل الطلب</div>
             </div>
             <p className="mt-3 text-xs text-[#10151d]/70">ده توضيح للشكل بس، مش طلب حقيقي.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="flex flex-col gap-5 rounded-[2rem] border border-[#10151d]/10 bg-[#e8e4d8] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7" data-testid="section-public-support">
+          <div><p className="text-xs font-bold text-[#315b68]">خدمة العملاء</p><h2 className="mt-1 font-display text-xl font-black">بابلو معاك لو احتجت مساعدة</h2><p className="mt-1 text-sm text-foreground/65">اتصل أو ابعتلنا على واتساب.</p></div>
+          <div className="grid grid-cols-2 gap-2 sm:min-w-72">
+            <a href="tel:+201210108856" data-testid="link-home-support-call" className="press inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#10151d] px-4 text-sm font-bold text-[#ffd000]"><Phone className="h-4 w-4" />اتصال</a>
+            <a href="https://wa.me/201210108856" target="_blank" rel="noreferrer" data-testid="link-home-support-whatsapp" className="press inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#10151d]/15 bg-[#fffdf7] px-4 text-sm font-bold"><MessageCircle className="h-4 w-4" />واتساب</a>
+            <span className="col-span-2 text-center font-num text-xs text-foreground/55" dir="ltr">+201210108856</span>
           </div>
         </div>
       </section>
