@@ -151,6 +151,22 @@ router.get("/storage/profile-photos/me/vehicle", requirePabloAuth, async (req, r
   await sendProfilePhoto(profile?.path ?? "", req, res);
 });
 
+router.get("/storage/profiles/:id/avatar", requirePabloAuth, async (req, res): Promise<void> => {
+  const profileId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  if (!profileId) throw new AppError(400, "رقم الحساب غير صحيح.");
+  const [profile] = await db.select({ path: profiles.avatarPhotoPath }).from(profiles).where(eq(profiles.id, profileId));
+  await sendProfilePhoto(profile?.path ?? "", req, res);
+});
+
+router.get("/storage/profiles/:id/vehicle", requirePabloAuth, async (req, res): Promise<void> => {
+  const profileId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  if (!profileId) throw new AppError(400, "رقم الحساب غير صحيح.");
+  const [profile] = await db.select({ path: profiles.captainVehiclePhotoPath })
+    .from(profiles)
+    .where(and(eq(profiles.id, profileId), eq(profiles.role, "driver")));
+  await sendProfilePhoto(profile?.path ?? "", req, res);
+});
+
 router.get("/storage/admin/drivers/:id/vehicle-photo", requirePabloAuth, requirePabloAdmin, async (req, res): Promise<void> => {
   const driverId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!driverId) throw new AppError(400, "رقم الكابتن غير صحيح.");

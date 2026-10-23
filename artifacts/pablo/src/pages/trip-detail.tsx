@@ -46,6 +46,8 @@ export default function TripDetail({ profile }: { profile: Profile }) {
     airConditioningRating: 0,
   });
   const [feedbackNote, setFeedbackNote] = useState("");
+  const [pabloRating, setPabloRating] = useState(0);
+  const [pabloFeedbackNote, setPabloFeedbackNote] = useState("");
   const [err, setErr] = useState("");
 
   function run(action: RideActionAction, rating?: number) {
@@ -69,8 +71,8 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
   function submitFeedback() {
     const requiredFields = r.rideType === "motorcycle" ? FEEDBACK_FIELDS : [...FEEDBACK_FIELDS, AIR_CONDITIONING_FIELD];
-    if (!stars || requiredFields.some(({ key }) => feedbackRatings[key] === 0)) {
-      setErr("اختار تقييم لكل بند قبل الإرسال.");
+    if (!stars || !pabloRating || requiredFields.some(({ key }) => feedbackRatings[key] === 0)) {
+      setErr("اختار تقييم الرحلة والكابتن وبابلو قبل الإرسال.");
       return;
     }
     setErr("");
@@ -85,6 +87,8 @@ export default function TripDetail({ profile }: { profile: Profile }) {
         comfortRating: feedbackRatings.comfortRating,
         ...(r.rideType === "motorcycle" ? {} : { airConditioningRating: feedbackRatings.airConditioningRating }),
         feedbackNote: feedbackNote.trim(),
+        pabloRating,
+        pabloFeedbackNote: pabloFeedbackNote.trim(),
       },
     }, {
       onSuccess: () => { invalidate(id); toast({ title: "شكرًا على رأيك", description: "تقييمك يساعدنا نحسّن تجربة بابلو." }); },
@@ -111,6 +115,11 @@ export default function TripDetail({ profile }: { profile: Profile }) {
   const canCancel = (isCustomer && ["pending", "accepted", "arrived"].includes(r.status)) || (isDriver && ["accepted", "arrived"].includes(r.status));
   const canRate = isCustomer && r.status === "completed" && r.rating == null;
   const other = isCustomer ? { title: "الكابتن", name: r.driverName, phone: r.driverPhone } : { title: "الراكب", name: r.customerName, phone: r.customerPhone };
+  const otherPhoto = isCustomer && r.driverId
+    ? { src: `/api/storage/profiles/${encodeURIComponent(r.driverId)}/vehicle`, alt: "صورة الكابتن مع المركبة" }
+    : isDriver
+      ? { src: `/api/storage/profiles/${encodeURIComponent(r.customerId)}/avatar`, alt: "صورة الراكب" }
+      : null;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -185,18 +194,18 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
       {(other.name && (isCustomer ? r.driverId : true)) && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-card-border bg-card p-4">
-          {isCustomer && r.driverId && <img
-            src={`/api/storage/rides/${r.id}/driver-photo`}
-            alt="صورة الكابتن مع المركبة"
+          {otherPhoto && <img
+            src={otherPhoto.src}
+            alt={otherPhoto.alt}
             className="h-16 w-20 shrink-0 rounded-xl bg-muted object-cover"
-            data-testid="img-trip-captain-photo"
+            data-testid={isCustomer ? "img-trip-captain-photo" : "img-trip-customer-avatar"}
             onError={(event) => { event.currentTarget.hidden = true; }}
           />}
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{other.title}</p>
             <p className="truncate font-display font-bold" data-testid="text-counterpart">{other.name}</p>
             {isCustomer && r.vehicle && <p className="text-sm text-muted-foreground">{r.vehicle} · <span className="font-num">{r.plate}</span></p>}
-            {isCustomer && r.driverId && <p className="mt-1 text-xs text-muted-foreground" data-testid="text-trip-captain-photo-privacy">صورة الكابتن متاحة لأطراف الرحلة بعد قبولها.</p>}
+            {isCustomer && r.driverId && <p className="mt-1 text-xs text-muted-foreground" data-testid="text-trip-captain-photo-privacy">صورة الكابتن متاحة لمستخدمي بابلو المسجلين.</p>}
           </div>
           {other.phone && <a href={`tel:${other.phone}`} data-testid="link-call" aria-label={isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"} className="press inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-[#ffd000] px-4 py-2 text-sm font-bold text-[#10151d]"><Phone className="h-4 w-4" /> <span>{isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"}</span><span className="font-num" dir="ltr">{other.phone}</span></a>}
         </div>
@@ -224,10 +233,20 @@ export default function TripDetail({ profile }: { profile: Profile }) {
                 <FeedbackRow key={key} label={label} value={feedbackRatings[key]} onChange={(value) => setFeedbackRatings((current) => ({ ...current, [key]: value }))} testId={key} />
               ))}
             </div>
-            <label htmlFor="ride-feedback-note" className="mt-4 block text-sm font-semibold">ملاحظة عن الرحلة أو المركبة <span className="font-normal text-muted-foreground">(اختياري)</span></label>
+            <label htmlFor="ride-feedback-note" className="mt-4 block text-sm font-semibold">تعليق للكابتن <span className="font-normal text-muted-foreground">(اختياري)</span></label>
             <textarea id="ride-feedback-note" data-testid="input-feedback-note" rows={3} maxLength={500} value={feedbackNote} onChange={(event) => setFeedbackNote(event.target.value)}
-              placeholder="قول لنا إيه اللي عجبك أو محتاج يتحسن..." className="mt-2 w-full resize-y rounded-2xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#ffd000]/40" />
-            <Btn className="mt-4 w-full" data-testid="button-rate" disabled={!stars || Object.values(feedbackRatings).some((value) => !value) || pending} onClick={submitFeedback}>
+              placeholder="اكتب رأيك في تعامل الكابتن أو أي ملاحظة حابب توصلهاله..." className="mt-2 w-full resize-y rounded-2xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#ffd000]/40" />
+            <section className="mt-5 rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 p-4" data-testid="panel-pablo-rating">
+              <h3 className="font-display font-bold">قيّم بابلو</h3>
+              <p className="mt-1 text-xs text-muted-foreground">رأيك في التطبيق يساعدنا نحسّن الخدمة.</p>
+              <div className="mt-3">
+                <FeedbackRow label="تقييم بابلو" value={pabloRating} onChange={setPabloRating} testId="pablo" />
+              </div>
+              <label htmlFor="pablo-feedback-note" className="mt-3 block text-sm font-semibold">تعليقك على بابلو <span className="font-normal text-muted-foreground">(اختياري)</span></label>
+              <textarea id="pablo-feedback-note" data-testid="input-pablo-feedback-note" rows={2} maxLength={500} value={pabloFeedbackNote} onChange={(event) => setPabloFeedbackNote(event.target.value)}
+                placeholder="إيه اللي نقدر نحسّنه في التطبيق؟" className="mt-2 w-full resize-y rounded-2xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#ffd000]/40" />
+            </section>
+            <Btn className="mt-4 w-full" data-testid="button-rate" disabled={!stars || !pabloRating || Object.values(feedbackRatings).some((value) => !value) || pending} onClick={submitFeedback}>
               {pending && <Loader2 className="h-4 w-4 animate-spin" />} ابعت رأيك
             </Btn>
           </div>
@@ -236,6 +255,10 @@ export default function TripDetail({ profile }: { profile: Profile }) {
           <div className="rounded-2xl bg-muted p-4 text-center text-sm" data-testid="text-rating">
             <p>شكراً على رأيك في الرحلة</p>
             <span className="mt-2 inline-flex" dir="ltr">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={cn("h-4 w-4", n <= (r.rating ?? 0) ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/20")} />)}</span>
+            {r.captainRating != null && <RatingDisplay label="تقييم الكابتن" value={r.captainRating} testId="captain-rating-summary" />}
+            {r.feedbackNote && <p className="mt-3 rounded-xl bg-background/70 p-3 text-right leading-relaxed" data-testid="text-captain-feedback">{r.feedbackNote}</p>}
+            {isCustomer && r.pabloRating != null && <RatingDisplay label="تقييم بابلو" value={r.pabloRating} testId="pablo-rating-summary" />}
+            {isCustomer && r.pabloFeedbackNote && <p className="mt-3 rounded-xl bg-background/70 p-3 text-right leading-relaxed" data-testid="text-pablo-feedback">{r.pabloFeedbackNote}</p>}
           </div>
         )}
         {canCancel && <Btn variant="danger" className="w-full" data-testid="button-cancel" disabled={pending} onClick={() => setConfirmCancel(true)}>إلغاء الطلب</Btn>}
@@ -268,6 +291,15 @@ function FeedbackRow({ label, value, onChange, testId }: { label: string; value:
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function RatingDisplay({ label, value, testId }: { label: string; value: number; testId: string }) {
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 text-sm" data-testid={testId}>
+      <span>{label}</span>
+      <span className="inline-flex" dir="ltr">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={cn("h-4 w-4", n <= value ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/20")} />)}</span>
     </div>
   );
 }

@@ -15,6 +15,13 @@ export interface RideAction {
      * @maximum 5
      */
   rating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  pabloRating?: number;
+  /** @maxLength 500 */
+  pabloFeedbackNote?: string;
   checkInStatus?: RideActionCheckInStatus;
   /**
      * @minimum 1

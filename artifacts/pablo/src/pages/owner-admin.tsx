@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Btn, EmptyState, ErrorState, PilotNotice, Skeleton } from "@/components/bits";
 import { SupportTicketsAdmin } from "@/components/support-tickets-admin";
+import { PabloFeedbackAdmin } from "@/components/pablo-feedback-admin";
 import { errorText } from "@/lib/pablo";
 
 const CHECKLIST = [
@@ -165,6 +166,7 @@ export default function OwnerAdmin() {
       </div>
 
       <SupportTicketsAdmin />
+      <PabloFeedbackAdmin />
 
       <section aria-labelledby="review-queue-heading">
         <div className="mb-4 flex items-end justify-between gap-3">

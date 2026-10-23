@@ -17,6 +17,8 @@ export * from './driverReviewVehicleType';
 export * from './fawryNotificationInput';
 export * from './healthStatus';
 export * from './locationInput';
+export * from './pabloFeedbackEntry';
+export * from './pabloFeedbackSummary';
 export * from './profile';
 export * from './profileDriverReviewStatus';
 export * from './profileInput';

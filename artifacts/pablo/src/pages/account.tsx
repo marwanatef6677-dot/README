@@ -146,7 +146,7 @@ export default function Account({ profile }: { profile: Profile }) {
                 {profile.hasAvatarPhoto ? <img src={`/api/storage/profile-photos/me/avatar?v=${photoRevision}`} alt="صورتك الشخصية" className="h-14 w-14 rounded-2xl object-cover" data-testid="img-profile-avatar" /> : <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-muted"><UserRound className="h-6 w-6 text-muted-foreground" /></span>}
                 <div className="min-w-0 flex-1">
                   <h2 className="font-display font-bold">صور الحساب</h2>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-avatar-privacy">صورة الحساب اختيارية وخاصة بحسابك، ومش بتظهر للطرف التاني.</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-avatar-privacy">صورة الحساب اختيارية، وتظهر لكل مستخدمي بابلو المسجلين الدخول.</p>
                   <label className="press mt-3 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-card-border bg-background px-3 text-sm font-bold" data-testid="label-avatar-upload">
                     <ImagePlus className="h-4 w-4" /> {profile.hasAvatarPhoto ? "غيّر الصورة" : "ارفع صورة اختيارية"}
                     <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy !== null || locked} onChange={(event) => { void uploadPhoto(event.currentTarget.files?.[0], "avatar"); event.currentTarget.value = ""; }} data-testid="input-avatar-photo" />
@@ -158,7 +158,7 @@ export default function Account({ profile }: { profile: Profile }) {
                   {profile.hasCaptainVehiclePhoto ? <img src={`/api/storage/profile-photos/me/vehicle?v=${photoRevision}`} alt="صورة الكابتن مع المركبة" className="h-20 w-28 shrink-0 rounded-xl object-cover" data-testid="img-captain-vehicle-photo" /> : <span className="grid h-20 w-28 shrink-0 place-items-center rounded-xl border border-dashed border-border bg-muted"><CarFront className="h-7 w-7 text-muted-foreground" /></span>}
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold">صورة الكابتن مع المركبة <span className="text-destructive">*</span></h3>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-captain-photo-privacy">الصورة متاحة للإدارة للمراجعة، ولأطراف الرحلة بعد قبولها فقط.</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-captain-photo-privacy">الصورة تظهر لكل مستخدمي بابلو المسجلين، وتستخدمها الإدارة لمراجعة حسابك.</p>
                     <label className="press mt-2 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#ffd000] px-3 text-sm font-bold text-[#10151d]" data-testid="label-captain-photo-upload">
                       <ImagePlus className="h-4 w-4" /> {profile.hasCaptainVehiclePhoto ? "غيّر صورة المركبة" : "ارفع صورة مطلوبة"}
                       <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy !== null || locked} onChange={(event) => { void uploadPhoto(event.currentTarget.files?.[0], "captain_vehicle"); event.currentTarget.value = ""; }} data-testid="input-captain-vehicle-photo" />
@@ -181,7 +181,7 @@ export default function Account({ profile }: { profile: Profile }) {
               ))}
             </div>
             <div><label className="mb-1.5 block text-sm font-semibold">الاسم</label><input data-testid="input-name" className={fieldCls} value={f.name} maxLength={80} onChange={(e) => set("name", e.target.value)} placeholder="اسمك زي ما الكابتن أو الراكب هيشوفه" /><Err k="name" /></div>
-            <div><label className="mb-1.5 block text-sm font-semibold">رقم الموبايل</label><input data-testid="input-phone" dir="ltr" inputMode="tel" className={cn(fieldCls, "text-right font-num")} value={f.phone} onChange={(e) => set("phone", e.target.value)} placeholder="01012345678" /><Err k="phone" /><p className="mt-1 text-xs text-muted-foreground">بيظهر للطرف التاني بس لما رحلة تتقبل.</p></div>
+            <div><label className="mb-1.5 block text-sm font-semibold">رقم الموبايل المصري <span className="text-destructive">*</span></label><input data-testid="input-phone" dir="ltr" inputMode="tel" autoComplete="tel" required className={cn(fieldCls, "text-right font-num")} value={f.phone} onChange={(e) => set("phone", e.target.value)} placeholder="01012345678" /><Err k="phone" /><p className="mt-1 text-xs text-muted-foreground">مطلوب لكل حساب قبل استخدام الرحلات، وبيظهر للطرف التاني بعد قبولها.</p></div>
             <div>
               <label className="mb-1.5 block text-sm font-semibold">المحافظة</label>
               {config.isLoading ? <Skeleton className="h-12" /> : (

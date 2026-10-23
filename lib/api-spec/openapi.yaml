@@ -123,6 +123,44 @@ paths:
               schema: { type: string, format: binary }
         "404":
           description: No captain image is set
+  /storage/profiles/{id}/avatar:
+    get:
+      operationId: getProfileAvatarPhoto
+      tags: [storage]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Profile image available to signed-in Pablo users
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: No profile image is set
+  /storage/profiles/{id}/vehicle:
+    get:
+      operationId: getProfileVehiclePhoto
+      tags: [storage]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Captain-with-vehicle image available to signed-in Pablo users
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: No captain image is set
+  /admin/pablo-feedback:
+    get:
+      operationId: getPabloFeedbackSummary
+      responses:
+        "200":
+          description: Pablo ratings and recent customer feedback (owner only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PabloFeedbackSummary"
   /storage/admin/drivers/{id}/vehicle-photo:
     get:
       operationId: getDriverReviewPhoto
@@ -588,6 +626,8 @@ components:
       properties:
         action: { type: string, enum: [accept, arrive, start, complete, cancel, rate, check_in] }
         rating: { type: integer, minimum: 1, maximum: 5 }
+        pabloRating: { type: integer, minimum: 1, maximum: 5 }
+        pabloFeedbackNote: { type: string, maxLength: 500 }
         checkInStatus: { type: string, enum: [all_good, need_help] }
         captainRating: { type: integer, minimum: 1, maximum: 5 }
         drivingRating: { type: integer, minimum: 1, maximum: 5 }
@@ -612,7 +652,7 @@ components:
         message: { type: string, minLength: 1, maxLength: 1000 }
     Ride:
       type: object
-      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, serviceType, deliveryDescription, recipientName, recipientPhone, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, estimatedFarePiasters, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, serviceType, deliveryDescription, recipientName, recipientPhone, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, pabloRating, pabloFeedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, estimatedFarePiasters, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
       properties:
         id: { type: integer }
         customerId: { type: string }
@@ -643,6 +683,8 @@ components:
         comfortRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
         airConditioningRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
         feedbackNote: { type: string }
+        pabloRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        pabloFeedbackNote: { type: string }
         feedbackSubmittedAt: { type: ["string", "null"] }
         pickupLat: { type: [number, "null"] }
         pickupLng: { type: [number, "null"] }
@@ -709,6 +751,24 @@ components:
         completed: { type: integer }
         active: { type: integer }
         cancelled: { type: integer }
+    PabloFeedbackSummary:
+      type: object
+      required: [averageRating, totalRatings, recent]
+      properties:
+        averageRating: { type: [number, "null"] }
+        totalRatings: { type: integer }
+        recent:
+          type: array
+          items: { $ref: "#/components/schemas/PabloFeedbackEntry" }
+    PabloFeedbackEntry:
+      type: object
+      required: [rideId, customerName, rating, comment, submittedAt]
+      properties:
+        rideId: { type: integer }
+        customerName: { type: string }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string }
+        submittedAt: { type: [string, "null"] }
     WalletTopupInput:
       type: object
       required: [amountPiasters, paymentMethod]

@@ -31,7 +31,14 @@ export function SignInPage() {
   return <AuthFrame title="أهلاً بيك تاني."><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} fallbackRedirectUrl={`${basePath}/book`} /></AuthFrame>;
 }
 export function SignUpPage() {
-  return <AuthFrame title="مشوارك الجاي يبدأ من هنا."><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} fallbackRedirectUrl={`${basePath}/account`} /></AuthFrame>;
+  return (
+    <AuthFrame title="مشوارك الجاي يبدأ من هنا.">
+      <p className="mb-4 w-[440px] max-w-full rounded-2xl bg-accent px-4 py-3 text-sm leading-relaxed">
+        بعد التسجيل بالبريد وكلمة المرور، كمّل اسمك ورقم موبايل مصري صحيح في بيانات حسابك قبل استخدام الرحلات.
+      </p>
+      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} fallbackRedirectUrl={`${basePath}/account`} />
+    </AuthFrame>
+  );
 }
 
 export function OwnerSignInPage() {

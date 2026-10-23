@@ -74,6 +74,13 @@ export interface Ride {
      */
   airConditioningRating: number | null;
   feedbackNote: string;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  pabloRating: number | null;
+  pabloFeedbackNote: string;
   /** @nullable */
   feedbackSubmittedAt: string | null;
   /** @nullable */

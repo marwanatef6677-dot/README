@@ -12,7 +12,7 @@ router.use("/rides", requirePabloAuth);
 router.get("/rides", async (_req, res): Promise<void> => {
   const userId: string = res.locals.userId;
   const records = await db.select().from(rides).where(belongsTo(userId)).orderBy(desc(rides.createdAt));
-  res.json(ListRidesResponse.parse(records.map(r => rideJson(r, false, r.driverId === userId))));
+  res.json(ListRidesResponse.parse(records.map(r => rideJson(r, false, r.driverId === userId, r.customerId === userId))));
 });
 router.get("/rides/available", async (_req, res): Promise<void> => {
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, res.locals.userId));
@@ -87,7 +87,7 @@ router.get("/rides/:id", async (req, res): Promise<void> => {
   if (!parsed.success) throw new AppError(400, "رقم الرحلة غير صحيح.");
   const [ride] = await db.select().from(rides).where(and(eq(rides.id, parsed.data.id), belongsTo(res.locals.userId)));
   if (!ride) throw new AppError(404, "الرحلة غير موجودة.");
-  res.json(GetRideResponse.parse(rideJson(ride, false, ride.driverId === res.locals.userId)));
+  res.json(GetRideResponse.parse(rideJson(ride, false, ride.driverId === res.locals.userId, ride.customerId === res.locals.userId)));
 });
 router.post("/rides/:id/action", async (req, res): Promise<void> => {
   const params = ActOnRideParams.safeParse(req.params);
@@ -96,6 +96,7 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
   const {
     action, rating, checkInStatus, captainRating, drivingRating,
     cleanlinessRating, comfortRating, airConditioningRating, feedbackNote,
+    pabloRating, pabloFeedbackNote,
   } = parsed.data;
   const userId: string = res.locals.userId;
   const result = await db.transaction(async (tx) => {
@@ -173,27 +174,27 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
         changes.checkInStatus = checkInStatus;
       } else if (action === "rate") {
         if (!customer || ride.status !== "completed" || ride.rating !== null || rating === undefined) throw new AppError(409, "التقييم متاح للعميل مرة واحدة بعد انتهاء الرحلة.");
+        if (pabloRating === undefined) throw new AppError(400, "اختار تقييمك لبابلو قبل إرسال رأيك.");
         const detailedRatings = ride.rideType === "motorcycle"
           ? [captainRating, drivingRating, cleanlinessRating, comfortRating]
           : [captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating];
-        const hasDetailedFeedback = detailedRatings.some((value) => value !== undefined) || feedbackNote !== undefined;
-        if (hasDetailedFeedback && detailedRatings.some((value) => value === undefined)) {
+        if (detailedRatings.some((value) => value === undefined)) {
           throw new AppError(400, ride.rideType === "motorcycle"
             ? "كمّل تقييم الكابتن والقيادة ونظافة المركبة وراحة المشوار."
             : "كمّل تقييم الكابتن والقيادة ونظافة المركبة والراحة والتكييف.");
         }
         changes.rating = rating;
-        if (hasDetailedFeedback) {
-          Object.assign(changes, {
-            captainRating,
-            drivingRating,
-            cleanlinessRating,
-            comfortRating,
-            ...(ride.rideType === "motorcycle" ? {} : { airConditioningRating }),
-            feedbackNote: feedbackNote?.trim() ?? "",
-            feedbackSubmittedAt: new Date(),
-          });
-        }
+        Object.assign(changes, {
+          captainRating,
+          drivingRating,
+          cleanlinessRating,
+          comfortRating,
+          ...(ride.rideType === "motorcycle" ? {} : { airConditioningRating }),
+          feedbackNote: feedbackNote?.trim() ?? "",
+          pabloRating,
+          pabloFeedbackNote: pabloFeedbackNote?.trim() ?? "",
+          feedbackSubmittedAt: new Date(),
+        });
       } else {
         if (!driver) throw new AppError(403, "الإجراء ده متاح للكابتن المعيّن فقط.");
         const transitions = { arrive: ["accepted", "arrived"], start: ["arrived", "in_progress"], complete: ["in_progress", "completed"] } as const;
@@ -225,6 +226,6 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
     }
     return updated;
   });
-  res.json(ActOnRideResponse.parse(rideJson(result, false, result.driverId === userId)));
+  res.json(ActOnRideResponse.parse(rideJson(result, false, result.driverId === userId, result.customerId === userId)));
 });
 export default router;

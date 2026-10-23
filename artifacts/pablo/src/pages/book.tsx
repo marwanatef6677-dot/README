@@ -155,7 +155,7 @@ function DriverBook({ profile }: { profile: Profile }) {
              ) : queue.data.filter((request) => profile.vehicleType === "motorcycle"
                ? request.rideType === "motorcycle"
                : request.serviceType === "passenger" && request.rideType !== "motorcycle").map((r, i) => (
-              <RideCard key={r.id} ride={r} i={i} action={
+              <RideCard key={r.id} ride={r} i={i} viewerRole="driver" action={
                 <button data-testid={`button-accept-${r.id}`} disabled={!!myJob || busy !== null} onClick={() => accept(r.id)}
                   className="press relative z-10 inline-flex items-center gap-1.5 rounded-full bg-[#ffd000] px-4 py-2 font-display text-sm font-bold text-[#10151d] disabled:opacity-40">
                   {busy === r.id && <Loader2 className="h-4 w-4 animate-spin" />} اقبل

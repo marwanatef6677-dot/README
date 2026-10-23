@@ -41,6 +41,8 @@ export const rides = pgTable("pablo_rides", {
   comfortRating: integer("comfort_rating"),
   airConditioningRating: integer("air_conditioning_rating"),
   feedbackNote: text("feedback_note").notNull().default(""),
+  pabloRating: integer("pablo_rating"),
+  pabloFeedbackNote: text("pablo_feedback_note").notNull().default(""),
   feedbackSubmittedAt: timestamp("feedback_submitted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

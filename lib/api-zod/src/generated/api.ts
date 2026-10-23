@@ -168,6 +168,37 @@ export const GetMyAvatarPhotoResponse = zod.unknown()
 export const GetMyCaptainVehiclePhotoResponse = zod.unknown()
 
 
+export const GetProfileAvatarPhotoParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetProfileAvatarPhotoResponse = zod.unknown()
+
+
+export const GetProfileVehiclePhotoParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetProfileVehiclePhotoResponse = zod.unknown()
+
+
+export const getPabloFeedbackSummaryResponseRecentItemRatingMax = 5;
+
+
+
+export const GetPabloFeedbackSummaryResponse = zod.object({
+  "averageRating": zod.number().nullable(),
+  "totalRatings": zod.number().int(),
+  "recent": zod.array(zod.object({
+  "rideId": zod.number().int(),
+  "customerName": zod.string(),
+  "rating": zod.number().int().min(1).max(getPabloFeedbackSummaryResponseRecentItemRatingMax),
+  "comment": zod.string(),
+  "submittedAt": zod.string().nullable()
+}))
+})
+
+
 export const GetDriverReviewPhotoParams = zod.object({
   "id": zod.coerce.string()
 })
@@ -191,6 +222,8 @@ export const listRidesResponseCleanlinessRatingMax = 5;
 export const listRidesResponseComfortRatingMax = 5;
 
 export const listRidesResponseAirConditioningRatingMax = 5;
+
+export const listRidesResponsePabloRatingMax = 5;
 
 
 
@@ -224,6 +257,8 @@ export const ListRidesResponseItem = zod.object({
   "comfortRating": zod.number().int().min(1).max(listRidesResponseComfortRatingMax).nullable(),
   "airConditioningRating": zod.number().int().min(1).max(listRidesResponseAirConditioningRatingMax).nullable(),
   "feedbackNote": zod.string(),
+  "pabloRating": zod.number().int().min(1).max(listRidesResponsePabloRatingMax).nullable(),
+  "pabloFeedbackNote": zod.string(),
   "feedbackSubmittedAt": zod.string().nullable(),
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
@@ -301,6 +336,8 @@ export const createRideResponseComfortRatingMax = 5;
 
 export const createRideResponseAirConditioningRatingMax = 5;
 
+export const createRideResponsePabloRatingMax = 5;
+
 
 
 export const CreateRideResponse = zod.object({
@@ -333,6 +370,8 @@ export const CreateRideResponse = zod.object({
   "comfortRating": zod.number().int().min(1).max(createRideResponseComfortRatingMax).nullable(),
   "airConditioningRating": zod.number().int().min(1).max(createRideResponseAirConditioningRatingMax).nullable(),
   "feedbackNote": zod.string(),
+  "pabloRating": zod.number().int().min(1).max(createRideResponsePabloRatingMax).nullable(),
+  "pabloFeedbackNote": zod.string(),
   "feedbackSubmittedAt": zod.string().nullable(),
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
@@ -357,6 +396,8 @@ export const listAvailableRidesResponseCleanlinessRatingMax = 5;
 export const listAvailableRidesResponseComfortRatingMax = 5;
 
 export const listAvailableRidesResponseAirConditioningRatingMax = 5;
+
+export const listAvailableRidesResponsePabloRatingMax = 5;
 
 
 
@@ -390,6 +431,8 @@ export const ListAvailableRidesResponseItem = zod.object({
   "comfortRating": zod.number().int().min(1).max(listAvailableRidesResponseComfortRatingMax).nullable(),
   "airConditioningRating": zod.number().int().min(1).max(listAvailableRidesResponseAirConditioningRatingMax).nullable(),
   "feedbackNote": zod.string(),
+  "pabloRating": zod.number().int().min(1).max(listAvailableRidesResponsePabloRatingMax).nullable(),
+  "pabloFeedbackNote": zod.string(),
   "feedbackSubmittedAt": zod.string().nullable(),
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
@@ -419,6 +462,8 @@ export const getRideResponseCleanlinessRatingMax = 5;
 export const getRideResponseComfortRatingMax = 5;
 
 export const getRideResponseAirConditioningRatingMax = 5;
+
+export const getRideResponsePabloRatingMax = 5;
 
 
 
@@ -452,6 +497,8 @@ export const GetRideResponse = zod.object({
   "comfortRating": zod.number().int().min(1).max(getRideResponseComfortRatingMax).nullable(),
   "airConditioningRating": zod.number().int().min(1).max(getRideResponseAirConditioningRatingMax).nullable(),
   "feedbackNote": zod.string(),
+  "pabloRating": zod.number().int().min(1).max(getRideResponsePabloRatingMax).nullable(),
+  "pabloFeedbackNote": zod.string(),
   "feedbackSubmittedAt": zod.string().nullable(),
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
@@ -473,6 +520,10 @@ export const ActOnRideParams = zod.object({
 
 export const actOnRideBodyRatingMax = 5;
 
+export const actOnRideBodyPabloRatingMax = 5;
+
+export const actOnRideBodyPabloFeedbackNoteMax = 500;
+
 export const actOnRideBodyCaptainRatingMax = 5;
 
 export const actOnRideBodyDrivingRatingMax = 5;
@@ -490,6 +541,8 @@ export const actOnRideBodyFeedbackNoteMax = 500;
 export const ActOnRideBody = zod.object({
   "action": zod.enum(['accept', 'arrive', 'start', 'complete', 'cancel', 'rate', 'check_in']),
   "rating": zod.number().int().min(1).max(actOnRideBodyRatingMax).optional(),
+  "pabloRating": zod.number().int().min(1).max(actOnRideBodyPabloRatingMax).optional(),
+  "pabloFeedbackNote": zod.string().max(actOnRideBodyPabloFeedbackNoteMax).optional(),
   "checkInStatus": zod.enum(['all_good', 'need_help']).optional(),
   "captainRating": zod.number().int().min(1).max(actOnRideBodyCaptainRatingMax).optional(),
   "drivingRating": zod.number().int().min(1).max(actOnRideBodyDrivingRatingMax).optional(),
@@ -508,6 +561,8 @@ export const actOnRideResponseCleanlinessRatingMax = 5;
 export const actOnRideResponseComfortRatingMax = 5;
 
 export const actOnRideResponseAirConditioningRatingMax = 5;
+
+export const actOnRideResponsePabloRatingMax = 5;
 
 
 
@@ -541,6 +596,8 @@ export const ActOnRideResponse = zod.object({
   "comfortRating": zod.number().int().min(1).max(actOnRideResponseComfortRatingMax).nullable(),
   "airConditioningRating": zod.number().int().min(1).max(actOnRideResponseAirConditioningRatingMax).nullable(),
   "feedbackNote": zod.string(),
+  "pabloRating": zod.number().int().min(1).max(actOnRideResponsePabloRatingMax).nullable(),
+  "pabloFeedbackNote": zod.string(),
   "feedbackSubmittedAt": zod.string().nullable(),
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),

@@ -297,6 +297,13 @@ export interface RideAction {
      * @maximum 5
      */
   rating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  pabloRating?: number;
+  /** @maxLength 500 */
+  pabloFeedbackNote?: string;
   checkInStatus?: RideActionCheckInStatus;
   /**
      * @minimum 1
@@ -463,6 +470,13 @@ export interface Ride {
      */
   airConditioningRating: number | null;
   feedbackNote: string;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  pabloRating: number | null;
+  pabloFeedbackNote: string;
   /** @nullable */
   feedbackSubmittedAt: string | null;
   /** @nullable */
@@ -574,6 +588,26 @@ export interface Summary {
   completed: number;
   active: number;
   cancelled: number;
+}
+
+export interface PabloFeedbackEntry {
+  rideId: number;
+  customerName: string;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+  comment: string;
+  /** @nullable */
+  submittedAt: string | null;
+}
+
+export interface PabloFeedbackSummary {
+  /** @nullable */
+  averageRating: number | null;
+  totalRatings: number;
+  recent: PabloFeedbackEntry[];
 }
 
 export type WalletTopupInputPaymentMethod = typeof WalletTopupInputPaymentMethod[keyof typeof WalletTopupInputPaymentMethod];

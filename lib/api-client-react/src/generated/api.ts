@@ -31,6 +31,7 @@ import type {
   FawryNotificationInput,
   HealthStatus,
   LocationInput,
+  PabloFeedbackSummary,
   Profile,
   ProfileInput,
   ProfilePhotoCompleteRequest,
@@ -799,6 +800,291 @@ export function useGetMyCaptainVehiclePhoto<TData = Awaited<ReturnType<typeof ge
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetMyCaptainVehiclePhotoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetProfileAvatarPhotoUrl = (id: string,) => {
+
+
+
+
+  return `/api/storage/profiles/${id}/avatar`
+}
+
+export const getProfileAvatarPhoto = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetProfileAvatarPhotoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProfileAvatarPhotoQueryKey = (id: string,) => {
+    return [
+    `/api/storage/profiles/${id}/avatar`
+    ] as const;
+    }
+
+
+export const getGetProfileAvatarPhotoQueryOptions = <TData = Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProfileAvatarPhotoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfileAvatarPhoto>>> = ({ signal }) => getProfileAvatarPhoto(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProfileAvatarPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getProfileAvatarPhoto>>>
+export type GetProfileAvatarPhotoQueryError = ErrorType<void>
+
+
+export function useGetProfileAvatarPhoto<TData = Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProfileAvatarPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getProfileAvatarPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProfileAvatarPhoto<TData = Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProfileAvatarPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getProfileAvatarPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProfileAvatarPhoto<TData = Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetProfileAvatarPhoto<TData = Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProfileAvatarPhotoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetProfileVehiclePhotoUrl = (id: string,) => {
+
+
+
+
+  return `/api/storage/profiles/${id}/vehicle`
+}
+
+export const getProfileVehiclePhoto = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetProfileVehiclePhotoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProfileVehiclePhotoQueryKey = (id: string,) => {
+    return [
+    `/api/storage/profiles/${id}/vehicle`
+    ] as const;
+    }
+
+
+export const getGetProfileVehiclePhotoQueryOptions = <TData = Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProfileVehiclePhotoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfileVehiclePhoto>>> = ({ signal }) => getProfileVehiclePhoto(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProfileVehiclePhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getProfileVehiclePhoto>>>
+export type GetProfileVehiclePhotoQueryError = ErrorType<void>
+
+
+export function useGetProfileVehiclePhoto<TData = Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProfileVehiclePhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getProfileVehiclePhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProfileVehiclePhoto<TData = Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProfileVehiclePhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getProfileVehiclePhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProfileVehiclePhoto<TData = Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetProfileVehiclePhoto<TData = Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProfileVehiclePhotoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPabloFeedbackSummaryUrl = () => {
+
+
+
+
+  return `/api/admin/pablo-feedback`
+}
+
+export const getPabloFeedbackSummary = async ( options?: Parameters<typeof customFetch>[1]): Promise<PabloFeedbackSummary> => {
+
+  return customFetch<PabloFeedbackSummary>(getGetPabloFeedbackSummaryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPabloFeedbackSummaryQueryKey = () => {
+    return [
+    `/api/admin/pablo-feedback`
+    ] as const;
+    }
+
+
+export const getGetPabloFeedbackSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPabloFeedbackSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPabloFeedbackSummary>>> = ({ signal }) => getPabloFeedbackSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPabloFeedbackSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getPabloFeedbackSummary>>>
+export type GetPabloFeedbackSummaryQueryError = ErrorType<unknown>
+
+
+export function useGetPabloFeedbackSummary<TData = Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPabloFeedbackSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getPabloFeedbackSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPabloFeedbackSummary<TData = Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPabloFeedbackSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getPabloFeedbackSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPabloFeedbackSummary<TData = Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPabloFeedbackSummary<TData = Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPabloFeedbackSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPabloFeedbackSummaryQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

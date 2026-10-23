@@ -31,7 +31,7 @@ export default function Trips({ profile }: { profile: Profile }) {
             </EmptyState>
           ) : list.map((r, i) => (
             <div key={r.id} className="space-y-3">
-              <RideCard ride={r} i={i} />
+              <RideCard ride={r} i={i} viewerRole={profile.role} />
               {ACTIVE.includes(r.status) && (
                 <section className="rounded-3xl border border-card-border bg-card p-4" data-testid={`panel-trip-map-${r.id}`}>
                   <h2 className="mb-2 font-display font-bold">{profile.role === "driver" ? "خريطة الرحلة" : "خريطة رحلتك وموقع الكابتن"}</h2>

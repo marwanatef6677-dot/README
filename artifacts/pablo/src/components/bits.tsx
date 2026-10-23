@@ -77,7 +77,12 @@ export function RouteLine({ from, to, size = "md" }: { from: string; to: string;
   );
 }
 
-export function RideCard({ ride, i = 0, action }: { ride: Ride; i?: number; action?: ReactNode }) {
+export function RideCard({ ride, i = 0, action, viewerRole }: { ride: Ride; i?: number; action?: ReactNode; viewerRole?: "customer" | "driver" }) {
+  const counterpart = viewerRole === "driver"
+    ? { name: ride.customerName, src: `/api/storage/profiles/${encodeURIComponent(ride.customerId)}/avatar`, alt: "صورة الراكب" }
+    : viewerRole === "customer" && ride.driverId
+      ? { name: ride.driverName ?? "الكابتن", src: `/api/storage/profiles/${encodeURIComponent(ride.driverId)}/vehicle`, alt: "صورة الكابتن مع المركبة" }
+      : null;
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04, duration: 0.3 }}
       className="group relative rounded-3xl border border-card-border bg-card p-4 shadow-[0_1px_0_hsl(var(--foreground)/.04)] transition-transform hover:-translate-y-0.5" data-testid={`card-ride-${ride.id}`}>
@@ -91,6 +96,10 @@ export function RideCard({ ride, i = 0, action }: { ride: Ride; i?: number; acti
           {ride.serviceType === "delivery" ? "توصيل طلب · موتوسيكل" : ride.rideType === "motorcycle" ? "مشوار راكب · موتوسيكل" : `مشوار راكب · ${RIDE_TYPE_FALLBACK[ride.rideType]}`}
         </span>
       </div>
+      {counterpart && <div className="mb-3 flex items-center gap-2 rounded-xl bg-muted/70 px-3 py-2" data-testid={`panel-ride-counterpart-${ride.id}`}>
+        <img src={counterpart.src} alt={counterpart.alt} className="h-10 w-10 shrink-0 rounded-xl bg-background object-cover" onError={(event) => { if (event.currentTarget.parentElement) event.currentTarget.parentElement.hidden = true; }} />
+        <span className="truncate text-sm font-semibold">{counterpart.name || "مستخدم بابلو"}</span>
+      </div>}
       <RouteLine from={ride.pickup} to={ride.destination} />
       {ride.serviceType === "delivery" && ride.deliveryDescription && <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-xs leading-5" data-testid={`text-delivery-description-${ride.id}`}>الطلب: {ride.deliveryDescription}</p>}
       {ride.serviceType === "delivery" && (ride.recipientName || ride.recipientPhone) && <p className="mt-2 text-xs text-muted-foreground" data-testid={`text-delivery-recipient-${ride.id}`}>{ride.recipientName ? `المستلم: ${ride.recipientName}` : ""}{ride.recipientName && ride.recipientPhone ? " · " : ""}{ride.recipientPhone ? `موبايل: ${ride.recipientPhone}` : ""}</p>}

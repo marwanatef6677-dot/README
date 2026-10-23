@@ -5,7 +5,7 @@ export const provinces = ["القاهرة","الجيزة","الإسكندرية"
 export const activeStates = ["pending", "accepted", "arrived", "in_progress"];
 export const belongsTo = (id: string) => or(eq(rides.customerId, id), eq(rides.driverId, id));
 export const activeFor = (id: string) => and(belongsTo(id), inArray(rides.status, activeStates));
-export function rideJson(ride: RideRecord, queue = false, showCommission = false) {
+export function rideJson(ride: RideRecord, queue = false, showCommission = false, showPabloFeedback = false) {
   return {
     ...ride,
     customerPhone: queue ? null : ride.customerPhone,
@@ -20,6 +20,8 @@ export function rideJson(ride: RideRecord, queue = false, showCommission = false
     notes: queue ? "" : ride.notes,
     recipientName: queue ? "" : ride.recipientName,
     recipientPhone: queue ? "" : ride.recipientPhone,
+    pabloRating: showPabloFeedback ? ride.pabloRating : null,
+    pabloFeedbackNote: showPabloFeedback ? ride.pabloFeedbackNote : "",
     createdAt: ride.createdAt.toISOString(),
     updatedAt: ride.updatedAt.toISOString(),
     feedbackSubmittedAt: ride.feedbackSubmittedAt?.toISOString() ?? null,
