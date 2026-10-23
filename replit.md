@@ -37,9 +37,9 @@ Arabic RTL ride-request pilot for Egypt, with passenger/captain accounts, shared
 
 ## Product
 
-The owner accepted the pre-commercial operating requirements, with operating details deferred. See `docs/operating-readiness.ar.md` for launch gates, an explicitly unactivated fare proposal, and pilot-safe marketing copy. Acceptance of requirements is not approval to launch.
+The owner accepted the pre-commercial operating requirements, with implementation and some operating details deferred. See `docs/operating-readiness.ar.md` for launch gates, the owner-approved but unimplemented fare and commission policy, and pilot-safe marketing copy. Acceptance of requirements is not approval to launch.
 
-The owner set Pablo's commission to 20% of each completed ride's fare (captain share 80%), excluding cancelled rides. This is an approved business requirement, not an implemented deduction or collection system; payment and settlement details remain undecided.
+The owner approved EGP 20 start + EGP 10/km + EGP 1/minute, minimum EGP 40; cash from rider to captain; and 20% Pablo commission debited from captain wallet on acceptance, waived on the first two completed rides, refunded on rider cancellation and forfeited on captain cancellation. This is a business requirement only: fare calculation, wallet, top-ups, debits, refunds, and provider settlement are not implemented.
 
 Passengers request and cancel rides, captains accept/arrive/start/complete them, and passengers can rate completed trips. Clerk handles authentication. Development and production accounts are separate. The web app supports home-screen installation after publishing; it is not an APK.
 
