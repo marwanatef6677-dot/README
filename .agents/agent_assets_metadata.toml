@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "6HNOGrLSDXDtt6COMfoNq"
+uri = "file://generated-artifacts/pablo-ownership-declaration.pdf"
+type = "pdf"
+title = "مسودة إقرار ملكية تطبيق بابلو — PDF"
+description = "إقرار عربي من 3 صفحات باسم صاحب المشروع، مع وصف لحالة النسخة الحالية وخانات التوقيع وقائمة بالمستندات الداعمة. مسودة للمراجعة القانونية وليست شهادة ملكية رسمية."
+logical_id = "b6a7ecaa-d398-459a-87da-62ad23760d87"
+content_hash = "sha256:2c6d9060dbff625d748a9fcc2dbb5b96d523d0ebb035a8bf020ecbf514b350f6"
+size = 78691
+mtime_ms = 1792750113828
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/b6a7ecaa-d398-459a-87da-62ad23760d87/f2ed91b4-c5c4-42a3-9b49-d71aaaa6980d"
+storage_version_token = "1792750170237503"
+content_type = "application/pdf"

@@ -39,6 +39,16 @@ export const ProfileRole = {
   driver: 'driver',
 } as const;
 
+export type ProfileDriverReviewStatus = typeof ProfileDriverReviewStatus[keyof typeof ProfileDriverReviewStatus];
+
+
+export const ProfileDriverReviewStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+  suspended: 'suspended',
+} as const;
+
 export interface Profile {
   id: string;
   name: string;
@@ -48,6 +58,9 @@ export interface Profile {
   vehicle: string;
   plate: string;
   onboarded: boolean;
+  driverReviewStatus: ProfileDriverReviewStatus;
+  driverTermsAccepted: boolean;
+  walletBalancePiasters: number;
 }
 
 export type ProfileInputRole = typeof ProfileInputRole[keyof typeof ProfileInputRole];
@@ -76,6 +89,7 @@ export interface ProfileInput {
   vehicle: string;
   /** @maxLength 30 */
   plate: string;
+  driverTermsAccepted: boolean;
 }
 
 export type RideInputRideType = typeof RideInputRideType[keyof typeof RideInputRideType];
@@ -170,6 +184,20 @@ export const RideStatus = {
   cancelled: 'cancelled',
 } as const;
 
+/**
+ * @nullable
+ */
+export type RideCommissionState = typeof RideCommissionState[keyof typeof RideCommissionState] | null;
+
+
+export const RideCommissionState = {
+  reserved: 'reserved',
+  retained: 'retained',
+  refunded: 'refunded',
+  waived: 'waived',
+  null: 'null',
+} as const;
+
 export interface Ride {
   id: number;
   customerId: string;
@@ -204,6 +232,17 @@ export interface Ride {
   destinationLat: number | null;
   /** @nullable */
   destinationLng: number | null;
+  /** @nullable */
+  routeDistanceMeters: number | null;
+  /** @nullable */
+  routeDurationSeconds: number | null;
+  /** @nullable */
+  farePiasters: number | null;
+  /** @nullable */
+  commissionPiasters: number | null;
+  /** @nullable */
+  commissionState: RideCommissionState;
+  promoCommissionWaived: boolean;
 }
 
 export interface RouteInput {
@@ -271,4 +310,136 @@ export interface Summary {
   active: number;
   cancelled: number;
 }
+
+export type WalletTopupInputPaymentMethod = typeof WalletTopupInputPaymentMethod[keyof typeof WalletTopupInputPaymentMethod];
+
+
+export const WalletTopupInputPaymentMethod = {
+  PayAtFawry: 'PayAtFawry',
+  MWALLET: 'MWALLET',
+} as const;
+
+export interface WalletTopupInput {
+  /**
+     * @minimum 1000
+     * @maximum 1000000
+     */
+  amountPiasters: number;
+  paymentMethod: WalletTopupInputPaymentMethod;
+}
+
+export type WalletTopupPaymentMethod = typeof WalletTopupPaymentMethod[keyof typeof WalletTopupPaymentMethod];
+
+
+export const WalletTopupPaymentMethod = {
+  PayAtFawry: 'PayAtFawry',
+  MWALLET: 'MWALLET',
+} as const;
+
+export type WalletTopupStatus = typeof WalletTopupStatus[keyof typeof WalletTopupStatus];
+
+
+export const WalletTopupStatus = {
+  pending: 'pending',
+  paid: 'paid',
+  expired: 'expired',
+  failed: 'failed',
+} as const;
+
+export interface WalletTopup {
+  id: number;
+  amountPiasters: number;
+  paymentMethod: WalletTopupPaymentMethod;
+  status: WalletTopupStatus;
+  /** @nullable */
+  providerReference: string | null;
+  /** @nullable */
+  qrData: string | null;
+  /** @nullable */
+  expiresAt: string | null;
+}
+
+export type WalletLedgerEntryKind = typeof WalletLedgerEntryKind[keyof typeof WalletLedgerEntryKind];
+
+
+export const WalletLedgerEntryKind = {
+  topup: 'topup',
+  commission: 'commission',
+  customer_cancel_refund: 'customer_cancel_refund',
+  promo_refund: 'promo_refund',
+} as const;
+
+export interface WalletLedgerEntry {
+  kind: WalletLedgerEntryKind;
+  amountPiasters: number;
+  balanceAfterPiasters: number;
+  note: string;
+  createdAt: string;
+}
+
+export interface Wallet {
+  balancePiasters: number;
+  completedTrips: number;
+  freeTripsRemaining: number;
+  ledger: WalletLedgerEntry[];
+}
+
+export type DriverReviewDriverReviewStatus = typeof DriverReviewDriverReviewStatus[keyof typeof DriverReviewDriverReviewStatus];
+
+
+export const DriverReviewDriverReviewStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+  suspended: 'suspended',
+} as const;
+
+export interface DriverReview {
+  id: string;
+  name: string;
+  phone: string;
+  province: string;
+  vehicle: string;
+  plate: string;
+  driverReviewStatus: DriverReviewDriverReviewStatus;
+  driverTermsAccepted: boolean;
+  driverReviewNote: string;
+  /** @nullable */
+  driverReviewedAt: string | null;
+  identityVerified: boolean;
+  drivingLicenseVerified: boolean;
+  vehicleVerified: boolean;
+  workPermitVerified: boolean;
+  socialInsuranceVerified: boolean;
+  backgroundCheckCompleted: boolean;
+  vehicleRequirementsVerified: boolean;
+  operatorLicenseVerified: boolean;
+  randomTestProcessConfirmed: boolean;
+}
+
+export type DriverReviewInputDecision = typeof DriverReviewInputDecision[keyof typeof DriverReviewInputDecision];
+
+
+export const DriverReviewInputDecision = {
+  approved: 'approved',
+  rejected: 'rejected',
+  suspended: 'suspended',
+} as const;
+
+export interface DriverReviewInput {
+  decision: DriverReviewInputDecision;
+  /** @maxLength 500 */
+  note: string;
+  identityVerified: boolean;
+  drivingLicenseVerified: boolean;
+  vehicleVerified: boolean;
+  workPermitVerified: boolean;
+  socialInsuranceVerified: boolean;
+  backgroundCheckCompleted: boolean;
+  vehicleRequirementsVerified: boolean;
+  operatorLicenseVerified: boolean;
+  randomTestProcessConfirmed: boolean;
+}
+
+export type FawryPaymentNotificationBody = { [key: string]: unknown };
 

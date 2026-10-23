@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RideCommissionState } from './rideCommissionState';
 import type { RideRideType } from './rideRideType';
 import type { RideStatus } from './rideStatus';
 
@@ -42,4 +43,15 @@ export interface Ride {
   destinationLat: number | null;
   /** @nullable */
   destinationLng: number | null;
+  /** @nullable */
+  routeDistanceMeters: number | null;
+  /** @nullable */
+  routeDurationSeconds: number | null;
+  /** @nullable */
+  farePiasters: number | null;
+  /** @nullable */
+  commissionPiasters: number | null;
+  /** @nullable */
+  commissionState: RideCommissionState;
+  promoCommissionWaived: boolean;
 }

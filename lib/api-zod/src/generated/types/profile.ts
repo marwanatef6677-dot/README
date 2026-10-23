@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ProfileDriverReviewStatus } from './profileDriverReviewStatus';
 import type { ProfileRole } from './profileRole';
 
 export interface Profile {
@@ -16,4 +17,7 @@ export interface Profile {
   vehicle: string;
   plate: string;
   onboarded: boolean;
+  driverReviewStatus: ProfileDriverReviewStatus;
+  driverTermsAccepted: boolean;
+  walletBalancePiasters: number;
 }

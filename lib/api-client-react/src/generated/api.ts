@@ -26,6 +26,9 @@ import type {
 
 import type {
   AppConfig,
+  DriverReview,
+  DriverReviewInput,
+  FawryPaymentNotificationBody,
   HealthStatus,
   LocationInput,
   Profile,
@@ -36,7 +39,10 @@ import type {
   RouteInput,
   RoutePreview,
   Summary,
-  TrackingState
+  TrackingState,
+  Wallet,
+  WalletTopup,
+  WalletTopupInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1312,4 +1318,539 @@ export function useGetSummary<TData = Awaited<ReturnType<typeof getSummary>>, TE
 
 
 
+
+export const getListDriverReviewsUrl = () => {
+
+
+
+
+  return `/api/admin/drivers`
+}
+
+export const listDriverReviews = async ( options?: Parameters<typeof customFetch>[1]): Promise<DriverReview[]> => {
+
+  return customFetch<DriverReview[]>(getListDriverReviewsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDriverReviewsQueryKey = () => {
+    return [
+    `/api/admin/drivers`
+    ] as const;
+    }
+
+
+export const getListDriverReviewsQueryOptions = <TData = Awaited<ReturnType<typeof listDriverReviews>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDriverReviewsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDriverReviews>>> = ({ signal }) => listDriverReviews({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListDriverReviewsQueryResult = NonNullable<Awaited<ReturnType<typeof listDriverReviews>>>
+export type ListDriverReviewsQueryError = ErrorType<unknown>
+
+
+export function useListDriverReviews<TData = Awaited<ReturnType<typeof listDriverReviews>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDriverReviews>>,
+          TError,
+          Awaited<ReturnType<typeof listDriverReviews>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListDriverReviews<TData = Awaited<ReturnType<typeof listDriverReviews>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listDriverReviews>>,
+          TError,
+          Awaited<ReturnType<typeof listDriverReviews>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListDriverReviews<TData = Awaited<ReturnType<typeof listDriverReviews>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListDriverReviews<TData = Awaited<ReturnType<typeof listDriverReviews>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDriverReviews>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListDriverReviewsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getReviewDriverUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/drivers/${id}/review`
+}
+
+export const reviewDriver = async (id: string,
+    driverReviewInput: DriverReviewInput, options?: Parameters<typeof customFetch>[1]): Promise<DriverReview> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<DriverReview>(getReviewDriverUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(driverReviewInput)
+  }
+);}
+
+
+
+
+
+export const getReviewDriverMutationKey = () => ['reviewDriver'] as const;
+
+export const getReviewDriverMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewDriver>>, TError,ReviewDriverMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reviewDriver>>, TError,ReviewDriverMutationVariables, TContext> => {
+
+const mutationKey = getReviewDriverMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reviewDriver>>, ReviewDriverMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reviewDriver(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReviewDriverMutationResult = NonNullable<Awaited<ReturnType<typeof reviewDriver>>>
+    export type ReviewDriverMutationBody = BodyType<DriverReviewInput>
+    export type ReviewDriverMutationError = ErrorType<unknown>
+    export type ReviewDriverMutationVariables = {id: string;data: BodyType<DriverReviewInput>}
+
+    export const useReviewDriver = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewDriver>>, TError,ReviewDriverMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof reviewDriver>>,
+        TError,
+        ReviewDriverMutationVariables,
+        TContext
+      > => {
+      return useMutation(getReviewDriverMutationOptions(options), queryClient);
+    }
+
+export const getGetWalletUrl = () => {
+
+
+
+
+  return `/api/wallet`
+}
+
+export const getWallet = async ( options?: Parameters<typeof customFetch>[1]): Promise<Wallet> => {
+
+  return customFetch<Wallet>(getGetWalletUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWalletQueryKey = () => {
+    return [
+    `/api/wallet`
+    ] as const;
+    }
+
+
+export const getGetWalletQueryOptions = <TData = Awaited<ReturnType<typeof getWallet>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWalletQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWallet>>> = ({ signal }) => getWallet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWalletQueryResult = NonNullable<Awaited<ReturnType<typeof getWallet>>>
+export type GetWalletQueryError = ErrorType<unknown>
+
+
+export function useGetWallet<TData = Awaited<ReturnType<typeof getWallet>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWallet>>,
+          TError,
+          Awaited<ReturnType<typeof getWallet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWallet<TData = Awaited<ReturnType<typeof getWallet>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWallet>>,
+          TError,
+          Awaited<ReturnType<typeof getWallet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWallet<TData = Awaited<ReturnType<typeof getWallet>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetWallet<TData = Awaited<ReturnType<typeof getWallet>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWallet>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWalletQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateWalletTopupUrl = () => {
+
+
+
+
+  return `/api/wallet/topups`
+}
+
+export const createWalletTopup = async (walletTopupInput: WalletTopupInput, options?: Parameters<typeof customFetch>[1]): Promise<WalletTopup> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<WalletTopup>(getCreateWalletTopupUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(walletTopupInput)
+  }
+);}
+
+
+
+
+
+export const getCreateWalletTopupMutationKey = () => ['createWalletTopup'] as const;
+
+export const getCreateWalletTopupMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWalletTopup>>, TError,CreateWalletTopupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createWalletTopup>>, TError,CreateWalletTopupMutationVariables, TContext> => {
+
+const mutationKey = getCreateWalletTopupMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWalletTopup>>, CreateWalletTopupMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createWalletTopup(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateWalletTopupMutationResult = NonNullable<Awaited<ReturnType<typeof createWalletTopup>>>
+    export type CreateWalletTopupMutationBody = BodyType<WalletTopupInput>
+    export type CreateWalletTopupMutationError = ErrorType<unknown>
+    export type CreateWalletTopupMutationVariables = {data: BodyType<WalletTopupInput>}
+
+    export const useCreateWalletTopup = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWalletTopup>>, TError,CreateWalletTopupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createWalletTopup>>,
+        TError,
+        CreateWalletTopupMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateWalletTopupMutationOptions(options), queryClient);
+    }
+
+export const getGetWalletTopupUrl = (id: number,) => {
+
+
+
+
+  return `/api/wallet/topups/${id}`
+}
+
+export const getWalletTopup = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<WalletTopup> => {
+
+  return customFetch<WalletTopup>(getGetWalletTopupUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWalletTopupQueryKey = (id: number,) => {
+    return [
+    `/api/wallet/topups/${id}`
+    ] as const;
+    }
+
+
+export const getGetWalletTopupQueryOptions = <TData = Awaited<ReturnType<typeof getWalletTopup>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWalletTopupQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWalletTopup>>> = ({ signal }) => getWalletTopup(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWalletTopupQueryResult = NonNullable<Awaited<ReturnType<typeof getWalletTopup>>>
+export type GetWalletTopupQueryError = ErrorType<unknown>
+
+
+export function useGetWalletTopup<TData = Awaited<ReturnType<typeof getWalletTopup>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWalletTopup>>,
+          TError,
+          Awaited<ReturnType<typeof getWalletTopup>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWalletTopup<TData = Awaited<ReturnType<typeof getWalletTopup>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWalletTopup>>,
+          TError,
+          Awaited<ReturnType<typeof getWalletTopup>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWalletTopup<TData = Awaited<ReturnType<typeof getWalletTopup>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetWalletTopup<TData = Awaited<ReturnType<typeof getWalletTopup>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWalletTopup>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWalletTopupQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getFawryPaymentNotificationUrl = () => {
+
+
+
+
+  return `/api/fawry/notify`
+}
+
+/**
+ * Validates FawryPay's signed server notification and applies a top-up once.
+ */
+export const fawryPaymentNotification = async (fawryPaymentNotificationBody: FawryPaymentNotificationBody, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getFawryPaymentNotificationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(fawryPaymentNotificationBody)
+  }
+);}
+
+
+
+
+
+export const getFawryPaymentNotificationMutationKey = () => ['fawryPaymentNotification'] as const;
+
+export const getFawryPaymentNotificationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fawryPaymentNotification>>, TError,FawryPaymentNotificationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof fawryPaymentNotification>>, TError,FawryPaymentNotificationMutationVariables, TContext> => {
+
+const mutationKey = getFawryPaymentNotificationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof fawryPaymentNotification>>, FawryPaymentNotificationMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  fawryPaymentNotification(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FawryPaymentNotificationMutationResult = NonNullable<Awaited<ReturnType<typeof fawryPaymentNotification>>>
+    export type FawryPaymentNotificationMutationBody = BodyType<FawryPaymentNotificationBody>
+    export type FawryPaymentNotificationMutationError = ErrorType<unknown>
+    export type FawryPaymentNotificationMutationVariables = {data: BodyType<FawryPaymentNotificationBody>}
+
+    export const useFawryPaymentNotification = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fawryPaymentNotification>>, TError,FawryPaymentNotificationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof fawryPaymentNotification>>,
+        TError,
+        FawryPaymentNotificationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getFawryPaymentNotificationMutationOptions(options), queryClient);
+    }
 

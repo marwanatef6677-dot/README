@@ -25,4 +25,5 @@ export interface ProfileInput {
   vehicle: string;
   /** @maxLength 30 */
   plate: string;
+  driverTermsAccepted: boolean;
 }

@@ -37,7 +37,10 @@ export const GetProfileResponse = zod.object({
   "province": zod.string(),
   "vehicle": zod.string(),
   "plate": zod.string(),
-  "onboarded": zod.boolean()
+  "onboarded": zod.boolean(),
+  "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
+  "driverTermsAccepted": zod.boolean(),
+  "walletBalancePiasters": zod.number().int()
 })
 
 
@@ -60,7 +63,8 @@ export const UpdateProfileBody = zod.object({
   "role": zod.enum(['customer', 'driver']),
   "province": zod.string().min(updateProfileBodyProvinceMin).max(updateProfileBodyProvinceMax),
   "vehicle": zod.string().max(updateProfileBodyVehicleMax),
-  "plate": zod.string().max(updateProfileBodyPlateMax)
+  "plate": zod.string().max(updateProfileBodyPlateMax),
+  "driverTermsAccepted": zod.boolean()
 })
 
 export const UpdateProfileResponse = zod.object({
@@ -71,7 +75,10 @@ export const UpdateProfileResponse = zod.object({
   "province": zod.string(),
   "vehicle": zod.string(),
   "plate": zod.string(),
-  "onboarded": zod.boolean()
+  "onboarded": zod.boolean(),
+  "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
+  "driverTermsAccepted": zod.boolean(),
+  "walletBalancePiasters": zod.number().int()
 })
 
 
@@ -97,7 +104,13 @@ export const ListRidesResponseItem = zod.object({
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
   "destinationLat": zod.number().nullable(),
-  "destinationLng": zod.number().nullable()
+  "destinationLng": zod.number().nullable(),
+  "routeDistanceMeters": zod.number().int().nullable(),
+  "routeDurationSeconds": zod.number().int().nullable(),
+  "farePiasters": zod.number().int().nullable(),
+  "commissionPiasters": zod.number().int().nullable(),
+  "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
+  "promoCommissionWaived": zod.boolean()
 })
 export const ListRidesResponse = zod.array(ListRidesResponseItem)
 
@@ -161,7 +174,13 @@ export const CreateRideResponse = zod.object({
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
   "destinationLat": zod.number().nullable(),
-  "destinationLng": zod.number().nullable()
+  "destinationLng": zod.number().nullable(),
+  "routeDistanceMeters": zod.number().int().nullable(),
+  "routeDurationSeconds": zod.number().int().nullable(),
+  "farePiasters": zod.number().int().nullable(),
+  "commissionPiasters": zod.number().int().nullable(),
+  "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
+  "promoCommissionWaived": zod.boolean()
 })
 
 
@@ -187,7 +206,13 @@ export const ListAvailableRidesResponseItem = zod.object({
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
   "destinationLat": zod.number().nullable(),
-  "destinationLng": zod.number().nullable()
+  "destinationLng": zod.number().nullable(),
+  "routeDistanceMeters": zod.number().int().nullable(),
+  "routeDurationSeconds": zod.number().int().nullable(),
+  "farePiasters": zod.number().int().nullable(),
+  "commissionPiasters": zod.number().int().nullable(),
+  "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
+  "promoCommissionWaived": zod.boolean()
 })
 export const ListAvailableRidesResponse = zod.array(ListAvailableRidesResponseItem)
 
@@ -218,7 +243,13 @@ export const GetRideResponse = zod.object({
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
   "destinationLat": zod.number().nullable(),
-  "destinationLng": zod.number().nullable()
+  "destinationLng": zod.number().nullable(),
+  "routeDistanceMeters": zod.number().int().nullable(),
+  "routeDurationSeconds": zod.number().int().nullable(),
+  "farePiasters": zod.number().int().nullable(),
+  "commissionPiasters": zod.number().int().nullable(),
+  "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
+  "promoCommissionWaived": zod.boolean()
 })
 
 
@@ -257,7 +288,13 @@ export const ActOnRideResponse = zod.object({
   "pickupLat": zod.number().nullable(),
   "pickupLng": zod.number().nullable(),
   "destinationLat": zod.number().nullable(),
-  "destinationLng": zod.number().nullable()
+  "destinationLng": zod.number().nullable(),
+  "routeDistanceMeters": zod.number().int().nullable(),
+  "routeDurationSeconds": zod.number().int().nullable(),
+  "farePiasters": zod.number().int().nullable(),
+  "commissionPiasters": zod.number().int().nullable(),
+  "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
+  "promoCommissionWaived": zod.boolean()
 })
 
 
@@ -347,5 +384,132 @@ export const GetSummaryResponse = zod.object({
   "active": zod.number().int(),
   "cancelled": zod.number().int()
 })
+
+
+export const ListDriverReviewsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "province": zod.string(),
+  "vehicle": zod.string(),
+  "plate": zod.string(),
+  "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
+  "driverTermsAccepted": zod.boolean(),
+  "driverReviewNote": zod.string(),
+  "driverReviewedAt": zod.string().nullable(),
+  "identityVerified": zod.boolean(),
+  "drivingLicenseVerified": zod.boolean(),
+  "vehicleVerified": zod.boolean(),
+  "workPermitVerified": zod.boolean(),
+  "socialInsuranceVerified": zod.boolean(),
+  "backgroundCheckCompleted": zod.boolean(),
+  "vehicleRequirementsVerified": zod.boolean(),
+  "operatorLicenseVerified": zod.boolean(),
+  "randomTestProcessConfirmed": zod.boolean()
+})
+export const ListDriverReviewsResponse = zod.array(ListDriverReviewsResponseItem)
+
+
+export const ReviewDriverParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const reviewDriverBodyNoteMax = 500;
+
+
+
+export const ReviewDriverBody = zod.object({
+  "decision": zod.enum(['approved', 'rejected', 'suspended']),
+  "note": zod.string().max(reviewDriverBodyNoteMax),
+  "identityVerified": zod.boolean(),
+  "drivingLicenseVerified": zod.boolean(),
+  "vehicleVerified": zod.boolean(),
+  "workPermitVerified": zod.boolean(),
+  "socialInsuranceVerified": zod.boolean(),
+  "backgroundCheckCompleted": zod.boolean(),
+  "vehicleRequirementsVerified": zod.boolean(),
+  "operatorLicenseVerified": zod.boolean(),
+  "randomTestProcessConfirmed": zod.boolean()
+})
+
+export const ReviewDriverResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "province": zod.string(),
+  "vehicle": zod.string(),
+  "plate": zod.string(),
+  "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
+  "driverTermsAccepted": zod.boolean(),
+  "driverReviewNote": zod.string(),
+  "driverReviewedAt": zod.string().nullable(),
+  "identityVerified": zod.boolean(),
+  "drivingLicenseVerified": zod.boolean(),
+  "vehicleVerified": zod.boolean(),
+  "workPermitVerified": zod.boolean(),
+  "socialInsuranceVerified": zod.boolean(),
+  "backgroundCheckCompleted": zod.boolean(),
+  "vehicleRequirementsVerified": zod.boolean(),
+  "operatorLicenseVerified": zod.boolean(),
+  "randomTestProcessConfirmed": zod.boolean()
+})
+
+
+export const GetWalletResponse = zod.object({
+  "balancePiasters": zod.number().int(),
+  "completedTrips": zod.number().int(),
+  "freeTripsRemaining": zod.number().int(),
+  "ledger": zod.array(zod.object({
+  "kind": zod.enum(['topup', 'commission', 'customer_cancel_refund', 'promo_refund']),
+  "amountPiasters": zod.number().int(),
+  "balanceAfterPiasters": zod.number().int(),
+  "note": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+export const createWalletTopupBodyAmountPiastersMin = 1000;
+export const createWalletTopupBodyAmountPiastersMax = 1000000;
+
+
+
+export const CreateWalletTopupBody = zod.object({
+  "amountPiasters": zod.number().int().min(createWalletTopupBodyAmountPiastersMin).max(createWalletTopupBodyAmountPiastersMax),
+  "paymentMethod": zod.enum(['PayAtFawry', 'MWALLET'])
+})
+
+export const CreateWalletTopupResponse = zod.object({
+  "id": zod.number().int(),
+  "amountPiasters": zod.number().int(),
+  "paymentMethod": zod.enum(['PayAtFawry', 'MWALLET']),
+  "status": zod.enum(['pending', 'paid', 'expired', 'failed']),
+  "providerReference": zod.string().nullable(),
+  "qrData": zod.string().nullable(),
+  "expiresAt": zod.string().nullable()
+})
+
+
+export const GetWalletTopupParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetWalletTopupResponse = zod.object({
+  "id": zod.number().int(),
+  "amountPiasters": zod.number().int(),
+  "paymentMethod": zod.enum(['PayAtFawry', 'MWALLET']),
+  "status": zod.enum(['pending', 'paid', 'expired', 'failed']),
+  "providerReference": zod.string().nullable(),
+  "qrData": zod.string().nullable(),
+  "expiresAt": zod.string().nullable()
+})
+
+
+/**
+ * Validates FawryPay's signed server notification and applies a top-up once.
+ */
+export const FawryPaymentNotificationBody = zod.record(zod.string(), zod.unknown())
+
+export const FawryPaymentNotificationResponse = zod.unknown()
 
 
