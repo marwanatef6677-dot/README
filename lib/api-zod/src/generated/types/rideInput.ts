@@ -46,4 +46,9 @@ export interface RideInput {
   destinationLng: number;
   /** @maxLength 500 */
   notes?: string;
+  /**
+     * @minimum -1000000
+     * @maximum 1000000
+     */
+  fareAdjustmentPiasters?: number;
 }

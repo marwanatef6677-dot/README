@@ -84,6 +84,8 @@ export interface Ride {
   /** @nullable */
   routeDurationSeconds: number | null;
   /** @nullable */
+  estimatedFarePiasters: number | null;
+  /** @nullable */
   farePiasters: number | null;
   /** @nullable */
   commissionPiasters: number | null;

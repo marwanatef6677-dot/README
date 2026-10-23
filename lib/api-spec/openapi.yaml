@@ -128,6 +128,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Ride"
+  /rides/{id}/messages:
+    get:
+      operationId: listRideMessages
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Ride conversation for its customer and assigned captain
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RideMessage"
+    post:
+      operationId: sendRideMessage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RideMessageInput"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RideMessage"
   /routes/preview:
     post:
       operationId: previewRoute
@@ -337,6 +368,7 @@ components:
         destinationLat: { type: number, minimum: -90, maximum: 90 }
         destinationLng: { type: number, minimum: -180, maximum: 180 }
         notes: { type: string, maxLength: 500 }
+        fareAdjustmentPiasters: { type: integer, multipleOf: 500, minimum: -1000000, maximum: 1000000 }
     RideAction:
       type: object
       required: [action]
@@ -350,9 +382,24 @@ components:
         comfortRating: { type: integer, minimum: 1, maximum: 5 }
         airConditioningRating: { type: integer, minimum: 1, maximum: 5 }
         feedbackNote: { type: string, maxLength: 500 }
+    RideMessage:
+      type: object
+      required: [id, rideId, senderId, senderName, message, createdAt]
+      properties:
+        id: { type: integer }
+        rideId: { type: integer }
+        senderId: { type: string }
+        senderName: { type: string }
+        message: { type: string }
+        createdAt: { type: string }
+    RideMessageInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1, maxLength: 1000 }
     Ride:
       type: object
-      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, estimatedFarePiasters, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
       properties:
         id: { type: integer }
         customerId: { type: string }
@@ -386,6 +433,7 @@ components:
         destinationLng: { type: [number, "null"] }
         routeDistanceMeters: { type: [integer, "null"] }
         routeDurationSeconds: { type: [integer, "null"] }
+        estimatedFarePiasters: { type: [integer, "null"] }
         farePiasters: { type: [integer, "null"] }
         commissionPiasters: { type: [integer, "null"] }
         commissionState: { type: [string, "null"], enum: [reserved, retained, refunded, waived, "null"] }
@@ -400,10 +448,11 @@ components:
         destinationLng: { type: number, minimum: -180, maximum: 180 }
     RoutePreview:
       type: object
-      required: [distanceMeters, durationSeconds, coordinates]
+      required: [distanceMeters, durationSeconds, estimatedFarePiasters, coordinates]
       properties:
         distanceMeters: { type: number }
         durationSeconds: { type: number }
+        estimatedFarePiasters: { type: integer, minimum: 4000 }
         coordinates:
           type: array
           description: GeoJSON longitude then latitude pairs

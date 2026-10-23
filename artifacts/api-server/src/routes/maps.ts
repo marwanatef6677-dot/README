@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { rateLimit } from "express-rate-limit";
 import { PreviewRouteBody, PreviewRouteResponse } from "@workspace/api-zod";
 import { AppError } from "../lib/pablo";
-import { getRoutePreview } from "../lib/routing";
+import { calculateFarePiasters, getRoutePreview } from "../lib/routing";
 
 const router: IRouter = Router();
 const limiter = rateLimit({
@@ -20,6 +20,7 @@ router.post("/routes/preview", limiter, async (req, res): Promise<void> => {
     res.setHeader("Cache-Control", "no-store");
     res.json(PreviewRouteResponse.parse({
       distanceMeters: route.distanceMeters, durationSeconds: route.durationSeconds, coordinates: route.coordinates,
+      estimatedFarePiasters: calculateFarePiasters(route.distanceMeters, route.durationSeconds),
     }));
   } catch (error) {
     if (error instanceof AppError) throw error;

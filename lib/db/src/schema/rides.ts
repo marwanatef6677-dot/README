@@ -24,6 +24,7 @@ export const rides = pgTable("pablo_rides", {
   destinationLng: doublePrecision("destination_lng"),
   routeDistanceMeters: integer("route_distance_meters"),
   routeDurationSeconds: integer("route_duration_seconds"),
+  estimatedFarePiasters: integer("estimated_fare_piasters"),
   farePiasters: integer("fare_piasters"),
   commissionPiasters: integer("commission_piasters"),
   commissionState: text("commission_state"),

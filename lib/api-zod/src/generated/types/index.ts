@@ -28,6 +28,8 @@ export * from './rideCheckInStatus';
 export * from './rideCommissionState';
 export * from './rideInput';
 export * from './rideInputRideType';
+export * from './rideMessage';
+export * from './rideMessageInput';
 export * from './rideRideType';
 export * from './rideStatus';
 export * from './rideType';

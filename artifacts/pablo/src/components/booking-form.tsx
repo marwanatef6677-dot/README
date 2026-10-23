@@ -14,6 +14,10 @@ import { cn } from "@/lib/utils";
 const typeIcon: Record<RideTypeId, typeof Car> = { economy: Car, family: Users, premium: Crown };
 
 export const fieldCls = "h-12 w-full rounded-2xl border border-input bg-card px-4 text-base outline-none transition-shadow placeholder:text-muted-foreground/70 focus:border-[#10151d] focus:shadow-[0_0_0_4px_rgba(255,208,0,.45)]";
+const MIN_FARE_PIASTERS = 4_000;
+const FARE_STEP_PIASTERS = 500;
+const MAX_ADJUSTMENT_PIASTERS = 1_000_000;
+const formatEgp = (piasters: number) => `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(piasters / 100)} جنيه`;
 
 export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; defaultProvince?: string }) {
   const [, setLocation] = useLocation();
@@ -26,12 +30,13 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const [geo, setGeo] = useState<"idle" | "busy" | "ok" | "err">("idle");
   const [geoMsg, setGeoMsg] = useState("");
   const [serverErr, setServerErr] = useState("");
+  const [fareAdjustmentPiasters, setFareAdjustmentPiasters] = useState(() => loadDraft().fareAdjustmentPiasters ?? 0);
   const restored = useRef(!!loadDraft().pickup || !!loadDraft().destination);
 
   useEffect(() => {
     if (!d.province && defaultProvince) setD((x) => ({ ...x, province: defaultProvince }));
   }, [defaultProvince, d.province]);
-  useEffect(() => { saveDraft(d); }, [d]);
+  useEffect(() => { saveDraft({ ...d, fareAdjustmentPiasters }); }, [d, fareAdjustmentPiasters]);
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => { setD((x) => ({ ...x, [k]: v })); setErrs((e) => ({ ...e, [k]: undefined })); };
 
@@ -64,8 +69,14 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const seq = useRef(0);
   const [route, setRoute] = useState<{ s: "idle" | "loading" | "ok" | "err"; data?: RoutePreview }>({ s: "idle" });
   const [retry, setRetry] = useState(0);
+  const routeKey = `${d.pickupLat ?? ""}|${d.pickupLng ?? ""}|${d.destinationLat ?? ""}|${d.destinationLng ?? ""}`;
+  const previousRouteKey = useRef(routeKey);
   useEffect(() => {
     const id = ++seq.current;
+    if (previousRouteKey.current !== routeKey) {
+      previousRouteKey.current = routeKey;
+      setFareAdjustmentPiasters(0);
+    }
     if (d.pickupLat == null || d.pickupLng == null || d.destinationLat == null || d.destinationLng == null) { setRoute({ s: "idle" }); return; }
     setRoute({ s: "loading" });
     const body = { pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng };
@@ -76,7 +87,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
       });
     }, 700);
     return () => clearTimeout(t);
-  }, [d.pickupLat, d.pickupLng, d.destinationLat, d.destinationLng, retry]);
+  }, [routeKey, retry]);
   useEffect(() => () => { seq.current++; }, []);
 
   function locate() {
@@ -111,18 +122,23 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
     ev.preventDefault();
     setServerErr("");
     if (!validate()) return;
-    if (!signedIn) { saveDraft(d); setLocation("/sign-in"); return; }
+    if (route.s !== "ok" || !route.data) {
+      setServerErr("احسب الطريق والسعر الأول قبل إرسال الطلب.");
+      return;
+    }
+    if (!signedIn) { saveDraft({ ...d, fareAdjustmentPiasters }); setLocation("/sign-in"); return; }
     if (d.pickupLat == null || d.pickupLng == null || d.destinationLat == null || d.destinationLng == null) return;
     create.mutate({
       data: {
         pickup: d.pickup.trim(), destination: d.destination.trim(), province: d.province, rideType: d.rideType,
         ...(d.notes.trim() ? { notes: d.notes.trim() } : {}),
         pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng,
+        fareAdjustmentPiasters,
       },
     }, {
       onSuccess: (ride) => {
         clearDraft(); invalidate(ride.id);
-        toast({ title: "الطلب اتبعت", description: "هنبلغك هنا أول ما كابتن يقبله." });
+        toast({ title: "الطلب اتبعت", description: `السعر المعروض على الكابتن: ${formatEgp(ride.farePiasters ?? route.data!.estimatedFarePiasters)}. هنبلغك هنا لو قبله.` });
         setLocation(`/trips/${ride.id}`);
       },
       onError: (err) => setServerErr(errorText(err)),
@@ -161,15 +177,36 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
           {route.s === "idle" && <p className="text-xs text-[#f6f1e4]/60">حط الدبوسين عشان نحسب المسافة بالطريق.</p>}
           {route.s === "loading" && <p className="flex items-center gap-2 text-xs text-[#f6f1e4]/70"><Loader2 className="h-3.5 w-3.5 animate-spin" /> بنحسب الطريق...</p>}
           {route.s === "ok" && route.data && (
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-              <span><span className="font-num text-xl font-bold text-[#ffd000]">{(route.data.distanceMeters / 1000).toFixed(1)}</span> <span className="text-xs">كم بالطريق</span></span>
-              <span><span className="font-num text-xl font-bold text-[#ffd000]">{Math.max(1, Math.round(route.data.durationSeconds / 60))}</span> <span className="text-xs">دقيقة سواقة تقديرياً</span></span>
-              <span className="w-full text-[11px] text-[#f6f1e4]/55">وقت السواقة تقدير عام من بيانات الطرق، مش معاد وصول كابتن ومش محسوب فيه الزحمة.</span>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                <span><span className="font-num text-xl font-bold text-[#ffd000]">{(route.data.distanceMeters / 1000).toFixed(1)}</span> <span className="text-xs">كم بالطريق</span></span>
+                <span><span className="font-num text-xl font-bold text-[#ffd000]">{Math.max(1, Math.round(route.data.durationSeconds / 60))}</span> <span className="text-xs">دقيقة سواقة تقديرياً</span></span>
+              </div>
+              <div className="rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 p-3" data-testid="fare-preview">
+                <p className="text-xs text-[#f6f1e4]/70">السعر الأساسي حسب المسافة والوقت</p>
+                <p className="mt-1 font-display text-sm font-bold">٢٠ جنيه بداية + ١٠ جنيه لكل كم + ١ جنيه لكل دقيقة، بحد أدنى ٤٠ جنيه</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <button type="button" data-testid="button-fare-minus" aria-label="قلل السعر ٥ جنيهات"
+                    disabled={route.data.estimatedFarePiasters + fareAdjustmentPiasters - FARE_STEP_PIASTERS < MIN_FARE_PIASTERS || fareAdjustmentPiasters <= -MAX_ADJUSTMENT_PIASTERS}
+                    onClick={() => setFareAdjustmentPiasters((value) => Math.max(-MAX_ADJUSTMENT_PIASTERS, value - FARE_STEP_PIASTERS))}
+                    className="press h-10 rounded-xl border border-[#f6f1e4]/20 px-3 text-sm font-bold disabled:opacity-40">− ٥ جنيه</button>
+                  <div className="text-center" aria-live="polite">
+                    <p className="text-[10px] text-[#f6f1e4]/65">السعر اللي هيشوفه الكابتن</p>
+                    <p className="font-num text-xl font-black text-[#ffd000]" data-testid="text-offered-fare">{formatEgp(route.data.estimatedFarePiasters + fareAdjustmentPiasters)}</p>
+                  </div>
+                  <button type="button" data-testid="button-fare-plus" aria-label="زود السعر ٥ جنيهات"
+                    disabled={fareAdjustmentPiasters >= MAX_ADJUSTMENT_PIASTERS}
+                    onClick={() => setFareAdjustmentPiasters((value) => Math.min(MAX_ADJUSTMENT_PIASTERS, value + FARE_STEP_PIASTERS))}
+                    className="press h-10 rounded-xl border border-[#f6f1e4]/20 px-3 text-sm font-bold disabled:opacity-40">+ ٥ جنيه</button>
+                </div>
+                <p className="mt-2 text-[11px] text-[#f6f1e4]/65">تقدر تعدّل العرض كل مرة بـ٥ جنيهات. الكابتن هيشوف السعر ويقرر يقبل الرحلة أو يسيبها، والتخفيض لا ينزل عن الحد الأدنى.</p>
+              </div>
+              <span className="block text-[11px] text-[#f6f1e4]/55">وقت السواقة تقدير عام من بيانات الطرق، مش معاد وصول كابتن ومش محسوب فيه الزحمة.</span>
             </div>
           )}
           {route.s === "err" && (
             <p className="text-xs text-[#f6f1e4]/80" data-testid="text-route-error">
-              مقدرناش نحسب الطريق دلوقتي. تقدر <button type="button" data-testid="button-route-retry" onClick={() => setRetry((n) => n + 1)} className="inline-flex items-center gap-1 font-bold text-[#ffd000] underline"><RotateCw className="h-3 w-3" />تجرّب تاني</button> أو تكمّل الطلب من غير حساب الطريق.
+              مقدرناش نحسب الطريق والسعر، فلازم نعيد المحاولة قبل إرسال الطلب. <button type="button" data-testid="button-route-retry" onClick={() => setRetry((n) => n + 1)} className="inline-flex items-center gap-1 font-bold text-[#ffd000] underline"><RotateCw className="h-3 w-3" />تجرّب تاني</button>
             </p>
           )}
         </div>
@@ -249,7 +286,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
         )}
       </AnimatePresence>
 
-      <Btn type="submit" variant="yellow" data-testid="button-request" disabled={create.isPending} className="h-14 w-full text-lg">
+      <Btn type="submit" variant="yellow" data-testid="button-request" disabled={create.isPending || route.s !== "ok"} className="h-14 w-full text-lg">
         {create.isPending ? <><Loader2 className="h-5 w-5 animate-spin" /> بنبعت الطلب...</> : signedIn ? "اطلب الرحلة" : "سجّل دخول عشان تطلب"}
       </Btn>
       {!signedIn && <p className="text-center text-xs text-muted-foreground">هنحفظ اللي كتبته، وبعد الدخول هتراجعه وتطلب بنفسك.</p>}

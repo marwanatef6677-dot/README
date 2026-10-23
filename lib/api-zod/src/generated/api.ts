@@ -159,6 +159,7 @@ export const ListRidesResponseItem = zod.object({
   "destinationLng": zod.number().nullable(),
   "routeDistanceMeters": zod.number().int().nullable(),
   "routeDurationSeconds": zod.number().int().nullable(),
+  "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
@@ -190,6 +191,10 @@ export const createRideBodyDestinationLngMax = 180;
 
 export const createRideBodyNotesMax = 500;
 
+export const createRideBodyFareAdjustmentPiastersMin = -1000000;
+export const createRideBodyFareAdjustmentPiastersMax = 1000000;
+export const createRideBodyFareAdjustmentPiastersMultipleOf = 500;
+
 
 
 export const CreateRideBody = zod.object({
@@ -201,7 +206,8 @@ export const CreateRideBody = zod.object({
   "pickupLng": zod.number().min(createRideBodyPickupLngMin).max(createRideBodyPickupLngMax),
   "destinationLat": zod.number().min(createRideBodyDestinationLatMin).max(createRideBodyDestinationLatMax),
   "destinationLng": zod.number().min(createRideBodyDestinationLngMin).max(createRideBodyDestinationLngMax),
-  "notes": zod.string().max(createRideBodyNotesMax).optional()
+  "notes": zod.string().max(createRideBodyNotesMax).optional(),
+  "fareAdjustmentPiasters": zod.number().int().min(createRideBodyFareAdjustmentPiastersMin).max(createRideBodyFareAdjustmentPiastersMax).multipleOf(createRideBodyFareAdjustmentPiastersMultipleOf).optional()
 })
 
 export const createRideResponseCaptainRatingMax = 5;
@@ -249,6 +255,7 @@ export const CreateRideResponse = zod.object({
   "destinationLng": zod.number().nullable(),
   "routeDistanceMeters": zod.number().int().nullable(),
   "routeDurationSeconds": zod.number().int().nullable(),
+  "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
@@ -301,6 +308,7 @@ export const ListAvailableRidesResponseItem = zod.object({
   "destinationLng": zod.number().nullable(),
   "routeDistanceMeters": zod.number().int().nullable(),
   "routeDurationSeconds": zod.number().int().nullable(),
+  "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
@@ -358,6 +366,7 @@ export const GetRideResponse = zod.object({
   "destinationLng": zod.number().nullable(),
   "routeDistanceMeters": zod.number().int().nullable(),
   "routeDurationSeconds": zod.number().int().nullable(),
+  "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
@@ -442,10 +451,48 @@ export const ActOnRideResponse = zod.object({
   "destinationLng": zod.number().nullable(),
   "routeDistanceMeters": zod.number().int().nullable(),
   "routeDurationSeconds": zod.number().int().nullable(),
+  "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
+})
+
+
+export const ListRideMessagesParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ListRideMessagesResponseItem = zod.object({
+  "id": zod.number().int(),
+  "rideId": zod.number().int(),
+  "senderId": zod.string(),
+  "senderName": zod.string(),
+  "message": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListRideMessagesResponse = zod.array(ListRideMessagesResponseItem)
+
+
+export const SendRideMessageParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const sendRideMessageBodyMessageMax = 1000;
+
+
+
+export const SendRideMessageBody = zod.object({
+  "message": zod.string().min(1).max(sendRideMessageBodyMessageMax)
+})
+
+export const SendRideMessageResponse = zod.object({
+  "id": zod.number().int(),
+  "rideId": zod.number().int(),
+  "senderId": zod.string(),
+  "senderName": zod.string(),
+  "message": zod.string(),
+  "createdAt": zod.string()
 })
 
 
@@ -470,9 +517,14 @@ export const PreviewRouteBody = zod.object({
   "destinationLng": zod.number().min(previewRouteBodyDestinationLngMin).max(previewRouteBodyDestinationLngMax)
 })
 
+export const previewRouteResponseEstimatedFarePiastersMin = 4000;
+
+
+
 export const PreviewRouteResponse = zod.object({
   "distanceMeters": zod.number(),
   "durationSeconds": zod.number(),
+  "estimatedFarePiasters": zod.number().int().min(previewRouteResponseEstimatedFarePiastersMin),
   "coordinates": zod.array(zod.array(zod.number())).describe('GeoJSON longitude then latitude pairs')
 })
 

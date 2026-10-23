@@ -158,6 +158,11 @@ export interface RideInput {
   destinationLng: number;
   /** @maxLength 500 */
   notes?: string;
+  /**
+     * @minimum -1000000
+     * @maximum 1000000
+     */
+  fareAdjustmentPiasters?: number;
 }
 
 export type RideActionAction = typeof RideActionAction[keyof typeof RideActionAction];
@@ -216,6 +221,23 @@ export interface RideAction {
   airConditioningRating?: number;
   /** @maxLength 500 */
   feedbackNote?: string;
+}
+
+export interface RideMessage {
+  id: number;
+  rideId: number;
+  senderId: string;
+  senderName: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface RideMessageInput {
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  message: string;
 }
 
 export type RideRideType = typeof RideRideType[keyof typeof RideRideType];
@@ -339,6 +361,8 @@ export interface Ride {
   /** @nullable */
   routeDurationSeconds: number | null;
   /** @nullable */
+  estimatedFarePiasters: number | null;
+  /** @nullable */
   farePiasters: number | null;
   /** @nullable */
   commissionPiasters: number | null;
@@ -373,6 +397,8 @@ export interface RouteInput {
 export interface RoutePreview {
   distanceMeters: number;
   durationSeconds: number;
+  /** @minimum 4000 */
+  estimatedFarePiasters: number;
   /** GeoJSON longitude then latitude pairs */
   coordinates: number[][];
 }

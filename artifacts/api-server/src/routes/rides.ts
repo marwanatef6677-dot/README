@@ -25,26 +25,31 @@ router.post("/rides", async (req, res): Promise<void> => {
   const normalized = Object.fromEntries(Object.entries(req.body ?? {}).map(([k,v]) => [k, typeof v === "string" ? v.trim() : v]));
   const parsed = CreateRideBody.safeParse(normalized);
   if (!parsed.success) throw new AppError(400, "راجع مكان الركوب والوجهة والبيانات المطلوبة.");
-  const data = parsed.data;
-  if (!provinces.includes(data.province)) throw new AppError(400, "اختار محافظة من القائمة.");
-  if (data.pickup === data.destination) throw new AppError(400, "مكان الركوب والوجهة لازم يكونوا مختلفين.");
-  if (Math.abs(data.pickupLat - data.destinationLat) + Math.abs(data.pickupLng - data.destinationLng) < 0.0001) throw new AppError(400, "اختار نقطتين مختلفتين للركوب والوصول.");
-  const route = await getRoutePreview(data);
+  const { fareAdjustmentPiasters = 0, ...rideData } = parsed.data;
+  if (!provinces.includes(rideData.province)) throw new AppError(400, "اختار محافظة من القائمة.");
+  if (rideData.pickup === rideData.destination) throw new AppError(400, "مكان الركوب والوجهة لازم يكونوا مختلفين.");
+  if (Math.abs(rideData.pickupLat - rideData.destinationLat) + Math.abs(rideData.pickupLng - rideData.destinationLng) < 0.0001) throw new AppError(400, "اختار نقطتين مختلفتين للركوب والوصول.");
+  const route = await getRoutePreview(rideData);
   const routeDistanceMeters = Math.round(route.distanceMeters);
   const routeDurationSeconds = Math.round(route.durationSeconds);
-  const farePiasters = calculateFarePiasters(routeDistanceMeters, routeDurationSeconds);
+  const estimatedFarePiasters = calculateFarePiasters(route.distanceMeters, route.durationSeconds);
+  const farePiasters = estimatedFarePiasters + fareAdjustmentPiasters;
+  if (fareAdjustmentPiasters % 500 !== 0 || farePiasters < 4_000) {
+    throw new AppError(400, "التخفيض لا يمكن أن ينزل بالأجرة عن الحد الأدنى ٤٠ جنيهًا.");
+  }
   const record = await db.transaction(async (tx) => {
     const [profile] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
     if (!profile.onboarded || profile.role !== "customer") throw new AppError(403, "كمّل بياناتك واختار وضع العميل عشان تطلب رحلة.");
     const [active] = await tx.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
     if (active) throw new AppError(409, "عندك رحلة حالية. كمّلها أو الغيها قبل طلب رحلة جديدة.");
     const [ride] = await tx.insert(rides).values({
-      ...data,
+      ...rideData,
       customerId: profile.id,
       customerName: profile.name,
       customerPhone: profile.phone,
       routeDistanceMeters,
       routeDurationSeconds,
+      estimatedFarePiasters,
       farePiasters,
     }).returning();
     return ride;

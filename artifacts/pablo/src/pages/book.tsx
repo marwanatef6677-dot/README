@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Loader2, Radio, Star, Trophy } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Loader2, Radio, Star, Trophy } from "lucide-react";
 import { useActOnRide } from "@workspace/api-client-react";
 import type { Profile, Ride } from "@workspace/api-client-react";
 import { BookingForm } from "@/components/booking-form";
@@ -74,6 +74,18 @@ function DriverProgress({ profile }: { profile: Profile }) {
         <span>{profile.driverLevel >= 10 ? "وصلت لأعلى Level" : `باقي ${profile.ridesToNextLevel.toLocaleString("ar-EG")} رحلات للمستوى التالي`}</span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">كل ١٠ رحلات مكتملة ترفعك Level، والتقييم متوسط آراء الركاب.</p>
+      <div className="mt-3 rounded-xl border border-[#ffd000]/40 bg-[#ffd000]/10 p-3" data-testid="driver-level-rewards">
+        <p className="flex items-center gap-2 text-xs font-bold"><BadgeCheck className="h-4 w-4 text-[#9b7600]" /> شارات المستويات المفتوحة</p>
+        {profile.driverLevel === 0 ? (
+          <p className="mt-1 text-[11px] text-muted-foreground">أكمل ١٠ رحلات لفتح أول شارة Level.</p>
+        ) : (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {Array.from({ length: profile.driverLevel }, (_, index) => (
+              <span key={index + 1} className="rounded-full bg-[#10151d] px-2.5 py-1 font-num text-[10px] font-bold text-[#ffd000]">Level {index + 1}</span>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

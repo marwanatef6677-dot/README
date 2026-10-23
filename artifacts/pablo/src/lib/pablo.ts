@@ -62,6 +62,7 @@ export function relTime(iso: string) {
 export type Draft = {
   pickup: string; destination: string; province: string; rideType: RideTypeId;
   notes: string; pickupLat?: number; pickupLng?: number; destinationLat?: number; destinationLng?: number;
+  fareAdjustmentPiasters?: number;
 };
 const DRAFT_KEY = "pablo:draft";
 export const emptyDraft: Draft = { pickup: "", destination: "", province: "", rideType: "economy", notes: "" };

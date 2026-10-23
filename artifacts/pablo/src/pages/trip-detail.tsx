@@ -3,6 +3,7 @@ import { Link, useParams } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Loader2, Phone, Star } from "lucide-react";
 import { DriverShare, RideMap } from "@/components/ride-tracking";
+import { RideChat } from "@/components/ride-chat";
 import { useActOnRide } from "@workspace/api-client-react";
 import type { Profile, RideActionAction } from "@workspace/api-client-react";
 import {
@@ -114,6 +115,15 @@ export default function TripDetail({ profile }: { profile: Profile }) {
         <StatusPill status={r.status} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{fmtTime(r.createdAt)} · {r.province} · {RIDE_TYPE_FALLBACK[r.rideType]}</p>
+      {r.farePiasters != null && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 px-4 py-3" data-testid="trip-fare-summary">
+          <span className="text-sm font-semibold">العرض اللي شافه الكابتن</span>
+          <strong className="font-num text-lg font-black">{(r.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+          {r.estimatedFarePiasters != null && r.estimatedFarePiasters !== r.farePiasters && (
+            <span className="w-full text-xs text-muted-foreground">السعر الأساسي: {(r.estimatedFarePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</span>
+          )}
+        </div>
+      )}
 
       {r.status !== "cancelled" && (
         <div className="mt-6 flex items-center gap-1" data-testid="progress-ride">
@@ -166,13 +176,14 @@ export default function TripDetail({ profile }: { profile: Profile }) {
             <p className="truncate font-display font-bold" data-testid="text-counterpart">{other.name}</p>
             {isCustomer && r.vehicle && <p className="text-sm text-muted-foreground">{r.vehicle} · <span className="font-num">{r.plate}</span></p>}
           </div>
-          {other.phone && <a href={`tel:${other.phone}`} data-testid="link-call" className="press inline-flex items-center gap-2 rounded-full bg-[#ffd000] px-4 py-2 text-sm font-bold text-[#10151d]"><Phone className="h-4 w-4" /> <span className="font-num">{other.phone}</span></a>}
+          {other.phone && <a href={`tel:${other.phone}`} data-testid="link-call" aria-label={isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"} className="press inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-[#ffd000] px-4 py-2 text-sm font-bold text-[#10151d]"><Phone className="h-4 w-4" /> <span>{isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"}</span><span className="font-num" dir="ltr">{other.phone}</span></a>}
         </div>
       )}
+      {r.driverId && <RideChat rideId={r.id} profile={profile} rideStatus={r.status} />}
       {isCustomer && r.status === "pending" && (
         <div className="mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-foreground/20 p-4 text-sm text-muted-foreground">
           <span className="relative flex h-3 w-3"><span className="pulse-ring absolute inset-0 rounded-full bg-[#ffd000]" /><span className="relative h-3 w-3 rounded-full bg-[#ffd000]" /></span>
-          مستنيين كابتن تجربة في {r.province} يقبل الطلب. ممكن ياخد وقت أو محدش يقبله.
+          مستنيين كابتن تجربة في {r.province} يقبل الطلب. السعر ظاهر للكباتن، ورقم الكابتن والدردشة هيظهروا بعد القبول.
         </div>
       )}
 

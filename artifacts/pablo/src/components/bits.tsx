@@ -86,6 +86,12 @@ export function RideCard({ ride, i = 0, action }: { ride: Ride; i?: number; acti
         <span className="text-xs text-muted-foreground">{relTime(ride.createdAt)}</span>
       </div>
       <RouteLine from={ride.pickup} to={ride.destination} />
+      {ride.farePiasters != null && (
+        <div className="mt-3 flex items-center justify-between rounded-xl bg-[#ffd000]/15 px-3 py-2" data-testid={`ride-fare-${ride.id}`}>
+          <span className="text-xs text-muted-foreground">السعر المعروض للكابتن</span>
+          <strong className="font-num text-sm font-black text-foreground">{(ride.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+        </div>
+      )}
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-dashed border-border pt-3 text-xs text-muted-foreground">
         <span>{ride.province} · {RIDE_TYPE_FALLBACK[ride.rideType]} · <span className="font-num">#{ride.id}</span></span>
         {action ?? (
