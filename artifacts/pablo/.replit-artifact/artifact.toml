@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "بابلو — Pablo"
+description = "تطبيق عربي لحجز الرحلات بين العميل والسائق، مع حسابات ورحلات محفوظة ومتابعة حالة الطلب، قابل للتثبيت على الهاتف."
+version = "1.0.0"
+id = "artifacts/pablo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20574
+
+[services.development]
+run = "pnpm --filter @workspace/pablo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pablo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/pablo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20574"
+BASE_PATH = "/"

@@ -1,10 +1,12 @@
-# [Project name]
+# بابلو — Pablo
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Arabic RTL ride-request pilot for Egypt, with passenger/captain accounts, shared trips, map-selected endpoints and opt-in foreground location sharing.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (use its managed workflow)
+- `pnpm --filter @workspace/pablo run dev` — web frontend (use its managed workflow)
+- `node artifacts/api-server/checks/run.mjs` — isolated route integration check with temporary test identities, creates and cleans up its own development records
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,23 +24,29 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Web frontend: `artifacts/pablo`; public manifest and offline-only service worker in `public/`.
+- API contracts: `lib/api-spec/openapi.yaml`; regenerate after editing.
+- API routes: `artifacts/api-server/src/routes`; Drizzle schemas: `lib/db/src/schema`.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- This is a pilot, not a production passenger transport operator. Do not imply verified drivers, insurance, guaranteed dispatch, fares or payments.
+- Map positions are chosen explicitly; editable address labels are not automatically geocoded.
+- OSM public tiles and OSRM public demo routing are for evaluation; commercial operation needs a suitable hosted service and capacity review.
+- Web location sharing is foreground-only, opt-in, and does not promise background GPS when the app closes or the phone locks.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Passengers request and cancel rides, captains accept/arrive/start/complete them, and passengers can rate completed trips. Clerk handles authentication. Development and production accounts are separate. The web app supports home-screen installation after publishing; it is not an APK.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+Preserve the supplied Pablo identity: Arabic RTL, navy/black and yellow. The user requested matching their shared visual reference and adding maps and tracking.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Do not cache authenticated API responses in the service worker.
+- The test identity middleware exists only in the isolated check build and must never be imported into the running API.
 
 ## Pointers
 

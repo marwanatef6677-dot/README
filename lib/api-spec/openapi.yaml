@@ -24,6 +24,172 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /config:
+    get:
+      operationId: getConfig
+      responses:
+        "200":
+          description: Public service configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppConfig"
+  /profile:
+    get:
+      operationId: getProfile
+      responses:
+        "200":
+          description: Current profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    patch:
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: Saved profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+  /rides:
+    get:
+      operationId: listRides
+      responses:
+        "200":
+          description: My trips as passenger or assigned driver
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+    post:
+      operationId: createRide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RideInput"
+      responses:
+        "201":
+          description: Trip requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+  /rides/available:
+    get:
+      operationId: listAvailableRides
+      responses:
+        "200":
+          description: Pending requests in driver's province, no passenger contact data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+  /rides/{id}:
+    get:
+      operationId: getRide
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Trip detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+  /rides/{id}/action:
+    post:
+      operationId: actOnRide
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RideAction"
+      responses:
+        "200":
+          description: Updated trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+  /routes/preview:
+    post:
+      operationId: previewRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RouteInput"
+      responses:
+        "200":
+          description: Estimated driving route from OSRM, not a fare or traffic-aware ETA
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoutePreview"
+  /rides/{id}/location:
+    get:
+      operationId: getRideLocation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Last driver position, only for ride participants while active
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingState"
+    put:
+      operationId: updateRideLocation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationInput"
+      responses:
+        "200":
+          description: Saved location, assigned driver only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingState"
+    delete:
+      operationId: stopRideTracking
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Sharing stopped and last location erased
+  /summary:
+    get:
+      operationId: getSummary
+      responses:
+        "200":
+          description: Personal ride counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +199,137 @@ components:
           type: string
       required:
         - status
+    AppConfig:
+      type: object
+      required: [provinces, rideTypes, notice]
+      properties:
+        provinces: { type: array, items: { type: string } }
+        rideTypes: { type: array, items: { $ref: "#/components/schemas/RideType" } }
+        notice: { type: string }
+    RideType:
+      type: object
+      required: [id, name, description, seats]
+      properties:
+        id: { type: string, enum: [economy, family, premium] }
+        name: { type: string }
+        description: { type: string }
+        seats: { type: integer }
+    Profile:
+      type: object
+      required: [id, name, phone, role, province, vehicle, plate, onboarded]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        role: { type: string, enum: [customer, driver] }
+        province: { type: string }
+        vehicle: { type: string }
+        plate: { type: string }
+        onboarded: { type: boolean }
+    ProfileInput:
+      type: object
+      required: [name, phone, role, province, vehicle, plate]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        phone: { type: string, pattern: '^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$' }
+        role: { type: string, enum: [customer, driver] }
+        province: { type: string, minLength: 2, maxLength: 50 }
+        vehicle: { type: string, maxLength: 80 }
+        plate: { type: string, maxLength: 30 }
+    RideInput:
+      type: object
+      required: [pickup, destination, province, rideType, pickupLat, pickupLng, destinationLat, destinationLng]
+      properties:
+        pickup: { type: string, minLength: 3, maxLength: 240 }
+        destination: { type: string, minLength: 3, maxLength: 240 }
+        province: { type: string, minLength: 2, maxLength: 50 }
+        rideType: { type: string, enum: [economy, family, premium] }
+        pickupLat: { type: number, minimum: -90, maximum: 90 }
+        pickupLng: { type: number, minimum: -180, maximum: 180 }
+        destinationLat: { type: number, minimum: -90, maximum: 90 }
+        destinationLng: { type: number, minimum: -180, maximum: 180 }
+        notes: { type: string, maxLength: 500 }
+    RideAction:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [accept, arrive, start, complete, cancel, rate] }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+    Ride:
+      type: object
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, pickupLat, pickupLng, destinationLat, destinationLng]
+      properties:
+        id: { type: integer }
+        customerId: { type: string }
+        driverId: { type: [string, "null"] }
+        customerName: { type: string }
+        driverName: { type: [string, "null"] }
+        driverPhone: { type: [string, "null"] }
+        customerPhone: { type: [string, "null"] }
+        vehicle: { type: [string, "null"] }
+        plate: { type: [string, "null"] }
+        pickup: { type: string }
+        destination: { type: string }
+        province: { type: string }
+        rideType: { type: string, enum: [economy, family, premium] }
+        status: { type: string, enum: [pending, accepted, arrived, in_progress, completed, cancelled] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        notes: { type: string }
+        rating: { type: [integer, "null"] }
+        pickupLat: { type: [number, "null"] }
+        pickupLng: { type: [number, "null"] }
+        destinationLat: { type: [number, "null"] }
+        destinationLng: { type: [number, "null"] }
+    RouteInput:
+      type: object
+      required: [pickupLat, pickupLng, destinationLat, destinationLng]
+      properties:
+        pickupLat: { type: number, minimum: -90, maximum: 90 }
+        pickupLng: { type: number, minimum: -180, maximum: 180 }
+        destinationLat: { type: number, minimum: -90, maximum: 90 }
+        destinationLng: { type: number, minimum: -180, maximum: 180 }
+    RoutePreview:
+      type: object
+      required: [distanceMeters, durationSeconds, coordinates]
+      properties:
+        distanceMeters: { type: number }
+        durationSeconds: { type: number }
+        coordinates:
+          type: array
+          description: GeoJSON longitude then latitude pairs
+          items:
+            type: array
+            items: { type: number }
+    LocationInput:
+      type: object
+      required: [latitude, longitude, accuracy]
+      properties:
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        accuracy: { type: number, minimum: 0, maximum: 100000 }
+    TrackingState:
+      type: object
+      required: [location]
+      properties:
+        location:
+          anyOf:
+            - $ref: "#/components/schemas/DriverLocation"
+            - type: "null"
+    DriverLocation:
+      type: object
+      required: [latitude, longitude, accuracy, updatedAt]
+      properties:
+        latitude: { type: number }
+        longitude: { type: number }
+        accuracy: { type: number }
+        updatedAt: { type: string }
+    Summary:
+      type: object
+      required: [total, completed, active, cancelled]
+      properties:
+        total: { type: integer }
+        completed: { type: integer }
+        active: { type: integer }
+        cancelled: { type: integer }
 

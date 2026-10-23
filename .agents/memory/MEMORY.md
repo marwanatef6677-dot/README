@@ -1,0 +1,1 @@
+- [React dependency cache](react-dependency-cache.md) — after React upgrades, Vite can retain an old React DOM bundle despite matching installed versions.
