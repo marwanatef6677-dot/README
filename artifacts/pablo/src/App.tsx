@@ -20,6 +20,7 @@ import Book from "@/pages/book";
 import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
 import Account from "@/pages/account";
+import CustomerTerms from "@/pages/customer-terms";
 import OwnerAdminPage from "@/pages/owner-admin";
 import { OwnerSignInPage, SignInPage, SignUpPage } from "@/pages/auth";
 
@@ -118,15 +119,16 @@ function PageSkeleton() {
   return <div className="mx-auto max-w-4xl space-y-4 px-4 py-8"><Skeleton className="h-10 w-64" /><Skeleton className="h-72 rounded-[2rem]" /><Skeleton className="h-24" /></div>;
 }
 
-function WithProfile({ page: Page, allowOnboarding }: { page: ComponentType<{ profile: Profile }>; allowOnboarding?: boolean }) {
+function WithProfile({ page: Page, allowOnboarding, requireCustomerTerms }: { page: ComponentType<{ profile: Profile }>; allowOnboarding?: boolean; requireCustomerTerms?: boolean }) {
   const profile = useProfile();
   if (profile.isLoading) return <PageSkeleton />;
   if (profile.isError || !profile.data) return <div className="mx-auto max-w-xl px-4 py-12"><ErrorState message={errorText(profile.error, "مش قادرين نجيب حسابك.")} onRetry={() => profile.refetch()} /></div>;
   if (!profile.data.onboarded && !allowOnboarding) return <Redirect to="/account" />;
+  if (requireCustomerTerms && profile.data.role === "customer" && !profile.data.customerTermsAccepted) return <Redirect to="/account" />;
   return <Page profile={profile.data} />;
 }
 
-function Protected(props: { page: ComponentType<{ profile: Profile }>; allowOnboarding?: boolean }) {
+function Protected(props: { page: ComponentType<{ profile: Profile }>; allowOnboarding?: boolean; requireCustomerTerms?: boolean }) {
   return (
     <>
       <Show when="signed-in"><WithProfile {...props} /></Show>
@@ -171,12 +173,13 @@ function Routes() {
       <Route path="/owner/sign-in/*?" component={OwnerSignInPage} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
+      <Route path="/terms" component={CustomerTerms} />
       <Route>
         <Shell>
           <RoutedErrorBoundary>
             <Switch>
               <Route path="/" component={HomeRedirect} />
-              <Route path="/book">{() => <Protected page={Book} />}</Route>
+              <Route path="/book">{() => <Protected page={Book} requireCustomerTerms />}</Route>
               <Route path="/trips">{() => <Protected page={Trips} />}</Route>
               <Route path="/trips/:id">{() => <Protected page={TripDetail} />}</Route>
               <Route path="/account">{() => <Protected page={Account} allowOnboarding />}</Route>

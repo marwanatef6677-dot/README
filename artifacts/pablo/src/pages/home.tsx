@@ -109,7 +109,10 @@ export default function Home() {
       <footer className="border-t border-foreground/10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm text-muted-foreground md:flex-row">
           <span className="flex items-center gap-2"><Monogram className="h-6 w-6" /> بابلو — رحلتك أسهل .. مع بابلو</span>
-          <span>نسخة تجريبية · مفيش دفع أونلاين</span>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/terms" data-testid="link-footer-terms" className="underline underline-offset-4">شروط استخدام العميل</Link>
+            <span>نسخة تجريبية · مفيش دفع أونلاين</span>
+          </div>
         </div>
       </footer>
     </div>

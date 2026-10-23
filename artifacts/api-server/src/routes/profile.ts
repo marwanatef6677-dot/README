@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { db, profiles, rides } from "@workspace/db";
 import { GetConfigResponse, GetProfileResponse, UpdateProfileBody, UpdateProfileResponse, GetSummaryResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
-import { provinces, activeFor, belongsTo, activeStates, AppError } from "../lib/pablo";
+import { provinces, activeFor, belongsTo, activeStates, AppError, CUSTOMER_TERMS_VERSION, hasCurrentCustomerTerms } from "../lib/pablo";
 
 const router: IRouter = Router();
 const RIDES_PER_LEVEL = 10;
@@ -16,9 +16,17 @@ async function profileJson(profile: typeof profiles.$inferSelect) {
   }).from(rides).where(eq(rides.driverId, profile.id));
   const completedRides = stats?.completedRides ?? 0;
   const driverLevel = Math.min(MAX_DRIVER_LEVEL, Math.floor(completedRides / RIDES_PER_LEVEL));
-  const { avatarPhotoPath, captainVehiclePhotoPath, ...safeProfile } = profile;
+  const {
+    avatarPhotoPath, captainVehiclePhotoPath, customerAge18Attested,
+    customerTermsSignature, customerTermsAcceptedAt, customerTermsVersion,
+    ...safeProfile
+  } = profile;
   return {
     ...safeProfile,
+    customerTermsAccepted: hasCurrentCustomerTerms({
+      customerAge18Attested, customerTermsSignature, customerTermsAcceptedAt, customerTermsVersion,
+    }),
+    customerTermsAcceptedAt: customerTermsAcceptedAt?.toISOString() ?? null,
     hasAvatarPhoto: Boolean(avatarPhotoPath),
     hasCaptainVehiclePhoto: Boolean(captainVehiclePhotoPath),
     driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
@@ -55,7 +63,13 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
   const parsed = UpdateProfileBody.safeParse(normalized);
   if (!parsed.success) throw new AppError(400, "راجع الاسم ورقم الموبايل المصري والبيانات المطلوبة.");
   const data = parsed.data;
-  const { driverTermsAccepted, ...profileData } = data;
+  const {
+    driverTermsAccepted,
+    customerAge18Attested,
+    customerTermsAccepted,
+    customerTermsSignature,
+    ...profileData
+  } = data;
   if (!provinces.includes(data.province)) throw new AppError(400, "اختار محافظة من القائمة.");
   if (data.role === "driver" && (!data.vehicle || !data.plate)) throw new AppError(400, "اكتب نوع العربية ورقم اللوحة الأول.");
   if (data.role === "driver" && !driverTermsAccepted) {
@@ -63,11 +77,37 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
   }
   const result = await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
+    const alreadyAcceptedCurrentTerms = hasCurrentCustomerTerms(existing);
+    let customerTermsUpdate: Partial<typeof profiles.$inferInsert> = {};
+    if (data.role === "customer" && !alreadyAcceptedCurrentTerms) {
+      if (customerAge18Attested !== true || customerTermsAccepted !== true) {
+        throw new AppError(400, "أقر أن عمرك ١٨ سنة أو أكثر ووافق على شروط العميل قبل المتابعة.");
+      }
+      const signedName = (customerTermsSignature ?? "").trim();
+      const normalizeName = (value: string) => value.normalize("NFKC").replace(/\s+/g, " ").trim();
+      if (!signedName || normalizeName(signedName) !== normalizeName(data.name)) {
+        throw new AppError(400, "اكتب اسمك الكامل كتوقيع مطابق للاسم المسجل.");
+      }
+      customerTermsUpdate = {
+        customerAge18Attested: true,
+        customerTermsSignature: signedName,
+        customerTermsAcceptedAt: new Date(),
+        customerTermsVersion: CUSTOMER_TERMS_VERSION,
+      };
+    }
     if (data.role === "driver" && !existing.captainVehiclePhotoPath) {
       throw new AppError(400, "ارفع صورة واضحة ليك مع العربية أو الموتوسيكل قبل تسجيل حساب الكابتن.");
     }
     const [active] = await tx.select({ id: rides.id }).from(rides).where(activeFor(existing.id)).limit(1);
-    if (active) throw new AppError(409, "كمّل أو الغي الرحلة الحالية قبل تعديل بيانات الحساب.");
+    const profileUnchangedDuringConsent = data.name === existing.name
+      && data.phone === existing.phone
+      && data.role === existing.role
+      && data.province === existing.province
+      && data.vehicle === existing.vehicle
+      && data.vehicleType === existing.vehicleType
+      && data.plate === existing.plate;
+    const termsOnlyAcceptance = Boolean(customerTermsUpdate.customerTermsAcceptedAt) && profileUnchangedDuringConsent;
+    if (active && !termsOnlyAcceptance) throw new AppError(409, "كمّل أو الغي الرحلة الحالية قبل تعديل بيانات الحساب.");
     const needsReview = data.role === "driver" && (
       existing.role !== "driver" || existing.name !== data.name || existing.phone !== data.phone
       || existing.province !== data.province || existing.vehicle !== data.vehicle
@@ -75,6 +115,7 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
     );
     const [updated] = await tx.update(profiles).set({
       ...profileData,
+      ...customerTermsUpdate,
       onboarded: true,
       driverTermsAcceptedAt: data.role === "driver" && driverTermsAccepted
         ? new Date() : existing.driverTermsAcceptedAt,

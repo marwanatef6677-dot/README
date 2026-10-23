@@ -19,6 +19,9 @@ export interface Profile {
   vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
+  customerTermsAccepted: boolean;
+  /** @nullable */
+  customerTermsAcceptedAt: string | null;
   hasAvatarPhoto: boolean;
   hasCaptainVehiclePhoto: boolean;
   captainPhotoVerified: boolean;

@@ -37,6 +37,9 @@ export function SignUpPage() {
         بعد التسجيل بالبريد وكلمة المرور، كمّل اسمك ورقم موبايل مصري صحيح في بيانات حسابك قبل استخدام الرحلات.
       </p>
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} fallbackRedirectUrl={`${basePath}/account`} />
+      <p className="w-[440px] max-w-full text-center text-xs leading-relaxed text-muted-foreground">
+        بإنشاء الحساب، تقدر تراجع <Link href="/terms" className="font-semibold underline">مسودة شروط استخدام العميل</Link> قبل إكمال بياناتك والموافقة عليها.
+      </p>
     </AuthFrame>
   );
 }

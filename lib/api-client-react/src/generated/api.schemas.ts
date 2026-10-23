@@ -75,6 +75,9 @@ export interface Profile {
   vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
+  customerTermsAccepted: boolean;
+  /** @nullable */
+  customerTermsAcceptedAt: string | null;
   hasAvatarPhoto: boolean;
   hasCaptainVehiclePhoto: boolean;
   captainPhotoVerified: boolean;
@@ -137,6 +140,10 @@ export interface ProfileInput {
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;
+  customerAge18Attested?: boolean;
+  customerTermsAccepted?: boolean;
+  /** @maxLength 80 */
+  customerTermsSignature?: string;
 }
 
 export type ProfilePhotoUploadRequestPurpose = typeof ProfilePhotoUploadRequestPurpose[keyof typeof ProfilePhotoUploadRequestPurpose];

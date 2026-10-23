@@ -3,7 +3,7 @@ import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { db, profiles, rides, rideLocations, walletLedger } from "@workspace/db";
 import { CreateRideBody, CreateRideResponse, ListRidesResponse, ListAvailableRidesResponse, GetRideParams, GetRideResponse, ActOnRideParams, ActOnRideBody, ActOnRideResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
-import { activeFor, belongsTo, provinces, rideJson, AppError } from "../lib/pablo";
+import { activeFor, belongsTo, provinces, rideJson, AppError, hasCurrentCustomerTerms } from "../lib/pablo";
 import { calculateFarePiasters, getMinimumFarePiasters, getRoutePreview } from "../lib/routing";
 
 const router: IRouter = Router();
@@ -63,6 +63,7 @@ router.post("/rides", async (req, res): Promise<void> => {
   const record = await db.transaction(async (tx) => {
     const [profile] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
     if (!profile.onboarded || profile.role !== "customer") throw new AppError(403, "كمّل بياناتك واختار وضع العميل عشان تطلب رحلة.");
+    if (!hasCurrentCustomerTerms(profile)) throw new AppError(403, "وافق على شروط العميل وأكد أن عمرك ١٨ سنة أو أكثر قبل طلب الرحلة.");
     const [active] = await tx.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
     if (active) throw new AppError(409, "عندك رحلة حالية. كمّلها أو الغيها قبل طلب رحلة جديدة.");
     const [ride] = await tx.insert(rides).values({

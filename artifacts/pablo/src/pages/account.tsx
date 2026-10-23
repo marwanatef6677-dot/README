@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bike, CarFront, Check, Download, ImagePlus, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
@@ -14,8 +14,13 @@ import { errorText } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
 
 const PHONE = /^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/;
-type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean };
+type Form = {
+  name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string;
+  vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean;
+  customerAge18Attested: boolean; customerTermsAccepted: boolean; customerTermsSignature: string;
+};
 type FormErrors = Partial<Record<keyof Form | "vehiclePhoto", string>>;
+const normalizeSignature = (value: string) => value.normalize("NFKC").replace(/\s+/g, " ").trim();
 
 function InstallCard() {
   const { canPrompt, standalone, isIOS, install } = useInstall();
@@ -55,7 +60,14 @@ export default function Account({ profile }: { profile: Profile }) {
   const invalidate = useInvalidateRides();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, vehicleType: profile.vehicleType, plate: profile.plate, driverTermsAccepted: profile.driverTermsAccepted });
+  const [f, setF] = useState<Form>({
+    name: profile.name, phone: profile.phone, role: profile.role, province: profile.province,
+    vehicle: profile.vehicle, vehicleType: profile.vehicleType, plate: profile.plate,
+    driverTermsAccepted: profile.driverTermsAccepted,
+    customerAge18Attested: profile.customerTermsAccepted,
+    customerTermsAccepted: profile.customerTermsAccepted,
+    customerTermsSignature: "",
+  });
   const [errs, setErrs] = useState<FormErrors>({});
   const [serverErr, setServerErr] = useState("");
   const [photoBusy, setPhotoBusy] = useState<"avatar" | "captain_vehicle" | null>(null);
@@ -83,14 +95,26 @@ export default function Account({ profile }: { profile: Profile }) {
     if (f.role === "driver" && f.plate.trim().length < 2) er.plate = "اكتب رقم اللوحة";
     if (f.role === "driver" && !profile.hasCaptainVehiclePhoto) er.vehiclePhoto = "ارفع صورة ليك واقف جنب عربيتك أو موتوسيكل قبل تسجيل الكابتن";
     if (f.role === "driver" && !f.driverTermsAccepted) er.driverTermsAccepted = "وافق على إقرار النسخة التجريبية قبل تسجيل الكابتن";
+    if (f.role === "customer" && !profile.customerTermsAccepted) {
+      if (!f.customerAge18Attested) er.customerAge18Attested = "أكد أن عمرك ١٨ سنة أو أكثر.";
+      if (!f.customerTermsAccepted) er.customerTermsAccepted = "وافق على شروط استخدام بابلو.";
+      if (normalizeSignature(f.customerTermsSignature) !== normalizeSignature(name)) {
+        er.customerTermsSignature = "اكتب اسمك المسجل بالكامل كتوقيع.";
+      }
+    }
     if (f.vehicle.length > 80) er.vehicle = "أقصى حد ٨٠ حرف";
     if (f.plate.length > 30) er.plate = "أقصى حد ٣٠ حرف";
     setErrs(er);
     if (Object.keys(er).length) return;
-     update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), vehicleType: f.vehicleType, plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted } }, {
+     const customerTerms = f.role === "customer" && !profile.customerTermsAccepted ? {
+       customerAge18Attested: f.customerAge18Attested,
+       customerTermsAccepted: f.customerTermsAccepted,
+       customerTermsSignature: f.customerTermsSignature.trim(),
+     } : {};
+     update.mutate({ data: { name, phone, role: f.role, province: f.province, vehicle: f.vehicle.trim(), vehicleType: f.vehicleType, plate: f.plate.trim(), driverTermsAccepted: f.role === "driver" && f.driverTermsAccepted, ...customerTerms } }, {
       onSuccess: (p) => {
         qc.setQueryData(getGetProfileQueryKey(), p); invalidate();
-        if (onboarding) { toast({ title: `أهلاً بيك يا ${p.name.split(" ")[0]}` }); setLocation("/book"); }
+         if (onboarding || (f.role === "customer" && p.customerTermsAccepted)) { toast({ title: `أهلاً بيك يا ${p.name.split(" ")[0]}` }); setLocation("/book"); }
         else toast({ title: "اتحفظت بياناتك" });
       },
       onError: (err) => setServerErr(errorText(err)),
@@ -126,6 +150,9 @@ export default function Account({ profile }: { profile: Profile }) {
   }
 
   const Err = ({ k }: { k: keyof Form }) => errs[k] ? <p className="mt-1 text-xs text-destructive">{errs[k]}</p> : null;
+  const canSubmitTermsWhileLocked = f.role === "customer" && !profile.customerTermsAccepted
+    && f.customerAge18Attested && f.customerTermsAccepted
+    && normalizeSignature(f.customerTermsSignature) === normalizeSignature(f.name);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -220,8 +247,35 @@ export default function Account({ profile }: { profile: Profile }) {
               </div>
             )}
           </fieldset>
+          {f.role === "customer" && !profile.customerTermsAccepted && <section className="space-y-4 rounded-2xl border border-[#ffd000]/50 bg-[#ffd000]/10 p-4" data-testid="section-customer-terms">
+            <div>
+              <h2 className="font-display text-lg font-bold">اتفاق استخدام العميل</h2>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">اقرأ <Link href="/terms" className="font-bold underline" data-testid="link-customer-terms">شروط استخدام بابلو</Link> قبل الموافقة.</p>
+            </div>
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
+              <input type="checkbox" data-testid="checkbox-customer-age" className="mt-1 h-4 w-4 accent-[#10151d]" checked={f.customerAge18Attested} onChange={(e) => set("customerAge18Attested", e.target.checked)} />
+              <span>أقرّ أن عمري ١٨ سنة أو أكثر وأن البيانات التي أدخلتها صحيحة.</span>
+            </label>
+            <Err k="customerAge18Attested" />
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
+              <input type="checkbox" data-testid="checkbox-customer-terms" className="mt-1 h-4 w-4 accent-[#10151d]" checked={f.customerTermsAccepted} onChange={(e) => set("customerTermsAccepted", e.target.checked)} />
+              <span>قرأت شروط استخدام بابلو وأوافق عليها.</span>
+            </label>
+            <Err k="customerTermsAccepted" />
+            <div>
+              <label htmlFor="customer-terms-signature" className="mb-1.5 block text-sm font-semibold">اكتب اسمك المسجل كتوقيع إلكتروني</label>
+              <input id="customer-terms-signature" data-testid="input-customer-terms-signature" className={fieldCls} autoComplete="name" maxLength={80} value={f.customerTermsSignature} onChange={(e) => set("customerTermsSignature", e.target.value)} placeholder={f.name || "اسمك الكامل"} />
+              <Err k="customerTermsSignature" />
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">سيُحفظ الاسم المكتوب وإقرار السن ووقت الموافقة وإصدار الشروط. هذا إقرار ذاتي ولا يتضمن تحققًا من تاريخ الميلاد أو الهوية.</p>
+          </section>}
+          {f.role === "customer" && profile.customerTermsAccepted && <div className="rounded-2xl border border-emerald-700/20 bg-emerald-700/5 p-4 text-sm" data-testid="text-customer-terms-signed">
+            <p className="font-semibold">تم تسجيل موافقتك على شروط العميل.</p>
+            {profile.customerTermsAcceptedAt && <p className="mt-1 text-xs text-muted-foreground">وقت الموافقة: {new Date(profile.customerTermsAcceptedAt).toLocaleString("ar-EG")}</p>}
+            <Link href="/terms" className="mt-2 inline-block text-xs font-bold underline">عرض شروط الاستخدام</Link>
+          </div>}
           {serverErr && <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive" data-testid="text-profile-error">{serverErr}</p>}
-          <Btn type="submit" variant={onboarding ? "yellow" : "dark"} className="h-14 w-full text-lg" data-testid="button-save-profile" disabled={locked || update.isPending || photoBusy !== null || (f.role === "driver" && !profile.hasCaptainVehiclePhoto)}>
+          <Btn type="submit" variant={onboarding ? "yellow" : "dark"} className="h-14 w-full text-lg" data-testid="button-save-profile" disabled={(locked && !canSubmitTermsWhileLocked) || update.isPending || photoBusy !== null || (f.role === "driver" && !profile.hasCaptainVehiclePhoto)}>
             {update.isPending && <Loader2 className="h-5 w-5 animate-spin" />} {onboarding ? "يلا نبدأ" : "احفظ التعديلات"}
           </Btn>
         </form>

@@ -56,6 +56,8 @@ export const GetProfileResponse = zod.object({
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
+  "customerTermsAccepted": zod.boolean(),
+  "customerTermsAcceptedAt": zod.string().nullable(),
   "hasAvatarPhoto": zod.boolean(),
   "hasCaptainVehiclePhoto": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
@@ -80,6 +82,8 @@ export const updateProfileBodyVehicleMax = 80;
 
 export const updateProfileBodyPlateMax = 30;
 
+export const updateProfileBodyCustomerTermsSignatureMax = 80;
+
 
 
 export const UpdateProfileBody = zod.object({
@@ -90,7 +94,10 @@ export const UpdateProfileBody = zod.object({
   "vehicle": zod.string().max(updateProfileBodyVehicleMax),
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string().max(updateProfileBodyPlateMax),
-  "driverTermsAccepted": zod.boolean()
+  "driverTermsAccepted": zod.boolean(),
+  "customerAge18Attested": zod.boolean().optional(),
+  "customerTermsAccepted": zod.boolean().optional(),
+  "customerTermsSignature": zod.string().max(updateProfileBodyCustomerTermsSignatureMax).optional()
 })
 
 export const updateProfileResponseDriverCompletedRidesMin = 0;
@@ -115,6 +122,8 @@ export const UpdateProfileResponse = zod.object({
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
+  "customerTermsAccepted": zod.boolean(),
+  "customerTermsAcceptedAt": zod.string().nullable(),
   "hasAvatarPhoto": zod.boolean(),
   "hasCaptainVehiclePhoto": zod.boolean(),
   "captainPhotoVerified": zod.boolean(),
