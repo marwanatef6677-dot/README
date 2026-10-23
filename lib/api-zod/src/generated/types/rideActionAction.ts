@@ -16,4 +16,5 @@ export const RideActionAction = {
   complete: 'complete',
   cancel: 'cancel',
   rate: 'rate',
+  check_in: 'check_in',
 } as const;

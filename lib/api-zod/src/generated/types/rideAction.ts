@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { RideActionAction } from './rideActionAction';
+import type { RideActionCheckInStatus } from './rideActionCheckInStatus';
 
 export interface RideAction {
   action: RideActionAction;
@@ -14,4 +15,32 @@ export interface RideAction {
      * @maximum 5
      */
   rating?: number;
+  checkInStatus?: RideActionCheckInStatus;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  captainRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  drivingRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  cleanlinessRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  comfortRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  airConditioningRating?: number;
+  /** @maxLength 500 */
+  feedbackNote?: string;
 }

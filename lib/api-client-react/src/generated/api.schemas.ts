@@ -61,6 +61,24 @@ export interface Profile {
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;
   walletBalancePiasters: number;
+  /** @minimum 0 */
+  driverCompletedRides: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  driverRating: number | null;
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  driverLevel: number;
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  ridesToNextLevel: number;
 }
 
 export type ProfileInputRole = typeof ProfileInputRole[keyof typeof ProfileInputRole];
@@ -152,6 +170,15 @@ export const RideActionAction = {
   complete: 'complete',
   cancel: 'cancel',
   rate: 'rate',
+  check_in: 'check_in',
+} as const;
+
+export type RideActionCheckInStatus = typeof RideActionCheckInStatus[keyof typeof RideActionCheckInStatus];
+
+
+export const RideActionCheckInStatus = {
+  all_good: 'all_good',
+  need_help: 'need_help',
 } as const;
 
 export interface RideAction {
@@ -161,6 +188,34 @@ export interface RideAction {
      * @maximum 5
      */
   rating?: number;
+  checkInStatus?: RideActionCheckInStatus;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  captainRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  drivingRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  cleanlinessRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  comfortRating?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  airConditioningRating?: number;
+  /** @maxLength 500 */
+  feedbackNote?: string;
 }
 
 export type RideRideType = typeof RideRideType[keyof typeof RideRideType];
@@ -182,6 +237,18 @@ export const RideStatus = {
   in_progress: 'in_progress',
   completed: 'completed',
   cancelled: 'cancelled',
+} as const;
+
+/**
+ * @nullable
+ */
+export type RideCheckInStatus = typeof RideCheckInStatus[keyof typeof RideCheckInStatus] | null;
+
+
+export const RideCheckInStatus = {
+  all_good: 'all_good',
+  need_help: 'need_help',
+  null: 'null',
 } as const;
 
 /**
@@ -224,6 +291,41 @@ export interface Ride {
   notes: string;
   /** @nullable */
   rating: number | null;
+  /** @nullable */
+  checkInStatus: RideCheckInStatus;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  captainRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  drivingRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  cleanlinessRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  comfortRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  airConditioningRating: number | null;
+  feedbackNote: string;
+  /** @nullable */
+  feedbackSubmittedAt: string | null;
   /** @nullable */
   pickupLat: number | null;
   /** @nullable */

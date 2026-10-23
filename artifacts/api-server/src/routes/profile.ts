@@ -1,11 +1,31 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, profiles, rides } from "@workspace/db";
 import { GetConfigResponse, GetProfileResponse, UpdateProfileBody, UpdateProfileResponse, GetSummaryResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
 import { provinces, activeFor, belongsTo, activeStates, AppError } from "../lib/pablo";
 
 const router: IRouter = Router();
+const RIDES_PER_LEVEL = 10;
+const MAX_DRIVER_LEVEL = 10;
+
+async function profileJson(profile: typeof profiles.$inferSelect) {
+  const [stats] = await db.select({
+    completedRides: sql<number>`count(*) filter (where ${rides.status} = 'completed')::int`,
+    driverRating: sql<number | null>`round(avg(${rides.captainRating})::numeric, 1)::float8`,
+  }).from(rides).where(eq(rides.driverId, profile.id));
+  const completedRides = stats?.completedRides ?? 0;
+  const driverLevel = Math.min(MAX_DRIVER_LEVEL, Math.floor(completedRides / RIDES_PER_LEVEL));
+  return {
+    ...profile,
+    driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
+    driverCompletedRides: completedRides,
+    driverRating: stats?.driverRating == null ? null : Number(stats.driverRating),
+    driverLevel,
+    ridesToNextLevel: driverLevel >= MAX_DRIVER_LEVEL ? 0 : RIDES_PER_LEVEL - completedRides % RIDES_PER_LEVEL,
+  };
+}
+
 router.get("/config", (_req, res) => {
   res.json(GetConfigResponse.parse({
     provinces,
@@ -19,10 +39,7 @@ router.get("/config", (_req, res) => {
 });
 router.get("/profile", requirePabloAuth, async (_req, res): Promise<void> => {
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, res.locals.userId));
-  res.json(GetProfileResponse.parse({
-    ...profile,
-    driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
-  }));
+  res.json(GetProfileResponse.parse(await profileJson(profile)));
 });
 router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
   const normalized = Object.fromEntries(Object.entries(req.body ?? {}).map(([k,v]) => [k, typeof v === "string" ? v.trim() : v]));
@@ -68,10 +85,7 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
     }).where(eq(profiles.id, existing.id)).returning();
     return updated;
   });
-  res.json(UpdateProfileResponse.parse({
-    ...result,
-    driverTermsAccepted: Boolean(result.driverTermsAcceptedAt),
-  }));
+  res.json(UpdateProfileResponse.parse(await profileJson(result)));
 });
 router.get("/summary", requirePabloAuth, async (_req, res): Promise<void> => {
   const records = await db.select({ status: rides.status }).from(rides).where(belongsTo(res.locals.userId));

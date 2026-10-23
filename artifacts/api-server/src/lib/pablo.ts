@@ -20,6 +20,7 @@ export function rideJson(ride: RideRecord, queue = false, showCommission = false
     notes: queue ? "" : ride.notes,
     createdAt: ride.createdAt.toISOString(),
     updatedAt: ride.updatedAt.toISOString(),
+    feedbackSubmittedAt: ride.feedbackSubmittedAt?.toISOString() ?? null,
   };
 }
 export class AppError extends Error {

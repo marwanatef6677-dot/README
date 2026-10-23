@@ -296,7 +296,7 @@ components:
         seats: { type: integer }
     Profile:
       type: object
-      required: [id, name, phone, role, province, vehicle, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters]
+      required: [id, name, phone, role, province, vehicle, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
       properties:
         id: { type: string }
         name: { type: string }
@@ -309,6 +309,10 @@ components:
         driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
         driverTermsAccepted: { type: boolean }
         walletBalancePiasters: { type: integer }
+        driverCompletedRides: { type: integer, minimum: 0 }
+        driverRating: { type: [number, "null"], minimum: 1, maximum: 5 }
+        driverLevel: { type: integer, minimum: 0, maximum: 10 }
+        ridesToNextLevel: { type: integer, minimum: 0, maximum: 10 }
     ProfileInput:
       type: object
       required: [name, phone, role, province, vehicle, plate, driverTermsAccepted]
@@ -337,11 +341,18 @@ components:
       type: object
       required: [action]
       properties:
-        action: { type: string, enum: [accept, arrive, start, complete, cancel, rate] }
+        action: { type: string, enum: [accept, arrive, start, complete, cancel, rate, check_in] }
         rating: { type: integer, minimum: 1, maximum: 5 }
+        checkInStatus: { type: string, enum: [all_good, need_help] }
+        captainRating: { type: integer, minimum: 1, maximum: 5 }
+        drivingRating: { type: integer, minimum: 1, maximum: 5 }
+        cleanlinessRating: { type: integer, minimum: 1, maximum: 5 }
+        comfortRating: { type: integer, minimum: 1, maximum: 5 }
+        airConditioningRating: { type: integer, minimum: 1, maximum: 5 }
+        feedbackNote: { type: string, maxLength: 500 }
     Ride:
       type: object
-      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
       properties:
         id: { type: integer }
         customerId: { type: string }
@@ -361,6 +372,14 @@ components:
         updatedAt: { type: string }
         notes: { type: string }
         rating: { type: [integer, "null"] }
+        checkInStatus: { type: [string, "null"], enum: [all_good, need_help, "null"] }
+        captainRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        drivingRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        cleanlinessRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        comfortRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        airConditioningRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+        feedbackNote: { type: string }
+        feedbackSubmittedAt: { type: ["string", "null"] }
         pickupLat: { type: [number, "null"] }
         pickupLng: { type: [number, "null"] }
         destinationLat: { type: [number, "null"] }

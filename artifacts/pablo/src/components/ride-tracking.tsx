@@ -50,7 +50,12 @@ export function RideMap({ ride }: { ride: Ride }) {
   const driver: DriverPin | null = useMemo(() => (l ? { lat: l.latitude, lng: l.longitude, accuracy: l.accuracy, stale } : null), [l, stale]);
 
   if (!pickup && !destination) {
-    return <div className="rounded-[1.75rem] border border-dashed border-foreground/20 p-5 text-sm text-muted-foreground" data-testid="text-no-map">الرحلة دي اتطلبت قبل الخريطة، فمفيش نقط محفوظة عليها.</div>;
+    return (
+      <div className="rounded-[1.75rem] border border-dashed border-foreground/20 bg-muted/30 p-5 text-sm" data-testid="text-no-map">
+        <p className="font-semibold text-foreground">الخريطة مش متاحة للرحلة دي</p>
+        <p className="mt-1 leading-relaxed text-muted-foreground">الطلب اتسجل قبل حفظ المواقع على الخريطة، فمش هنعرض مكانًا غير مؤكد. الطلبات الجديدة بتحفظ نقطتي الركوب والوصول من الخريطة.</p>
+      </div>
+    );
   }
 
   return (

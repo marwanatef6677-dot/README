@@ -20,4 +20,22 @@ export interface Profile {
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;
   walletBalancePiasters: number;
+  /** @minimum 0 */
+  driverCompletedRides: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  driverRating: number | null;
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  driverLevel: number;
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  ridesToNextLevel: number;
 }

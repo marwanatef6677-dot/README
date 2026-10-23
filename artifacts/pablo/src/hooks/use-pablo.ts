@@ -19,7 +19,7 @@ export function useConfig() {
 
 export function useProfile() {
   const { signedIn } = useSignedIn();
-  return useGetProfile({ query: { enabled: signedIn, queryKey: getGetProfileQueryKey(), retry: 1 } });
+  return useGetProfile({ query: { enabled: signedIn, queryKey: getGetProfileQueryKey(), refetchInterval: signedIn ? 15000 : false, retry: 1 } });
 }
 
 export function useMyRides() {

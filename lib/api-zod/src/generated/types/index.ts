@@ -23,6 +23,8 @@ export * from './profileRole';
 export * from './ride';
 export * from './rideAction';
 export * from './rideActionAction';
+export * from './rideActionCheckInStatus';
+export * from './rideCheckInStatus';
 export * from './rideCommissionState';
 export * from './rideInput';
 export * from './rideInputRideType';

@@ -16,6 +16,14 @@ import { RIDE_TYPE_FALLBACK, STATUS_HINT, STEPS, errorText, fmtTime } from "@/li
 import { cn } from "@/lib/utils";
 
 const STEP_LABEL = ["الطلب", "قبول", "وصول", "في الطريق", "خلصت"];
+const FEEDBACK_FIELDS = [
+  { key: "captainRating", label: "تعامل الكابتن واحترامه" },
+  { key: "drivingRating", label: "أسلوب القيادة والأمان" },
+  { key: "cleanlinessRating", label: "نظافة العربية" },
+  { key: "comfortRating", label: "راحة المشوار" },
+  { key: "airConditioningRating", label: "التكييف والجو داخل العربية" },
+] as const;
+type FeedbackKey = (typeof FEEDBACK_FIELDS)[number]["key"];
 const DONE_MSG: Partial<Record<RideActionAction, string>> = {
   accept: "قبلت الطلب", arrive: "سجّلنا إنك وصلت", start: "الرحلة بدأت", complete: "الرحلة خلصت", cancel: "الطلب اتلغى", rate: "شكراً على تقييمك",
 };
@@ -29,12 +37,51 @@ export default function TripDetail({ profile }: { profile: Profile }) {
   const { toast } = useToast();
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [stars, setStars] = useState(0);
+  const [feedbackRatings, setFeedbackRatings] = useState<Record<FeedbackKey, number>>({
+    captainRating: 0,
+    drivingRating: 0,
+    cleanlinessRating: 0,
+    comfortRating: 0,
+    airConditioningRating: 0,
+  });
+  const [feedbackNote, setFeedbackNote] = useState("");
   const [err, setErr] = useState("");
 
   function run(action: RideActionAction, rating?: number) {
     setErr("");
     act.mutate({ id, data: rating ? { action, rating } : { action } }, {
       onSuccess: () => { invalidate(id); toast({ title: DONE_MSG[action] }); },
+      onError: (e) => { invalidate(id); setErr(errorText(e)); },
+    });
+  }
+
+  function submitCheckIn(checkInStatus: "all_good" | "need_help") {
+    setErr("");
+    act.mutate({ id, data: { action: "check_in", checkInStatus } }, {
+      onSuccess: () => {
+        invalidate(id);
+        toast({ title: checkInStatus === "all_good" ? "شكرًا، سعداء إن الرحلة ماشية كويس" : "سجلنا إنك محتاج مساعدة", description: checkInStatus === "need_help" ? "لو الموضوع عاجل، اتصل بالكابتن مباشرة من زر الاتصال." : undefined });
+      },
+      onError: (e) => { invalidate(id); setErr(errorText(e)); },
+    });
+  }
+
+  function submitFeedback() {
+    if (!stars || Object.values(feedbackRatings).some((value) => value === 0)) {
+      setErr("اختار تقييم لكل بند قبل الإرسال.");
+      return;
+    }
+    setErr("");
+    act.mutate({
+      id,
+      data: {
+        action: "rate",
+        rating: stars,
+        ...feedbackRatings,
+        feedbackNote: feedbackNote.trim(),
+      },
+    }, {
+      onSuccess: () => { invalidate(id); toast({ title: "شكرًا على رأيك", description: "تقييمك يساعدنا نحسّن تجربة بابلو." }); },
       onError: (e) => { invalidate(id); setErr(errorText(e)); },
     });
   }
@@ -83,6 +130,28 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
       <div className="mt-6"><RideMap ride={r} /></div>
       {isDriver && ["accepted", "arrived", "in_progress"].includes(r.status) && <div className="mt-4"><DriverShare key={r.id} rideId={r.id} /></div>}
+      {isCustomer && r.status === "in_progress" && (
+        <section className="mt-4 rounded-3xl border border-card-border bg-card p-4" data-testid="panel-midride-checkin">
+          <h2 className="font-display text-lg font-bold">أنت في الرحلة — الدنيا معاك تمام؟</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">لما يكون مناسب ومن غير ما تتشتت، طمّنا على الراحة والتكييف وأسلوب الرحلة. تقدر تغيّر إجابتك طول ما الرحلة شغالة.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button type="button" data-testid="button-checkin-ok" aria-pressed={r.checkInStatus === "all_good"} disabled={pending} onClick={() => submitCheckIn("all_good")}
+              className={cn("press min-h-12 rounded-2xl border px-3 text-sm font-bold disabled:opacity-60", r.checkInStatus === "all_good" ? "border-emerald-700/30 bg-emerald-700/10 text-emerald-800" : "border-border bg-background")}>
+              كل حاجة تمام
+            </button>
+            <button type="button" data-testid="button-checkin-help" aria-pressed={r.checkInStatus === "need_help"} disabled={pending} onClick={() => submitCheckIn("need_help")}
+              className={cn("press min-h-12 rounded-2xl border px-3 text-sm font-bold disabled:opacity-60", r.checkInStatus === "need_help" ? "border-destructive/30 bg-destructive/10 text-destructive" : "border-border bg-background")}>
+              محتاج مساعدة
+            </button>
+          </div>
+          {r.checkInStatus === "need_help" && <p className="mt-2 text-xs font-semibold text-destructive" role="status">لو احتياجك عاجل، اتصل بالكابتن مباشرة من زر الاتصال بالأسفل.</p>}
+        </section>
+      )}
+      {isDriver && r.status === "in_progress" && r.checkInStatus === "need_help" && (
+        <p className="mt-4 rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-sm font-bold text-destructive" role="alert" data-testid="alert-customer-needs-help">
+          الراكب طلب مساعدة أثناء الرحلة. تواصل معه فورًا من زر الاتصال.
+        </p>
+      )}
 
       <div className="mt-4 rounded-[2rem] bg-[#10151d] p-6 text-[#f6f1e4]">
         <RouteLine from={r.pickup} to={r.destination} size="lg" />
@@ -113,21 +182,27 @@ export default function TripDetail({ profile }: { profile: Profile }) {
         {canAccept && <Btn variant="yellow" className="h-14 w-full" data-testid="button-accept" disabled={pending} onClick={() => run("accept")}>{pending && variables === "accept" && <Loader2 className="h-5 w-5 animate-spin" />} اقبل الطلب</Btn>}
         {driverNext && <Btn variant="yellow" className="h-14 w-full" data-testid={`button-${driverNext.action}`} disabled={pending} onClick={() => run(driverNext.action)}>{pending && variables === driverNext.action ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />} {driverNext.label}</Btn>}
         {canRate && (
-          <div className="rounded-2xl border border-card-border bg-card p-5 text-center">
-            <p className="font-display font-bold">إيه رأيك في الرحلة؟</p>
-            <div className="mt-3 flex justify-center gap-1" dir="ltr">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} data-testid={`button-star-${n}`} onClick={() => setStars(n)} className="press p-1" aria-label={`${n}`}>
-                  <Star className={cn("h-8 w-8 transition-colors", n <= stars ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/25")} />
-                </button>
+          <div className="rounded-2xl border border-card-border bg-card p-5" data-testid="panel-final-feedback">
+            <p className="font-display text-lg font-bold">وصلت بالسلامة؟ نحب نسمع رأيك</p>
+            <p className="mt-1 text-sm text-muted-foreground">قيّم التجربة والكابتن والعربية. كل البنود مطلوبة، والملاحظة الإضافية اختيارية.</p>
+            <div className="mt-4 space-y-3">
+              <FeedbackRow label="تقييم الرحلة عمومًا" value={stars} onChange={setStars} testId="overall" />
+              {FEEDBACK_FIELDS.map(({ key, label }) => (
+                <FeedbackRow key={key} label={label} value={feedbackRatings[key]} onChange={(value) => setFeedbackRatings((current) => ({ ...current, [key]: value }))} testId={key} />
               ))}
             </div>
-            <Btn className="mt-4 w-full" data-testid="button-rate" disabled={!stars || pending} onClick={() => run("rate", stars)}>{pending && <Loader2 className="h-4 w-4 animate-spin" />} ابعت التقييم</Btn>
+            <label htmlFor="ride-feedback-note" className="mt-4 block text-sm font-semibold">ملاحظات أو اقتراحات <span className="font-normal text-muted-foreground">(اختياري)</span></label>
+            <textarea id="ride-feedback-note" data-testid="input-feedback-note" rows={3} maxLength={500} value={feedbackNote} onChange={(event) => setFeedbackNote(event.target.value)}
+              placeholder="قول لنا إيه اللي عجبك أو محتاج يتحسن..." className="mt-2 w-full resize-y rounded-2xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:ring-2 focus:ring-[#ffd000]/40" />
+            <Btn className="mt-4 w-full" data-testid="button-rate" disabled={!stars || Object.values(feedbackRatings).some((value) => !value) || pending} onClick={submitFeedback}>
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />} ابعت رأيك
+            </Btn>
           </div>
         )}
         {r.rating != null && (
-          <div className="flex items-center justify-center gap-2 rounded-2xl bg-muted p-4 text-sm" data-testid="text-rating">
-            التقييم: <span className="flex" dir="ltr">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={cn("h-4 w-4", n <= (r.rating ?? 0) ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/20")} />)}</span>
+          <div className="rounded-2xl bg-muted p-4 text-center text-sm" data-testid="text-rating">
+            <p>شكراً على رأيك في الرحلة</p>
+            <span className="mt-2 inline-flex" dir="ltr">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={cn("h-4 w-4", n <= (r.rating ?? 0) ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/20")} />)}</span>
           </div>
         )}
         {canCancel && <Btn variant="danger" className="w-full" data-testid="button-cancel" disabled={pending} onClick={() => setConfirmCancel(true)}>إلغاء الطلب</Btn>}
@@ -145,6 +220,21 @@ export default function TripDetail({ profile }: { profile: Profile }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+function FeedbackRow({ label, value, onChange, testId }: { label: string; value: number; onChange: (value: number) => void; testId: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-3 py-2.5" data-testid={`rating-row-${testId}`}>
+      <span className="text-sm font-medium">{label}</span>
+      <div className="flex gap-1" dir="ltr" role="group" aria-label={label}>
+        {[1, 2, 3, 4, 5].map((valueOption) => (
+          <button key={valueOption} type="button" data-testid={`rating-${testId}-${valueOption}`} aria-label={`${label}: ${valueOption}`} aria-pressed={value === valueOption} onClick={() => onChange(valueOption)} className="press rounded-md p-1">
+            <Star className={cn("h-6 w-6 transition-colors", valueOption <= value ? "fill-[#ffd000] text-[#10151d]" : "text-foreground/25")} />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

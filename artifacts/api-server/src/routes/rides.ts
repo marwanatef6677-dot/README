@@ -62,7 +62,10 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
   const params = ActOnRideParams.safeParse(req.params);
   const parsed = ActOnRideBody.safeParse(req.body);
   if (!params.success || !parsed.success) throw new AppError(400, "طلب غير صحيح.");
-  const { action, rating } = parsed.data;
+  const {
+    action, rating, checkInStatus, captainRating, drivingRating,
+    cleanlinessRating, comfortRating, airConditioningRating, feedbackNote,
+  } = parsed.data;
   const userId: string = res.locals.userId;
   const result = await db.transaction(async (tx) => {
     // Serialize new assignments per driver, then serialize every state transition per ride.
@@ -128,9 +131,30 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
             changes.commissionState = "retained";
           }
         }
+      } else if (action === "check_in") {
+        if (!customer || ride.status !== "in_progress" || !checkInStatus) {
+          throw new AppError(409, "الاطمئنان على الرحلة متاح للراكب أثناء الرحلة فقط.");
+        }
+        changes.checkInStatus = checkInStatus;
       } else if (action === "rate") {
         if (!customer || ride.status !== "completed" || ride.rating !== null || rating === undefined) throw new AppError(409, "التقييم متاح للعميل مرة واحدة بعد انتهاء الرحلة.");
+        const detailedRatings = [captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating];
+        const hasDetailedFeedback = detailedRatings.some((value) => value !== undefined) || feedbackNote !== undefined;
+        if (hasDetailedFeedback && detailedRatings.some((value) => value === undefined)) {
+          throw new AppError(400, "كمّل تقييم الكابتن والقيادة ونظافة العربية والراحة والتكييف.");
+        }
         changes.rating = rating;
+        if (hasDetailedFeedback) {
+          Object.assign(changes, {
+            captainRating,
+            drivingRating,
+            cleanlinessRating,
+            comfortRating,
+            airConditioningRating,
+            feedbackNote: feedbackNote?.trim() ?? "",
+            feedbackSubmittedAt: new Date(),
+          });
+        }
       } else {
         if (!driver) throw new AppError(403, "الإجراء ده متاح للكابتن المعيّن فقط.");
         const transitions = { arrive: ["accepted", "arrived"], start: ["arrived", "in_progress"], complete: ["in_progress", "completed"] } as const;

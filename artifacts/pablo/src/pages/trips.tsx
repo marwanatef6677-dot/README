@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, ListSkeleton, RideCard } from "@/components/bit
 import { useMyRides } from "@/hooks/use-pablo";
 import { ACTIVE, errorText } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
+import { RideMap } from "@/components/ride-tracking";
 
 const tabs = [["all", "الكل"], ["active", "شغالة"], ["completed", "خلصت"], ["cancelled", "اتلغت"]] as const;
 
@@ -28,7 +29,20 @@ export default function Trips({ profile }: { profile: Profile }) {
             <EmptyState title={tab === "all" ? "لسه مفيش رحلات" : "مفيش حاجة هنا"} body={tab === "all" ? (profile.role === "driver" ? "لما تقبل أول طلب هيظهر هنا." : "أول مشوار تطلبه هيتسجل هنا وتقدر تتابعه.") : "مفيش رحلات بالحالة دي."}>
               {tab === "all" && <Link href="/book" data-testid="link-empty-book" className="press rounded-2xl bg-[#ffd000] px-5 py-3 font-display font-bold text-[#10151d]">{profile.role === "driver" ? "شوف الطلبات" : "اطلب أول رحلة"}</Link>}
             </EmptyState>
-          ) : list.map((r, i) => <RideCard key={r.id} ride={r} i={i} />)}
+          ) : list.map((r, i) => (
+            <div key={r.id} className="space-y-3">
+              <RideCard ride={r} i={i} />
+              {ACTIVE.includes(r.status) && (
+                <section className="rounded-3xl border border-card-border bg-card p-4" data-testid={`panel-trip-map-${r.id}`}>
+                  <h2 className="mb-2 font-display font-bold">{profile.role === "driver" ? "خريطة الرحلة" : "خريطة رحلتك وموقع الكابتن"}</h2>
+                  <RideMap ride={r} />
+                  {profile.role !== "driver" && (
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">موقع الكابتن يظهر بعد قبول الطلب وموافقته على مشاركة موقعه أثناء الرحلة.</p>
+                  )}
+                </section>
+              )}
+            </div>
+          ))}
       </div>
     </div>
   );

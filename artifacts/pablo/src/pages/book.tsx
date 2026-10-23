@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Loader2, Radio } from "lucide-react";
+import { ArrowLeft, Loader2, Radio, Star, Trophy } from "lucide-react";
 import { useActOnRide } from "@workspace/api-client-react";
 import type { Profile, Ride } from "@workspace/api-client-react";
 import { BookingForm } from "@/components/booking-form";
@@ -8,15 +8,27 @@ import { EmptyState, ErrorState, ListSkeleton, PilotNotice, RideCard, RouteLine,
 import { useConfig, useInvalidateRides, useMyRides, useQueue, useSummary } from "@/hooks/use-pablo";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVE, STATUS_HINT, errorText } from "@/lib/pablo";
+import { RideMap } from "@/components/ride-tracking";
 
-function ActiveBanner({ ride }: { ride: Ride }) {
+function ActiveBanner({ ride, viewer }: { ride: Ride; viewer: "customer" | "driver" }) {
   return (
-    <Link href={`/trips/${ride.id}`} data-testid="link-active-ride" className="press group block rounded-[2rem] bg-[#10151d] p-5 text-[#f6f1e4]">
-      <div className="flex items-center justify-between"><StatusPill status={ride.status} /><span className="font-num text-xs text-[#f6f1e4]/50">#{ride.id}</span></div>
-      <div className="mt-4"><RouteLine from={ride.pickup} to={ride.destination} /></div>
-      <p className="mt-4 text-sm text-[#f6f1e4]/70">{STATUS_HINT[ride.status]}</p>
-      <span className="mt-4 inline-flex items-center gap-2 font-display font-bold text-[#ffd000]">تابع الرحلة <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /></span>
-    </Link>
+    <section className="rounded-[2rem] border border-card-border bg-card p-4 shadow-sm sm:p-5" data-testid="panel-active-ride">
+      <Link href={`/trips/${ride.id}`} data-testid="link-active-ride" className="press group block rounded-2xl bg-[#10151d] p-4 text-[#f6f1e4]">
+        <div className="flex items-center justify-between"><StatusPill status={ride.status} /><span className="font-num text-xs text-[#f6f1e4]/50">#{ride.id}</span></div>
+        <div className="mt-4"><RouteLine from={ride.pickup} to={ride.destination} /></div>
+        <p className="mt-4 text-sm text-[#f6f1e4]/70">{STATUS_HINT[ride.status]}</p>
+        <span className="mt-4 inline-flex items-center gap-2 font-display font-bold text-[#ffd000]">تابع الرحلة <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /></span>
+      </Link>
+      <div className="mt-4">
+        <p className="mb-2 text-sm font-semibold">{viewer === "customer" ? "خريطة رحلتك وموقع الكابتن" : "خريطة الرحلة"}</p>
+        <RideMap ride={ride} />
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          {viewer === "customer"
+            ? "موقع الكابتن يظهر بعد قبول الطلب وموافقته على مشاركة موقعه أثناء الرحلة."
+            : "من تفاصيل الرحلة تقدر تبدأ مشاركة موقعك مع الراكب بعد السماح للموقع على جهازك."}
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -35,17 +47,55 @@ function Stats() {
   );
 }
 
+function DriverProgress({ profile }: { profile: Profile }) {
+  const progress = profile.driverLevel >= 10 ? 100 : ((profile.driverCompletedRides % 10) / 10) * 100;
+  return (
+    <section className="rounded-2xl border border-card-border bg-card p-4" data-testid="driver-progress">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs text-muted-foreground">مستواك الحالي</p>
+          <p className="mt-1 flex items-center gap-2 font-display text-2xl font-black">
+            <Trophy className="h-5 w-5 text-[#9b7600]" /> Level {profile.driverLevel}
+          </p>
+        </div>
+        <div className="rounded-xl bg-[#ffd000]/20 px-3 py-2 text-center">
+          <p className="flex items-center justify-center gap-1 font-num font-bold">
+            <Star className="h-4 w-4 fill-[#ffd000] text-[#9b7600]" />
+            {profile.driverRating == null ? "—" : profile.driverRating.toFixed(1)}
+          </p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground">تقييم الركاب</p>
+        </div>
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+        <div className="h-full rounded-full bg-[#ffd000] transition-[width]" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span>{profile.driverCompletedRides.toLocaleString("ar-EG")} رحلة مكتملة</span>
+        <span>{profile.driverLevel >= 10 ? "وصلت لأعلى Level" : `باقي ${profile.ridesToNextLevel.toLocaleString("ar-EG")} رحلات للمستوى التالي`}</span>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">كل ١٠ رحلات مكتملة ترفعك Level، والتقييم متوسط آراء الركاب.</p>
+    </section>
+  );
+}
+
 function CustomerBook({ profile }: { profile: Profile }) {
   const rides = useMyRides();
   const config = useConfig();
   const active = rides.data?.find((r) => ACTIVE.includes(r.status));
+  const newCustomer = !rides.isLoading && (rides.data?.length ?? 0) === 0;
   return (
     <div className="grid gap-8 md:grid-cols-[1.3fr_1fr]">
       <div>
         <h1 className="font-display text-3xl font-black">أهلاً {profile.name.split(" ")[0]}، <span className="text-muted-foreground">رايح فين؟</span></h1>
+        {newCustomer && (
+          <div className="mt-4 rounded-3xl border border-[#ffd000]/45 bg-[#ffd000]/15 p-4 sm:p-5" data-testid="welcome-new-customer">
+            <p className="font-display text-lg font-bold">نورت بابلو، يا {profile.name.split(" ")[0]}.</p>
+            <p className="mt-1 text-sm leading-relaxed text-foreground/75">أول مشوار يبدأ من الخريطة: اختار نقطة الركوب، وبعدها حدّد المكان اللي رايح له. هنحسب لك الطريق ونبعت طلبك لكباتن محافظتك.</p>
+          </div>
+        )}
         <div className="mt-6">
           {rides.isLoading ? <ListSkeleton n={1} /> : active ? (
-            <div className="space-y-3"><p className="text-sm text-muted-foreground">عندك رحلة شغالة. مينفعش تطلب رحلة تانية غير لما دي تخلص أو تتلغي.</p><ActiveBanner ride={active} /></div>
+            <div className="space-y-3"><p className="text-sm text-muted-foreground">عندك رحلة شغالة. مينفعش تطلب رحلة تانية غير لما دي تخلص أو تتلغي.</p><ActiveBanner ride={active} viewer="customer" /></div>
           ) : <BookingForm signedIn defaultProvince={profile.province} />}
         </div>
       </div>
@@ -86,7 +136,7 @@ function DriverBook({ profile }: { profile: Profile }) {
           </div>
         </div>
         <div className="mt-6 space-y-3">
-          {myJob && <><p className="text-sm text-muted-foreground">عندك رحلة شغالة. خلّصها الأول قبل ما تقبل طلب جديد.</p><ActiveBanner ride={myJob} /></>}
+          {myJob && <><p className="text-sm text-muted-foreground">عندك رحلة شغالة. خلّصها الأول قبل ما تقبل طلب جديد.</p><ActiveBanner ride={myJob} viewer="driver" /></>}
           {queue.isLoading ? <ListSkeleton /> : queue.isError ? <ErrorState message={errorText(queue.error)} onRetry={() => queue.refetch()} /> :
             !queue.data?.length ? (
               <EmptyState title="مفيش طلبات دلوقتي" body={`أول ما راكب في ${profile.province} يطلب مشوار هيظهر هنا. خلّي الصفحة مفتوحة.`} />
@@ -101,6 +151,7 @@ function DriverBook({ profile }: { profile: Profile }) {
         </div>
       </div>
       <aside className="space-y-4">
+        <DriverProgress profile={profile} />
         <Stats />
         <div className="rounded-2xl border border-card-border bg-card p-4 text-sm">
           <p className="font-display font-bold">عربيتك</p>

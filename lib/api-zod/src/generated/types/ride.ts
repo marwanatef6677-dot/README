@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RideCheckInStatus } from './rideCheckInStatus';
 import type { RideCommissionState } from './rideCommissionState';
 import type { RideRideType } from './rideRideType';
 import type { RideStatus } from './rideStatus';
@@ -35,6 +36,41 @@ export interface Ride {
   notes: string;
   /** @nullable */
   rating: number | null;
+  /** @nullable */
+  checkInStatus: RideCheckInStatus;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  captainRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  drivingRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  cleanlinessRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  comfortRating: number | null;
+  /**
+     * @minimum 1
+     * @maximum 5
+     * @nullable
+     */
+  airConditioningRating: number | null;
+  feedbackNote: string;
+  /** @nullable */
+  feedbackSubmittedAt: string | null;
   /** @nullable */
   pickupLat: number | null;
   /** @nullable */
