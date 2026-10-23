@@ -37,6 +37,8 @@ Arabic RTL ride-request pilot for Egypt, with passenger/captain accounts, shared
 
 ## Product
 
+The owner accepted the pre-commercial operating requirements, with operating details deferred. See `docs/operating-readiness.ar.md` for launch gates, an explicitly unactivated fare proposal, and pilot-safe marketing copy. Acceptance of requirements is not approval to launch.
+
 Passengers request and cancel rides, captains accept/arrive/start/complete them, and passengers can rate completed trips. Clerk handles authentication. Development and production accounts are separate. The web app supports home-screen installation after publishing; it is not an APK.
 
 ## User preferences
