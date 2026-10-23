@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentType, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, Show, useAuth, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
@@ -15,6 +15,7 @@ import { useProfile } from "@/hooks/use-pablo";
 import { errorText } from "@/lib/pablo";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import Welcome from "@/pages/welcome";
 import Book from "@/pages/book";
 import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
@@ -135,10 +136,19 @@ function Protected(props: { page: ComponentType<{ profile: Profile }>; allowOnbo
 }
 
 function HomeRedirect() {
+  const [welcomeComplete, setWelcomeComplete] = useState(
+    () => window.localStorage.getItem("pablo-welcome-complete") === "true",
+  );
+  const completeWelcome = () => {
+    window.localStorage.setItem("pablo-welcome-complete", "true");
+    setWelcomeComplete(true);
+  };
   return (
     <>
       <Show when="signed-in"><Redirect to="/book" /></Show>
-      <Show when="signed-out"><Home /></Show>
+      <Show when="signed-out">
+        {welcomeComplete ? <Home /> : <Welcome onContinue={completeWelcome} />}
+      </Show>
     </>
   );
 }

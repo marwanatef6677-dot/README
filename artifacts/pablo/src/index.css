@@ -463,3 +463,92 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .pb-car { width: 36px; height: 36px; border-radius: 12px; background: #10151d; border: 3px solid #ffd000; display: grid; place-items: center; box-shadow: 0 8px 18px -6px rgba(16,21,29,.6); }
 .pb-car span { font: 900 16px 'Alexandria', sans-serif; color: #ffd000; }
 .pb-car-stale { opacity: .45; filter: grayscale(1); }
+
+/* First-visit welcome: an editorial Cairo wayfinding poster, distinct from booking. */
+.welcome-page {
+  --welcome-ink: #15232a;
+  --welcome-paper: #f1eee5;
+  --welcome-sun: #f7c928;
+  --welcome-coral: #dd7253;
+  min-height: calc(100dvh - 4rem);
+  color: var(--welcome-ink);
+  background:
+    radial-gradient(ellipse at 9% 8%, rgba(247,201,40,.18), transparent 25rem),
+    var(--welcome-paper);
+}
+.welcome-inner { position: relative; z-index: 1; width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+.welcome-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .14; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.17' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.welcome-orbit { position: absolute; z-index: -1; pointer-events: none; border: 1px solid rgba(21,35,42,.09); border-radius: 50%; }
+.welcome-orbit-one { width: 520px; height: 520px; top: -260px; left: -165px; }
+.welcome-orbit-two { width: 710px; height: 710px; top: -350px; left: -260px; }
+.welcome-hero { display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: clamp(44px, 7.5vw, 108px); min-height: min(690px, calc(100dvh - 8rem)); padding: 48px 0 36px; }
+.welcome-copy { position: relative; z-index: 2; padding: 12px 0; }
+.welcome-kicker { display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(21,35,42,.17); border-radius: 999px; padding: 9px 14px; color: rgba(21,35,42,.72); font-size: 13px; font-weight: 700; }
+.welcome-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--welcome-coral); box-shadow: 0 0 0 4px rgba(221,114,83,.13); }
+.welcome-title { margin: 29px 0 0; font-family: 'Alexandria', sans-serif; font-size: clamp(3.3rem, 7vw, 6.4rem); font-weight: 900; line-height: 1.13; letter-spacing: -.065em; }
+.welcome-title span { display: block; color: #ba573e; }
+.welcome-description { max-width: 430px; margin: 24px 0 0; color: rgba(21,35,42,.72); font-size: clamp(1.05rem, 1.5vw, 1.22rem); line-height: 1.95; }
+.welcome-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 22px; margin-top: 32px; }
+.welcome-cta { display: inline-flex; align-items: center; justify-content: center; gap: 22px; min-height: 58px; border: 0; border-radius: 16px; padding: 0 23px; color: var(--welcome-ink); background: var(--welcome-sun); box-shadow: 0 5px 0 #d3aa1f; font-family: 'Alexandria', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
+.welcome-cta:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #d3aa1f; }
+.welcome-signin { color: rgba(21,35,42,.65); font-size: 14px; text-decoration: none; }
+.welcome-signin span { color: var(--welcome-ink); font-weight: 800; text-decoration: underline; text-decoration-color: var(--welcome-coral); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.welcome-reassurance { display: flex; align-items: center; gap: 9px; margin-top: 33px; color: rgba(21,35,42,.62); font-size: 12px; font-weight: 600; }
+.welcome-reassurance svg { color: #497d68; }
+.welcome-art { position: relative; min-height: 480px; overflow: hidden; border-radius: 28px 28px 100px 28px; color: #f4f0e6; background: #172a31; box-shadow: 0 26px 70px -35px rgba(15,32,38,.46); }
+.welcome-art::before { position: absolute; inset: 0; background: radial-gradient(ellipse at 82% 17%, rgba(247,201,40,.13), transparent 42%), linear-gradient(140deg, transparent 50%, rgba(255,255,255,.025)); content: ""; }
+.art-topline { position: absolute; top: 23px; right: 28px; left: 28px; z-index: 1; display: flex; align-items: center; justify-content: space-between; color: rgba(244,240,230,.68); font-size: 12px; font-weight: 700; }
+.art-coordinate { direction: ltr; font: 10px 'JetBrains Mono', monospace; letter-spacing: .08em; opacity: .64; }
+.city-map { position: absolute; top: 59px; right: 4%; width: 92%; height: 75%; overflow: visible; }
+.map-road { stroke: rgba(221,232,222,.12); stroke-width: 9; stroke-linecap: round; }
+.map-road-wide { stroke-width: 21; }
+.map-route-underlay { stroke: rgba(247,201,40,.15); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
+.map-route { stroke: #f7c928; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 7 7; }
+.map-route-stop { fill: #f4f0e6; }
+.map-label { position: absolute; color: rgba(244,240,230,.43); font-size: 11px; font-weight: 600; }
+.map-label-market { top: 42%; right: 18%; }
+.map-label-river { top: 60%; left: 18%; color: #81b4b0; }
+.map-landmark { position: absolute; width: 22px; height: 22px; border: 1px solid rgba(244,240,230,.15); transform: rotate(45deg); }
+.landmark-one { top: 25%; left: 22%; }
+.landmark-two { top: 51%; right: 35%; width: 13px; height: 13px; background: rgba(247,201,40,.12); }
+.landmark-three { top: 66%; left: 37%; width: 30px; height: 30px; }
+.pickup-pin { position: absolute; top: 20%; right: 24%; display: grid; width: 45px; height: 45px; place-items: center; border: 1px solid rgba(247,201,40,.35); border-radius: 50% 50% 50% 12px; color: #172a31; background: var(--welcome-sun); box-shadow: 0 7px 20px rgba(247,201,40,.2); transform: rotate(-45deg); }
+.pickup-pin svg { width: 20px; height: 20px; transform: rotate(45deg); }
+.destination-pin { position: absolute; top: 48%; left: 13%; display: grid; width: 35px; height: 35px; place-items: center; border: 1px solid rgba(244,240,230,.56); border-radius: 12px; color: #f4f0e6; background: #29444a; }
+.destination-pin svg { width: 16px; height: 16px; }
+.trip-card { position: absolute; right: 25px; bottom: 56px; left: 25px; display: flex; align-items: center; gap: 13px; border: 1px solid rgba(244,240,230,.12); border-radius: 18px; padding: 15px; background: rgba(244,240,230,.095); backdrop-filter: blur(12px); }
+.trip-card-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: 13px; color: #172a31; background: var(--welcome-sun); }
+.trip-card-icon svg { width: 20px; height: 20px; }
+.trip-card-copy { display: grid; gap: 4px; }
+.trip-card-copy strong { color: #f4f0e6; font-size: 13px; }
+.trip-card-copy small { color: rgba(244,240,230,.58); font-size: 11px; }
+.trip-card-arrow { display: grid; width: 32px; height: 32px; margin-right: auto; place-items: center; border-radius: 50%; color: var(--welcome-sun); background: rgba(247,201,40,.1); }
+.trip-card-arrow svg { width: 15px; height: 15px; }
+.art-index { position: absolute; bottom: 24px; left: 26px; color: rgba(244,240,230,.4); direction: ltr; font: 10px 'JetBrains Mono', monospace; letter-spacing: .12em; }
+.welcome-bottom { display: flex; align-items: center; justify-content: space-between; gap: 22px; border-top: 1px solid rgba(21,35,42,.14); padding: 19px 0 22px; }
+.welcome-steps { display: flex; align-items: center; gap: 11px; color: rgba(21,35,42,.67); font-size: 12px; font-weight: 700; }
+.step-mark { color: #b9533b; font: 700 13px 'JetBrains Mono', monospace; }
+.welcome-steps i { width: 26px; height: 1px; margin: 0 3px; background: rgba(21,35,42,.2); }
+.welcome-skip { border: 0; padding: 8px 0; color: rgba(21,35,42,.55); background: none; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.welcome-skip:hover { color: var(--welcome-ink); }
+@media (max-width: 767px) {
+  .welcome-page { min-height: calc(100dvh - 4rem); }
+  .welcome-inner { width: min(100% - 36px, 520px); }
+  .welcome-hero { grid-template-columns: 1fr; gap: 29px; min-height: auto; padding: 35px 0 24px; }
+  .welcome-title { margin-top: 21px; font-size: clamp(3.25rem, 15vw, 5.2rem); }
+  .welcome-description { max-width: 390px; margin-top: 16px; font-size: 16px; }
+  .welcome-actions { gap: 18px; margin-top: 23px; }
+  .welcome-cta { min-height: 54px; }
+  .welcome-reassurance { margin-top: 22px; }
+  .welcome-art { min-height: clamp(290px, 82vw, 370px); border-radius: 23px 23px 72px 23px; }
+  .art-topline { top: 17px; right: 19px; left: 19px; }
+  .city-map { top: 46px; height: 76%; }
+  .trip-card { right: 15px; bottom: 43px; left: 15px; padding: 12px; }
+  .art-index { bottom: 15px; left: 17px; }
+  .welcome-bottom { align-items: flex-start; padding-top: 15px; }
+  .welcome-steps { flex-wrap: wrap; gap: 7px; max-width: 300px; font-size: 10px; }
+  .welcome-steps i { width: 13px; margin: 0 1px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-cta { transition: none; }
+}
