@@ -8,6 +8,7 @@ export const walletTopups = pgTable("pablo_wallet_topups", {
   amountPiasters: integer("amount_piasters").notNull(),
   paymentMethod: text("payment_method").notNull(),
   providerRef: text("provider_ref"),
+  qrData: text("qr_data"),
   providerStatus: text("provider_status").notNull().default("NEW"),
   status: text("status").notNull().default("pending"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),

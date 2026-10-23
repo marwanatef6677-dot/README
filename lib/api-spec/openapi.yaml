@@ -190,6 +190,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Summary"
+  /admin/drivers:
+    get:
+      operationId: listDriverReviews
+      responses:
+        "200":
+          description: Driver accounts needing administrative review
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DriverReview" }
+  /admin/drivers/{id}/review:
+    post:
+      operationId: reviewDriver
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverReviewInput"
+      responses:
+        "200":
+          description: Saved driver review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriverReview"
   /wallet:
     get:
       operationId: getWallet
@@ -268,7 +297,7 @@ components:
         seats: { type: integer }
     Profile:
       type: object
-      required: [id, name, phone, role, province, vehicle, plate, onboarded]
+      required: [id, name, phone, role, province, vehicle, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters]
       properties:
         id: { type: string }
         name: { type: string }
@@ -278,9 +307,12 @@ components:
         vehicle: { type: string }
         plate: { type: string }
         onboarded: { type: boolean }
+        driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
+        driverTermsAccepted: { type: boolean }
+        walletBalancePiasters: { type: integer }
     ProfileInput:
       type: object
-      required: [name, phone, role, province, vehicle, plate]
+      required: [name, phone, role, province, vehicle, plate, driverTermsAccepted]
       properties:
         name: { type: string, minLength: 2, maxLength: 80 }
         phone: { type: string, pattern: '^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$' }
@@ -288,6 +320,7 @@ components:
         province: { type: string, minLength: 2, maxLength: 50 }
         vehicle: { type: string, maxLength: 80 }
         plate: { type: string, maxLength: 30 }
+        driverTermsAccepted: { type: boolean }
     RideInput:
       type: object
       required: [pickup, destination, province, rideType, pickupLat, pickupLng, destinationLat, destinationLng]
@@ -426,4 +459,42 @@ components:
         ledger:
           type: array
           items: { $ref: "#/components/schemas/WalletLedgerEntry" }
+    DriverReview:
+      type: object
+      required: [id, name, phone, province, vehicle, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        province: { type: string }
+        vehicle: { type: string }
+        plate: { type: string }
+        driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
+        driverTermsAccepted: { type: boolean }
+        driverReviewNote: { type: string }
+        driverReviewedAt: { type: [string, "null"] }
+        identityVerified: { type: boolean }
+        drivingLicenseVerified: { type: boolean }
+        vehicleVerified: { type: boolean }
+        workPermitVerified: { type: boolean }
+        socialInsuranceVerified: { type: boolean }
+        backgroundCheckCompleted: { type: boolean }
+        vehicleRequirementsVerified: { type: boolean }
+        operatorLicenseVerified: { type: boolean }
+        randomTestProcessConfirmed: { type: boolean }
+    DriverReviewInput:
+      type: object
+      required: [decision, note, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      properties:
+        decision: { type: string, enum: [approved, rejected, suspended] }
+        note: { type: string, maxLength: 500 }
+        identityVerified: { type: boolean }
+        drivingLicenseVerified: { type: boolean }
+        vehicleVerified: { type: boolean }
+        workPermitVerified: { type: boolean }
+        socialInsuranceVerified: { type: boolean }
+        backgroundCheckCompleted: { type: boolean }
+        vehicleRequirementsVerified: { type: boolean }
+        operatorLicenseVerified: { type: boolean }
+        randomTestProcessConfirmed: { type: boolean }
 
