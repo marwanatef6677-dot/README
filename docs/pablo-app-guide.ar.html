@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>دليل تطبيق بابلو — الشاشات والتصميم</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      direction: rtl;
+      color: #17253b;
+      background: #e9edf3;
+      font-family: "DejaVu Sans", sans-serif;
+      font-size: 10.2pt;
+      line-height: 1.7;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      padding: 16mm 17mm 18mm;
+      margin: 10mm auto;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 24px #17253b22;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e0b23c;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+    .brand { color: #112644; font-size: 13pt; font-weight: 800; }
+    .brand span { color: #d59e1c; }
+    .doc-label { color: #64748b; font-size: 8pt; }
+    h1 { color: #112644; font-size: 25pt; line-height: 1.4; margin: 8px 0; }
+    h2 {
+      color: #112644; font-size: 14pt; line-height: 1.45;
+      margin: 14px 0 6px; padding-right: 9px; border-right: 3px solid #e0b23c;
+    }
+    h3 { color: #112644; font-size: 11pt; margin: 8px 0 3px; }
+    p { margin: 5px 0; }
+    ul, ol { padding-right: 20px; margin: 5px 0; }
+    li { margin: 2px 0; }
+    .small { color: #5e6d80; font-size: 8.5pt; line-height: 1.6; }
+    .subtitle { color: #607088; font-size: 11pt; margin-bottom: 9px; }
+    .lead { font-size: 12pt; line-height: 1.8; }
+    .notice {
+      border: 1px solid #efcf83; border-right: 4px solid #d59e1c;
+      border-radius: 5px; background: #fff9e9; padding: 8px 11px; margin: 8px 0;
+    }
+    .box { background: #f1f5f9; border: 1px solid #dce5ee; border-radius: 6px; padding: 9px 11px; margin: 8px 0; }
+    .darkbox { background: #10151d; color: #f6f1e4; border-radius: 8px; padding: 11px 13px; }
+    .gold { color: #d59e1c; font-weight: 800; }
+    .tag {
+      display: inline-block; border-radius: 18px; padding: 2px 8px;
+      color: #5a4300; background: #fff3ca; border: 1px solid #eed17a;
+      font-size: 8pt; font-weight: 700;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .card { border: 1px solid #dce3ec; background: #fbfcfe; border-radius: 7px; padding: 8px 10px; }
+    .swatch { height: 11mm; border-radius: 5px; margin-bottom: 5px; border: 1px solid #0001; }
+    .route-map { display: flex; flex-direction: column; gap: 4px; }
+    .route-row {
+      border: 1px solid #dce3ec; background: #f8fafc; border-radius: 5px;
+      padding: 5px 8px; display: flex; align-items: center; gap: 7px;
+    }
+    .arrow { color: #d19b19; font-size: 14pt; font-weight: 800; }
+    .shot {
+      overflow: hidden; border-radius: 7px; border: 1px solid #d4dce6;
+      background: #f3f5f8; margin-top: 7px;
+    }
+    .shot img { display: block; width: 100%; object-fit: cover; object-position: top center; }
+    .shot.home img { height: 76mm; }
+    .shot.auth img { height: 62mm; object-fit: contain; background: #f3f5f8; }
+    .caption { color: #607088; font-size: 8pt; margin-top: 4px; }
+    .step {
+      display: grid; grid-template-columns: 10mm 1fr; gap: 7px; align-items: start;
+      padding: 6px 0; border-bottom: 1px dashed #d7dee8;
+    }
+    .num {
+      width: 8mm; height: 8mm; border-radius: 50%; display: grid; place-items: center;
+      color: #10151d; background: #ffd000; font-weight: 800; font-size: 9pt;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 8.5pt; }
+    th { text-align: right; background: #10151d; color: #ffd000; padding: 6px; }
+    td { border: 1px solid #dce3ec; padding: 6px; vertical-align: top; }
+    .status { display: inline-block; margin: 1px; padding: 2px 6px; border-radius: 12px; font-size: 8pt; font-weight: 700; }
+    .s1 { background: #fff0a6; color: #342900; }
+    .s2 { background: #10151d; color: #ffd000; }
+    .s3 { background: #dff4ed; color: #185b47; }
+    .s4 { background: #e9edf3; color: #3b4859; }
+    .s5 { background: #f7e4e4; color: #812b2b; }
+    .check { list-style: none; padding-right: 0; }
+    .check li::before { content: "□"; color: #d19b19; font-size: 12pt; margin-left: 7px; }
+    .foot {
+      position: absolute; bottom: 8mm; right: 17mm; left: 17mm;
+      border-top: 1px solid #e2e8f0; padding-top: 4px;
+      display: flex; justify-content: space-between; color: #778398; font-size: 7.5pt;
+    }
+    .pnum { direction: ltr; unicode-bidi: isolate; font-weight: 700; color: #32435b; }
+    @media print {
+      body { background: #fff; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">دليل الشاشات والتصميم</div></header>
+    <div class="tag">نسخة وصفية — ٢٣ أكتوبر ٢٠٢٦</div>
+    <h1>شرح تطبيق بابلو<br><span class="gold">كل شاشة ووظيفتها</span></h1>
+    <p class="subtitle">دليل مبسط لمسارات العميل والكابتن، شكل الواجهة، ومعنى الأجزاء الظاهرة داخل التطبيق.</p>
+    <p class="lead">بابلو واجهة عربية لتجربة طلب مشوار بين راكب وكابتن: تحديد مكان الركوب والوصول، ظهور الطلب للكباتن، متابعة حالة الرحلة، ثم إكمالها أو إلغاؤها وتقييمها.</p>
+
+    <h2>خريطة الانتقال بين الشاشات</h2>
+    <div class="route-map">
+      <div class="route-row"><strong>الزائر</strong><span class="arrow">←</span> الرئيسية <span class="arrow">←</span> دخول / إنشاء حساب</div>
+      <div class="route-row"><strong>بعد التسجيل</strong><span class="arrow">←</span> استكمال بيانات الحساب</div>
+      <div class="route-row"><strong>العميل</strong><span class="arrow">←</span> اطلب مشوار <span class="arrow">←</span> تفاصيل الرحلة <span class="arrow">←</span> رحلاتي</div>
+      <div class="route-row"><strong>الكابتن</strong><span class="arrow">←</span> الطلبات المتاحة <span class="arrow">←</span> تفاصيل الرحلة <span class="arrow">←</span> مشاركة الموقع</div>
+      <div class="route-row"><strong>كل مستخدم مسجل</strong><span class="arrow">←</span> حسابي · رحلاتي · خروج</div>
+    </div>
+
+    <div class="notice">
+      <strong>حالة النسخة:</strong> الموجود الآن واجهة ويب تجريبية قابلة للتثبيت من المتصفح، وليس تطبيق Android APK. بعض الصفحات تحتاج تسجيل الدخول. خادم العمليات حاليًا غير متاح بسبب عطل بناء، لذلك لا تعتبر دليل التصميم تأكيدًا أن الحجز أو تحديث الرحلات يعملان الآن.
+    </div>
+    <p class="small">الصفحات المحمية موصوفة بحسب كود الواجهة؛ لم يتم تسجيل الدخول لالتقاط صورها. الصور في هذا الدليل للشاشات العامة فقط.</p>
+    <footer class="foot"><span>شرح الشاشات والأجزاء — بابلو</span><span class="pnum">1 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">الهوية البصرية والتنقل</div></header>
+    <h2>ألوان وخطوط التطبيق</h2>
+    <div class="grid3">
+      <div class="card"><div class="swatch" style="background:#10151d"></div><strong>كحلي داكن</strong><div class="small">#10151d — العناوين والخلفيات والأزرار الأساسية.</div></div>
+      <div class="card"><div class="swatch" style="background:#ffd000"></div><strong>أصفر بابلو</strong><div class="small">#ffd000 — أزرار الإجراء، الدبابيس، والعناصر النشطة.</div></div>
+      <div class="card"><div class="swatch" style="background:#f6f1e4"></div><strong>أبيض دافئ</strong><div class="small">#f6f1e4 — النص على الكحلي والخلفية الهادئة.</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>الخطوط</h3><p>IBM Plex Sans Arabic للنص العربي، وAlexandria للعناوين والعناصر البارزة، مع خط ثابت للأرقام.</p></div>
+      <div class="card"><h3>الاتجاه والشكل</h3><p>اتجاه RTL، زوايا مستديرة، بطاقات واضحة، تباين قوي، ورسوم طريق متقطعة ترجع لهوية المشاوير.</p></div>
+    </div>
+    <h2>الشعار والعناصر المتكررة</h2>
+    <ul>
+      <li><strong>علامة P:</strong> رمز حرف P بلون أصفر على مربع كحلي، مع كتابة «بابلو / PABLO».</li>
+      <li><strong>زر أصفر:</strong> الإجراء الأساسي مثل طلب الرحلة أو قبول الطلب.</li>
+      <li><strong>تنبيه النسخة التجريبية:</strong> صندوق متقطع يوضح أن الخدمة للتجربة وليست تشغيلًا تجاريًا.</li>
+      <li><strong>خط الرحلة:</strong> دائرة صفراء للركوب، ومسار متقطع، ومربع داكن للوجهة.</li>
+      <li><strong>حالات التحميل والفراغ والخطأ:</strong> هياكل رمادية أثناء الانتظار، ورسالة فارغة عند عدم وجود نتائج، ورسالة خطأ مع إعادة المحاولة.</li>
+    </ul>
+    <h2>التنقل حسب الجهاز</h2>
+    <div class="grid2">
+      <div class="box"><strong>على الكمبيوتر:</strong> شريط علوي يعرض روابط الشاشة وحساب الخروج.</div>
+      <div class="box"><strong>على الموبايل:</strong> شريط سفلي ثابت بثلاثة تبويبات: «اطلب/الطلبات»، «رحلاتي»، «حسابي».</div>
+    </div>
+    <footer class="foot"><span>الهوية مأخوذة من الواجهة الحالية</span><span class="pnum">2 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">الشاشات العامة والتسجيل</div></header>
+    <h2>١. الرئيسية — المسار: <span dir="ltr">/</span></h2>
+    <p>للزائر قبل تسجيل الدخول. تعرض عبارة «رحلتك أسهل .. مع بابلو»، معاينة نموذج طلب المشوار، خطوات استخدام الخدمة، فقرة للكباتن، وتنبيه التجربة وطريقة تثبيت بابلو.</p>
+    <div class="shot home"><img src="../generated-artifacts/pablo-home-screen.jpg" alt="لقطة فعلية من الصفحة الرئيسية"></div>
+    <div class="caption">لقطة فعلية للشاشة العامة. نموذج الطلب في الصورة ينتظر اختيار الأماكن والمحافظة ونوع السيارة.</div>
+    <h2>٢. تسجيل الدخول — المسار: <span dir="ltr">/sign-in</span></h2>
+    <p>واجهة تسجيل من Clerk؛ تظهر خيار Google أو البريد الإلكتروني. لو بدأ الزائر كتابة طلب قبل الدخول، يحفظه المتصفح ليكمله بعد تسجيل الدخول.</p>
+    <div class="shot auth"><img src="../generated-artifacts/pablo-signin-screen.jpg" alt="لقطة فعلية لشاشة تسجيل الدخول"></div>
+    <div class="caption">هذه لقطة من بيئة التطوير؛ ظهور «Development mode» لا يعني أن إعداد الدخول إنتاجي.</div>
+    <div class="box"><strong>٣. إنشاء حساب — المسار: <span dir="ltr">/sign-up</span>:</strong> نفس الهوية البصرية مع نموذج إنشاء حساب، وبعده ينتقل المستخدم لاستكمال بياناته في «حسابي».</div>
+    <footer class="foot"><span>الصور الفعلية متاحة للشاشات العامة فقط</span><span class="pnum">3 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">الملف الشخصي وطلب المشوار</div></header>
+    <h2>٤. حسابي / بداية الاستخدام — المسار: <span dir="ltr">/account</span></h2>
+    <p>شاشة اختيار نوع الحساب وإدخال البيانات التي يحتاجها التشغيل التجريبي.</p>
+    <div class="grid2">
+      <div class="card"><h3>بيانات مشتركة</h3><ul><li>الاسم الظاهر.</li><li>رقم الموبايل المصري.</li><li>المحافظة.</li></ul></div>
+      <div class="card"><h3>بيانات الكابتن</h3><ul><li>نوع السيارة ولونها.</li><li>رقم اللوحة.</li><li>طلبات الكابتن تظهر لمحافظته.</li></ul></div>
+    </div>
+    <p class="small">لو توجد رحلة نشطة، تتقفل بعض تعديلات الملف مؤقتًا. الصفحة تعرض بريد الدخول، تنبيه التجربة، وخيار تثبيت بابلو.</p>
+    <h2>٥. طلب مشوار — المسار: <span dir="ltr">/book</span> للعميل</h2>
+    <div class="step"><span class="num">١</span><div><strong>تحديد نقطة الركوب والوجهة:</strong> يضغط الراكب على الخريطة لإضافة دبوسين؛ الوصف النصي يساعد الكابتن في العثور على المكان ولا يحدد الموقع وحده.</div></div>
+    <div class="step"><span class="num">٢</span><div><strong>مكاني = الركوب:</strong> يطلب إذن الموقع من المتصفح لتحديد نقطة الركوب، ويمكن تعديل الدبوس يدويًا.</div></div>
+    <div class="step"><span class="num">٣</span><div><strong>اختيار التفاصيل:</strong> المحافظة، نوع السيارة (اقتصادي/عائلي/مميز)، وملاحظات اختيارية للكابتن.</div></div>
+    <div class="step"><span class="num">٤</span><div><strong>معاينة الطريق:</strong> تعرض مسافة ومدة قيادة تقديريتين من خدمة خارجية؛ لا تشمل الزحمة ولا تمثل موعد وصول الكابتن.</div></div>
+    <div class="step"><span class="num">٥</span><div><strong>إرسال الطلب:</strong> بعد الدخول يرسل الطلب وينتقل لتفاصيل الرحلة. قبل الدخول يحفظ مسودة ولا يرسلها حتى يؤكد المستخدم.</div></div>
+    <div class="notice"><strong>غير ظاهر في شاشة الطلب الحالية:</strong> السعر النهائي، شاشة دفع، أو اختيار وسيلة دفع. الأجرة والعمولة المتفق عليهما لا تعنيان أن الحساب المالي فعّال.</div>
+    <footer class="foot"><span>الوصف من تصميم الحساب ونموذج الحجز</span><span class="pnum">4 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">لوحة العميل ولوحة الكابتن</div></header>
+    <h2>٦. الشاشة الرئيسية بعد الدخول — المسار: <span dir="ltr">/book</span></h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>إذا كان الحساب راكبًا</h3>
+        <ul><li>تحية باسم الراكب وسؤال «رايح فين؟».</li><li>نموذج إنشاء طلب جديد.</li><li>لو لديه رحلة نشطة تظهر بطاقة متابعة بدل طلب رحلة أخرى.</li><li>ملخص أعداد الرحلات وتنبيه التجربة.</li></ul>
+      </div>
+      <div class="card">
+        <h3>إذا كان الحساب كابتنًا</h3>
+        <ul><li>قائمة الطلبات المتاحة في المحافظة.</li><li>تتحدث القائمة دوريًا، وتظهر بطاقة الطريق والحالة.</li><li>إذا لديه رحلة نشطة، تظهر له أولًا ولا يقبل رحلة جديدة.</li><li>بطاقة السيارة ورقم اللوحة ورابط تعديل الحساب.</li></ul>
+      </div>
+    </div>
+    <h2>بطاقة الطلب</h2>
+    <p>تعرض حالة الرحلة، وقت إنشاء الطلب، نقطة الركوب والوجهة، المحافظة، نوع السيارة، ورقم الرحلة. يفتح الضغط عليها صفحة التفاصيل؛ يظهر للكابتن زر «اقبل» عندما يكون الطلب متاحًا.</p>
+    <div class="darkbox">
+      <strong class="gold">مهم للكابتن:</strong>
+      <p>اعتماد الإدارة، الموافقة الإلكترونية على الشروط، المحفظة، خصم العمولة وشحن فوري لم تكتمل في الواجهة الحالية. لا تعتبر زر القبول متاحًا تجاريًا أو أن الكابتن مؤهل قانونيًا بمجرد تسجيله.</p>
+    </div>
+    <h2>ملخص الرحلات</h2>
+    <p>أربع خانات: كل الرحلات، المكتملة، النشطة، والملغاة. على الموبايل تتحول إلى أربع خلايا صغيرة في بطاقة واحدة.</p>
+    <div class="box"><strong>حالات الواجهة العامة:</strong> تحميل قائمة الطلبات، قائمة فارغة عند عدم وجود طلبات، أو رسالة خطأ وزر لإعادة المحاولة عند فشل الاتصال.</div>
+    <footer class="foot"><span>شاشة واحدة تتغير حسب دور الحساب</span><span class="pnum">5 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">رحلاتي وتفاصيل الرحلة</div></header>
+    <h2>٧. رحلاتي — المسار: <span dir="ltr">/trips</span></h2>
+    <p>قائمة ببطاقات الرحلات السابقة والحالية. يختار المستخدم تبويبًا لتصفية القائمة:</p>
+    <div class="grid3"><div class="card"><strong>الكل</strong><br>جميع الرحلات.</div><div class="card"><strong>شغالة</strong><br>الطلبات النشطة.</div><div class="card"><strong>خلصت / اتلغت</strong><br>حسب الحالة المختارة.</div></div>
+    <p>الكابتن يرى الرحلات التي قبلها والطلبات التي أنشأها لنفسه؛ والراكب يرى الرحلات التي طلبها. عند عدم وجود نتائج تظهر رسالة توضيحية ورابط لبدء رحلة أو العودة للطلبات.</p>
+    <h2>٨. تفاصيل الرحلة — المسار: <span dir="ltr">/trips/:id</span></h2>
+    <ul>
+      <li>رقم الرحلة وتاريخها ومحافظتها ونوع السيارة، مع شريط تقدم بصري.</li>
+      <li>خريطة نقطة الركوب والوجهة والمسار. إذا كانت الرحلة نشطة قد يظهر موقع الكابتن ودقة الإحداثيات وحداثة آخر تحديث.</li>
+      <li>اسم الطرف الآخر ورقم الهاتف؛ يظهر رقم الكابتن للراكب بعد قبول الرحلة، مع زر اتصال هاتفي.</li>
+      <li>زر إلغاء مع نافذة تأكيد، وخيارات للكابتن لتسجيل الوصول ثم بدء الرحلة ثم إكمالها.</li>
+      <li>بعد الإكمال يستطيع الراكب اختيار تقييم من نجمة إلى خمس نجوم.</li>
+    </ul>
+    <h2>حالات الرحلة المعروضة</h2>
+    <p>
+      <span class="status s1">طلب جديد</span>
+      <span class="status s2">مقبولة / وصل الكابتن</span>
+      <span class="status s3">في الطريق</span>
+      <span class="status s4">مكتملة</span>
+      <span class="status s5">ملغاة</span>
+    </p>
+    <div class="notice"><strong>التتبع والخصوصية:</strong> مشاركة الموقع اختيارية من الكابتن وتتطلب إذن الجهاز. تعمل والصفحة مفتوحة فقط؛ مغادرة الصفحة أو إخفاؤها توقف المشاركة. يمكن للكابتن إيقافها ومسح آخر موقع، ولا يوجد ضمان للتتبع في الخلفية.</div>
+    <footer class="foot"><span>الموقع والمعلومات تخص طرفي الرحلة</span><span class="pnum">6 / 7</span></footer>
+  </section>
+
+  <section class="page">
+    <header><div class="brand">PABLO <span>|</span> بابلو</div><div class="doc-label">التثبيت والحالة الحالية</div></header>
+    <h2>٩. تثبيت بابلو من المتصفح</h2>
+    <p>من صفحة «حسابي» يظهر خيار تثبيت التطبيق إذا كان المتصفح يدعمه. على iPhone يُستخدم Safari ثم «مشاركة» ثم «إضافة إلى الشاشة الرئيسية». على Chrome يختار المستخدم من القائمة «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p>
+    <div class="notice"><strong>هذا تثبيت PWA من المتصفح، وليس APK.</strong> مهمة النسخة الأصلية لنظام Android منفصلة وما زالت قيد العمل.</div>
+    <h2>شاشات غير موجودة بعد</h2>
+    <table>
+      <thead><tr><th>الجزء</th><th>ما المتوقع أن يعرضه</th><th>الحالة في الواجهة</th></tr></thead>
+      <tbody>
+        <tr><td>اعتماد الكابتن</td><td>حالة الطلب، الإقرار الإلكتروني، قائمة تحقق للمراجع، والقرار.</td><td>لا توجد شاشة مدير مكتملة؛ التسجيل الحالي لا يعرض اعتمادًا إداريًا.</td></tr>
+        <tr><td>محفظة الكابتن</td><td>الرصيد، سجل الحركات، إنشاء شحن، QR أو مرجع دفع.</td><td>غير موجودة كواجهة مكتملة؛ حساب FawryPay بانتظار الموافقة.</td></tr>
+        <tr><td>السعر والعمولة</td><td>عرض تقدير الأجرة والعمولة قبل تأكيد الرحلة وقبولها.</td><td>غير مكتمل للعرض؛ لا تستخدم كحساب مالي فعلي.</td></tr>
+        <tr><td>تطبيق Android أصلي</td><td>تثبيت كتطبيق أصلي وميزات نظام الهاتف.</td><td>غير موجود كـAPK حاليًا.</td></tr>
+      </tbody>
+    </table>
+    <h2>حالة التشغيل</h2>
+    <div class="darkbox">
+      <p><strong class="gold">الوضع الحالي:</strong> بابلو نسخة تجريبية للتعريف والتطوير، وليست جاهزة لنقل ركاب تجاري أو تحصيل أموال.</p>
+      <p>الواجهة متاحة، لكن خادم العمليات متوقف حاليًا بسبب مشكلة بناء؛ لذلك إنشاء الحساب والطلب وتحديث الرحلة غير مؤكدة حتى إصلاح الخادم وإعادة الاختبار.</p>
+      <p>الخريطة تعتمد على OpenStreetMap وخدمة مسارات عامة للتجربة. يلزم تأكيد سياسة الاستخدام والسعة واختيار مزود ملائم قبل التشغيل التجاري.</p>
+    </div>
+    <h2>ما يلزم قبل الاستخدام الحقيقي</h2>
+    <ul class="check">
+      <li>إصلاح الخادم وتشغيل اختبارات الطلبات والحالات والتتبع.</li>
+      <li>إكمال واجهة اعتماد الكابتن والشروط والتحقق القانوني.</li>
+      <li>استكمال موافقة FawryPay، واختبار Sandbox قبل أي ربط إنتاجي.</li>
+      <li>إظهار الأجرة وسياسة العمولة والإلغاء بوضوح، ومراجعة التراخيص والتأمين والخصوصية.</li>
+    </ul>
+    <footer class="foot"><span>أُعد هذا الدليل من الشاشات والشفرة الحالية؛ ليس ضمانًا للتشغيل</span><span class="pnum">7 / 7</span></footer>
+  </section>
+</body>
+</html>

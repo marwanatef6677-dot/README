@@ -14,3 +14,17 @@ mtime_ms = 1792750113828
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/b6a7ecaa-d398-459a-87da-62ad23760d87/f2ed91b4-c5c4-42a3-9b49-d71aaaa6980d"
 storage_version_token = "1792750170237503"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "wu6f3kpnUoucrwxKcxtN6"
+uri = "file://generated-artifacts/pablo-app-guide.pdf"
+type = "pdf"
+title = "دليل بابلو الكامل — الشاشات والتصميم"
+description = "دليل PDF عربي من 7 صفحات يشرح الشاشات ومسارات العميل والكابتن، الهوية البصرية، الخرائط والتتبع، التثبيت، وما لم يكتمل بعد. يتضمن لقطات فعلية للرئيسية وتسجيل الدخول."
+logical_id = "35f0b0d4-2e63-4eb8-8c2d-50f54ac0b3b6"
+content_hash = "sha256:7f364cf99ef2090ea43cd5aa0fcb71e120595b3b2539ec0ac07e69e8df732183"
+size = 475448
+mtime_ms = 1792750573168
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/35f0b0d4-2e63-4eb8-8c2d-50f54ac0b3b6/54127679-6c2a-4ea5-8430-9916e20d20a1"
+storage_version_token = "1792750616837855"
+content_type = "application/pdf"
