@@ -75,6 +75,9 @@ export interface Profile {
   vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
+  hasAvatarPhoto: boolean;
+  hasCaptainVehiclePhoto: boolean;
+  captainPhotoVerified: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;
   walletBalancePiasters: number;
@@ -134,6 +137,65 @@ export interface ProfileInput {
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;
+}
+
+export type ProfilePhotoUploadRequestPurpose = typeof ProfilePhotoUploadRequestPurpose[keyof typeof ProfilePhotoUploadRequestPurpose];
+
+
+export const ProfilePhotoUploadRequestPurpose = {
+  avatar: 'avatar',
+  captain_vehicle: 'captain_vehicle',
+} as const;
+
+export type ProfilePhotoUploadRequestContentType = typeof ProfilePhotoUploadRequestContentType[keyof typeof ProfilePhotoUploadRequestContentType];
+
+
+export const ProfilePhotoUploadRequestContentType = {
+  'image/jpeg': 'image/jpeg',
+  'image/png': 'image/png',
+  'image/webp': 'image/webp',
+} as const;
+
+export interface ProfilePhotoUploadRequest {
+  purpose: ProfilePhotoUploadRequestPurpose;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 5242880
+     */
+  size: number;
+  contentType: ProfilePhotoUploadRequestContentType;
+}
+
+export interface ProfilePhotoUploadResponse {
+  uploadURL: string;
+  objectPath: string;
+}
+
+export type ProfilePhotoCompleteRequestPurpose = typeof ProfilePhotoCompleteRequestPurpose[keyof typeof ProfilePhotoCompleteRequestPurpose];
+
+
+export const ProfilePhotoCompleteRequestPurpose = {
+  avatar: 'avatar',
+  captain_vehicle: 'captain_vehicle',
+} as const;
+
+export interface ProfilePhotoCompleteRequest {
+  purpose: ProfilePhotoCompleteRequestPurpose;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  objectPath: string;
+}
+
+export interface ProfilePhotoCompleteResponse {
+  hasAvatarPhoto: boolean;
+  hasCaptainVehiclePhoto: boolean;
 }
 
 export type RideInputRideType = typeof RideInputRideType[keyof typeof RideInputRideType];
@@ -618,6 +680,8 @@ export interface DriverReview {
   driverReviewNote: string;
   /** @nullable */
   driverReviewedAt: string | null;
+  captainVehiclePhotoAvailable: boolean;
+  captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;
   vehicleVerified: boolean;
@@ -642,6 +706,7 @@ export interface DriverReviewInput {
   decision: DriverReviewInputDecision;
   /** @maxLength 500 */
   note: string;
+  captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;
   vehicleVerified: boolean;

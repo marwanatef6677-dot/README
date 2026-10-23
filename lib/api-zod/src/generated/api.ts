@@ -56,6 +56,9 @@ export const GetProfileResponse = zod.object({
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
+  "hasAvatarPhoto": zod.boolean(),
+  "hasCaptainVehiclePhoto": zod.boolean(),
+  "captainPhotoVerified": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
   "walletBalancePiasters": zod.number().int(),
@@ -112,6 +115,9 @@ export const UpdateProfileResponse = zod.object({
   "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
+  "hasAvatarPhoto": zod.boolean(),
+  "hasCaptainVehiclePhoto": zod.boolean(),
+  "captainPhotoVerified": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
   "walletBalancePiasters": zod.number().int(),
@@ -120,6 +126,60 @@ export const UpdateProfileResponse = zod.object({
   "driverLevel": zod.number().int().min(updateProfileResponseDriverLevelMin).max(updateProfileResponseDriverLevelMax),
   "ridesToNextLevel": zod.number().int().min(updateProfileResponseRidesToNextLevelMin).max(updateProfileResponseRidesToNextLevelMax)
 })
+
+
+export const requestProfilePhotoUploadBodyNameMax = 180;
+
+export const requestProfilePhotoUploadBodySizeMax = 5242880;
+
+
+
+export const RequestProfilePhotoUploadBody = zod.object({
+  "purpose": zod.enum(['avatar', 'captain_vehicle']),
+  "name": zod.string().min(1).max(requestProfilePhotoUploadBodyNameMax),
+  "size": zod.number().int().min(1).max(requestProfilePhotoUploadBodySizeMax),
+  "contentType": zod.enum(['image/jpeg', 'image/png', 'image/webp'])
+})
+
+export const RequestProfilePhotoUploadResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string()
+})
+
+
+export const completeProfilePhotoUploadBodyObjectPathMax = 500;
+
+
+
+export const CompleteProfilePhotoUploadBody = zod.object({
+  "purpose": zod.enum(['avatar', 'captain_vehicle']),
+  "objectPath": zod.string().min(1).max(completeProfilePhotoUploadBodyObjectPathMax)
+})
+
+export const CompleteProfilePhotoUploadResponse = zod.object({
+  "hasAvatarPhoto": zod.boolean(),
+  "hasCaptainVehiclePhoto": zod.boolean()
+})
+
+
+export const GetMyAvatarPhotoResponse = zod.unknown()
+
+
+export const GetMyCaptainVehiclePhotoResponse = zod.unknown()
+
+
+export const GetDriverReviewPhotoParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetDriverReviewPhotoResponse = zod.unknown()
+
+
+export const GetRideDriverPhotoParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetRideDriverPhotoResponse = zod.unknown()
 
 
 export const listRidesResponseCaptainRatingMax = 5;
@@ -640,6 +700,8 @@ export const ListDriverReviewsResponseItem = zod.object({
   "driverTermsAccepted": zod.boolean(),
   "driverReviewNote": zod.string(),
   "driverReviewedAt": zod.string().nullable(),
+  "captainVehiclePhotoAvailable": zod.boolean(),
+  "captainPhotoVerified": zod.boolean(),
   "identityVerified": zod.boolean(),
   "drivingLicenseVerified": zod.boolean(),
   "vehicleVerified": zod.boolean(),
@@ -664,6 +726,7 @@ export const reviewDriverBodyNoteMax = 500;
 export const ReviewDriverBody = zod.object({
   "decision": zod.enum(['approved', 'rejected', 'suspended']),
   "note": zod.string().max(reviewDriverBodyNoteMax),
+  "captainPhotoVerified": zod.boolean(),
   "identityVerified": zod.boolean(),
   "drivingLicenseVerified": zod.boolean(),
   "vehicleVerified": zod.boolean(),
@@ -687,6 +750,8 @@ export const ReviewDriverResponse = zod.object({
   "driverTermsAccepted": zod.boolean(),
   "driverReviewNote": zod.string(),
   "driverReviewedAt": zod.string().nullable(),
+  "captainVehiclePhotoAvailable": zod.boolean(),
+  "captainPhotoVerified": zod.boolean(),
   "identityVerified": zod.boolean(),
   "drivingLicenseVerified": zod.boolean(),
   "vehicleVerified": zod.boolean(),

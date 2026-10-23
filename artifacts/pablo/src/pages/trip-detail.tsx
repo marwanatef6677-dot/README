@@ -185,10 +185,18 @@ export default function TripDetail({ profile }: { profile: Profile }) {
 
       {(other.name && (isCustomer ? r.driverId : true)) && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-card-border bg-card p-4">
+          {isCustomer && r.driverId && <img
+            src={`/api/storage/rides/${r.id}/driver-photo`}
+            alt="صورة الكابتن مع المركبة"
+            className="h-16 w-20 shrink-0 rounded-xl bg-muted object-cover"
+            data-testid="img-trip-captain-photo"
+            onError={(event) => { event.currentTarget.hidden = true; }}
+          />}
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{other.title}</p>
             <p className="truncate font-display font-bold" data-testid="text-counterpart">{other.name}</p>
             {isCustomer && r.vehicle && <p className="text-sm text-muted-foreground">{r.vehicle} · <span className="font-num">{r.plate}</span></p>}
+            {isCustomer && r.driverId && <p className="mt-1 text-xs text-muted-foreground" data-testid="text-trip-captain-photo-privacy">صورة الكابتن متاحة لأطراف الرحلة بعد قبولها.</p>}
           </div>
           {other.phone && <a href={`tel:${other.phone}`} data-testid="link-call" aria-label={isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"} className="press inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-[#ffd000] px-4 py-2 text-sm font-bold text-[#10151d]"><Phone className="h-4 w-4" /> <span>{isCustomer ? "اتصل بالكابتن" : "اتصل بالراكب"}</span><span className="font-num" dir="ltr">{other.phone}</span></a>}
         </div>

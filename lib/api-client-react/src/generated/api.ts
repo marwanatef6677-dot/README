@@ -33,6 +33,10 @@ import type {
   LocationInput,
   Profile,
   ProfileInput,
+  ProfilePhotoCompleteRequest,
+  ProfilePhotoCompleteResponse,
+  ProfilePhotoUploadRequest,
+  ProfilePhotoUploadResponse,
   Ride,
   RideAction,
   RideInput,
@@ -452,6 +456,550 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getUpdateProfileMutationOptions(options), queryClient);
     }
+
+export const getRequestProfilePhotoUploadUrl = () => {
+
+
+
+
+  return `/api/storage/profile-photos/request-upload`
+}
+
+export const requestProfilePhotoUpload = async (profilePhotoUploadRequest: ProfilePhotoUploadRequest, options?: Parameters<typeof customFetch>[1]): Promise<ProfilePhotoUploadResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProfilePhotoUploadResponse>(getRequestProfilePhotoUploadUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(profilePhotoUploadRequest)
+  }
+);}
+
+
+
+
+
+export const getRequestProfilePhotoUploadMutationKey = () => ['requestProfilePhotoUpload'] as const;
+
+export const getRequestProfilePhotoUploadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestProfilePhotoUpload>>, TError,RequestProfilePhotoUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestProfilePhotoUpload>>, TError,RequestProfilePhotoUploadMutationVariables, TContext> => {
+
+const mutationKey = getRequestProfilePhotoUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestProfilePhotoUpload>>, RequestProfilePhotoUploadMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestProfilePhotoUpload(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestProfilePhotoUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestProfilePhotoUpload>>>
+    export type RequestProfilePhotoUploadMutationBody = BodyType<ProfilePhotoUploadRequest>
+    export type RequestProfilePhotoUploadMutationError = ErrorType<unknown>
+    export type RequestProfilePhotoUploadMutationVariables = {data: BodyType<ProfilePhotoUploadRequest>}
+
+    export const useRequestProfilePhotoUpload = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestProfilePhotoUpload>>, TError,RequestProfilePhotoUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestProfilePhotoUpload>>,
+        TError,
+        RequestProfilePhotoUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestProfilePhotoUploadMutationOptions(options), queryClient);
+    }
+
+export const getCompleteProfilePhotoUploadUrl = () => {
+
+
+
+
+  return `/api/storage/profile-photos/complete`
+}
+
+export const completeProfilePhotoUpload = async (profilePhotoCompleteRequest: ProfilePhotoCompleteRequest, options?: Parameters<typeof customFetch>[1]): Promise<ProfilePhotoCompleteResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProfilePhotoCompleteResponse>(getCompleteProfilePhotoUploadUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(profilePhotoCompleteRequest)
+  }
+);}
+
+
+
+
+
+export const getCompleteProfilePhotoUploadMutationKey = () => ['completeProfilePhotoUpload'] as const;
+
+export const getCompleteProfilePhotoUploadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeProfilePhotoUpload>>, TError,CompleteProfilePhotoUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeProfilePhotoUpload>>, TError,CompleteProfilePhotoUploadMutationVariables, TContext> => {
+
+const mutationKey = getCompleteProfilePhotoUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeProfilePhotoUpload>>, CompleteProfilePhotoUploadMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  completeProfilePhotoUpload(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteProfilePhotoUploadMutationResult = NonNullable<Awaited<ReturnType<typeof completeProfilePhotoUpload>>>
+    export type CompleteProfilePhotoUploadMutationBody = BodyType<ProfilePhotoCompleteRequest>
+    export type CompleteProfilePhotoUploadMutationError = ErrorType<unknown>
+    export type CompleteProfilePhotoUploadMutationVariables = {data: BodyType<ProfilePhotoCompleteRequest>}
+
+    export const useCompleteProfilePhotoUpload = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeProfilePhotoUpload>>, TError,CompleteProfilePhotoUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof completeProfilePhotoUpload>>,
+        TError,
+        CompleteProfilePhotoUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCompleteProfilePhotoUploadMutationOptions(options), queryClient);
+    }
+
+export const getGetMyAvatarPhotoUrl = () => {
+
+
+
+
+  return `/api/storage/profile-photos/me/avatar`
+}
+
+export const getMyAvatarPhoto = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetMyAvatarPhotoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyAvatarPhotoQueryKey = () => {
+    return [
+    `/api/storage/profile-photos/me/avatar`
+    ] as const;
+    }
+
+
+export const getGetMyAvatarPhotoQueryOptions = <TData = Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyAvatarPhotoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyAvatarPhoto>>> = ({ signal }) => getMyAvatarPhoto({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMyAvatarPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getMyAvatarPhoto>>>
+export type GetMyAvatarPhotoQueryError = ErrorType<void>
+
+
+export function useGetMyAvatarPhoto<TData = Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyAvatarPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getMyAvatarPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyAvatarPhoto<TData = Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyAvatarPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getMyAvatarPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyAvatarPhoto<TData = Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetMyAvatarPhoto<TData = Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAvatarPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMyAvatarPhotoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMyCaptainVehiclePhotoUrl = () => {
+
+
+
+
+  return `/api/storage/profile-photos/me/vehicle`
+}
+
+export const getMyCaptainVehiclePhoto = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetMyCaptainVehiclePhotoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyCaptainVehiclePhotoQueryKey = () => {
+    return [
+    `/api/storage/profile-photos/me/vehicle`
+    ] as const;
+    }
+
+
+export const getGetMyCaptainVehiclePhotoQueryOptions = <TData = Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyCaptainVehiclePhotoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>> = ({ signal }) => getMyCaptainVehiclePhoto({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMyCaptainVehiclePhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>>
+export type GetMyCaptainVehiclePhotoQueryError = ErrorType<void>
+
+
+export function useGetMyCaptainVehiclePhoto<TData = Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyCaptainVehiclePhoto<TData = Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMyCaptainVehiclePhoto<TData = Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetMyCaptainVehiclePhoto<TData = Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyCaptainVehiclePhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMyCaptainVehiclePhotoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDriverReviewPhotoUrl = (id: string,) => {
+
+
+
+
+  return `/api/storage/admin/drivers/${id}/vehicle-photo`
+}
+
+export const getDriverReviewPhoto = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetDriverReviewPhotoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDriverReviewPhotoQueryKey = (id: string,) => {
+    return [
+    `/api/storage/admin/drivers/${id}/vehicle-photo`
+    ] as const;
+    }
+
+
+export const getGetDriverReviewPhotoQueryOptions = <TData = Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDriverReviewPhotoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDriverReviewPhoto>>> = ({ signal }) => getDriverReviewPhoto(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDriverReviewPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getDriverReviewPhoto>>>
+export type GetDriverReviewPhotoQueryError = ErrorType<void>
+
+
+export function useGetDriverReviewPhoto<TData = Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDriverReviewPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getDriverReviewPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDriverReviewPhoto<TData = Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDriverReviewPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getDriverReviewPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDriverReviewPhoto<TData = Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetDriverReviewPhoto<TData = Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDriverReviewPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDriverReviewPhotoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRideDriverPhotoUrl = (id: number,) => {
+
+
+
+
+  return `/api/storage/rides/${id}/driver-photo`
+}
+
+export const getRideDriverPhoto = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetRideDriverPhotoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRideDriverPhotoQueryKey = (id: number,) => {
+    return [
+    `/api/storage/rides/${id}/driver-photo`
+    ] as const;
+    }
+
+
+export const getGetRideDriverPhotoQueryOptions = <TData = Awaited<ReturnType<typeof getRideDriverPhoto>>, TError = ErrorType<void>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRideDriverPhotoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRideDriverPhoto>>> = ({ signal }) => getRideDriverPhoto(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetRideDriverPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getRideDriverPhoto>>>
+export type GetRideDriverPhotoQueryError = ErrorType<void>
+
+
+export function useGetRideDriverPhoto<TData = Awaited<ReturnType<typeof getRideDriverPhoto>>, TError = ErrorType<void>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRideDriverPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getRideDriverPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRideDriverPhoto<TData = Awaited<ReturnType<typeof getRideDriverPhoto>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRideDriverPhoto>>,
+          TError,
+          Awaited<ReturnType<typeof getRideDriverPhoto>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRideDriverPhoto<TData = Awaited<ReturnType<typeof getRideDriverPhoto>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetRideDriverPhoto<TData = Awaited<ReturnType<typeof getRideDriverPhoto>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRideDriverPhoto>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetRideDriverPhotoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListRidesUrl = () => {
 

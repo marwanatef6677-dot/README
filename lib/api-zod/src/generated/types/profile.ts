@@ -19,6 +19,9 @@ export interface Profile {
   vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
+  hasAvatarPhoto: boolean;
+  hasCaptainVehiclePhoto: boolean;
+  captainPhotoVerified: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;
   driverTermsAccepted: boolean;
   walletBalancePiasters: number;

@@ -16,8 +16,11 @@ async function profileJson(profile: typeof profiles.$inferSelect) {
   }).from(rides).where(eq(rides.driverId, profile.id));
   const completedRides = stats?.completedRides ?? 0;
   const driverLevel = Math.min(MAX_DRIVER_LEVEL, Math.floor(completedRides / RIDES_PER_LEVEL));
+  const { avatarPhotoPath, captainVehiclePhotoPath, ...safeProfile } = profile;
   return {
-    ...profile,
+    ...safeProfile,
+    hasAvatarPhoto: Boolean(avatarPhotoPath),
+    hasCaptainVehiclePhoto: Boolean(captainVehiclePhotoPath),
     driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
     driverCompletedRides: completedRides,
     driverRating: stats?.driverRating == null ? null : Number(stats.driverRating),
@@ -60,6 +63,9 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
   }
   const result = await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(profiles).where(eq(profiles.id, res.locals.userId)).for("update");
+    if (data.role === "driver" && !existing.captainVehiclePhotoPath) {
+      throw new AppError(400, "ارفع صورة واضحة ليك مع العربية أو الموتوسيكل قبل تسجيل حساب الكابتن.");
+    }
     const [active] = await tx.select({ id: rides.id }).from(rides).where(activeFor(existing.id)).limit(1);
     if (active) throw new AppError(409, "كمّل أو الغي الرحلة الحالية قبل تعديل بيانات الحساب.");
     const needsReview = data.role === "driver" && (
@@ -82,6 +88,7 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
         identityVerified: false,
         drivingLicenseVerified: false,
         vehicleVerified: false,
+        captainPhotoVerified: false,
         workPermitVerified: false,
         socialInsuranceVerified: false,
         backgroundCheckCompleted: false,

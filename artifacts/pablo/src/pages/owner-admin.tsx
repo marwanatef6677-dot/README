@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Clock3,
+  Camera,
   FileCheck2,
   FlaskConical,
   IdCard,
@@ -29,6 +30,7 @@ import { SupportTicketsAdmin } from "@/components/support-tickets-admin";
 import { errorText } from "@/lib/pablo";
 
 const CHECKLIST = [
+  { key: "captainPhotoVerified", label: "مراجعة صورة الكابتن مع المركبة", icon: Camera },
   { key: "identityVerified", label: "التحقق من الهوية", icon: IdCard },
   { key: "drivingLicenseVerified", label: "رخصة القيادة", icon: FileCheck2 },
   { key: "vehicleVerified", label: "مطابقة بيانات المركبة", icon: ClipboardCheck },
@@ -45,6 +47,7 @@ type Draft = Pick<DriverReviewInput, ChecklistKey | "note">;
 
 const makeDraft = (review: DriverReview): Draft => ({
   note: review.driverReviewNote ?? "",
+  captainPhotoVerified: review.captainPhotoVerified && review.captainVehiclePhotoAvailable,
   identityVerified: review.identityVerified,
   drivingLicenseVerified: review.drivingLicenseVerified,
   vehicleVerified: review.vehicleVerified,
@@ -100,6 +103,7 @@ export default function OwnerAdmin() {
     const data: DriverReviewInput = {
       decision,
       note,
+      captainPhotoVerified: draft.captainPhotoVerified,
       identityVerified: draft.identityVerified,
       drivingLicenseVerified: draft.drivingLicenseVerified,
       vehicleVerified: draft.vehicleVerified,
@@ -188,7 +192,7 @@ export default function OwnerAdmin() {
             {reviews.map((review) => {
               const draft = drafts[review.id] ?? makeDraft(review);
               const verifiedCount = CHECKLIST.filter(({ key }) => draft[key]).length;
-              const canApprove = verifiedCount === CHECKLIST.length && review.driverTermsAccepted;
+              const canApprove = verifiedCount === CHECKLIST.length && review.driverTermsAccepted && review.captainVehiclePhotoAvailable;
               const isMutatingThis = reviewMutation.isPending && reviewMutation.variables?.id === review.id;
               const reviewDate = formatDate(review.driverReviewedAt);
               const status = STATUS[review.driverReviewStatus];
@@ -215,6 +219,24 @@ export default function OwnerAdmin() {
                       <InfoTile label="رقم اللوحة" value={review.plate || "غير مسجل"} />
                       <InfoTile label="موافقة الشروط" value={review.driverTermsAccepted ? "وافق عليها" : "لم يوافق"} alert={!review.driverTermsAccepted} />
                     </div>
+                    <section className="mt-4 rounded-2xl border border-border/75 bg-card p-3" data-testid={`section-captain-photo-${review.id}`}>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-bold">صورة الكابتن مع المركبة</h4>
+                          <p className="mt-1 text-xs text-muted-foreground">صورة خاصة للمراجعة الإدارية.</p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${review.captainVehiclePhotoAvailable ? "bg-emerald-700/10 text-emerald-800" : "bg-amber-700/10 text-amber-800"}`} data-testid={`status-captain-photo-${review.id}`}>
+                          {review.captainVehiclePhotoAvailable ? "متاحة للمراجعة" : "لم تُرفع"}
+                        </span>
+                      </div>
+                      {review.captainVehiclePhotoAvailable ? (
+                        <a href={`/api/storage/admin/drivers/${encodeURIComponent(review.id)}/vehicle-photo`} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl" data-testid={`link-captain-photo-${review.id}`}>
+                          <img src={`/api/storage/admin/drivers/${encodeURIComponent(review.id)}/vehicle-photo`} alt={`صورة ${review.name} مع المركبة`} className="max-h-72 w-full bg-muted object-contain" data-testid={`img-captain-photo-${review.id}`} onError={(event) => { event.currentTarget.hidden = true; }} />
+                        </a>
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-border bg-muted/45 px-3 py-5 text-center text-sm text-muted-foreground" data-testid={`text-captain-photo-missing-${review.id}`}>لا توجد صورة لمراجعتها حتى الآن.</p>
+                      )}
+                    </section>
                     {reviewDate && <p className="mt-3 text-xs text-muted-foreground" data-testid={`text-review-date-${review.id}`}>آخر مراجعة: {reviewDate}</p>}
                   </div>
 
@@ -222,10 +244,10 @@ export default function OwnerAdmin() {
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <h4 className="font-display text-lg font-bold">قائمة التحقق</h4>
-                        <p className="mt-1 text-xs text-muted-foreground">لازم تراجع وتؤكد البنود التسعة كلها قبل تفعيل الموافقة.</p>
+                          <p className="mt-1 text-xs text-muted-foreground">لازم تراجع وتؤكد البنود العشرة كلها قبل تفعيل الموافقة.</p>
                       </div>
                       <span className={`rounded-full px-3 py-1 font-num text-xs font-bold ${canApprove ? "bg-emerald-700/10 text-emerald-800" : "bg-muted text-muted-foreground"}`} data-testid={`text-checklist-progress-${review.id}`}>
-                        {verifiedCount} / 9 مكتمل
+                        {verifiedCount} / 10 مكتمل
                       </span>
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
@@ -237,7 +259,7 @@ export default function OwnerAdmin() {
                               type="checkbox"
                               checked={checked}
                               onChange={(event) => setDraftField(review.id, key, event.target.checked)}
-                              disabled={isMutatingThis}
+                               disabled={isMutatingThis || (key === "captainPhotoVerified" && !review.captainVehiclePhotoAvailable)}
                               className="h-4 w-4 accent-[#1f7a5f]"
                               data-testid={`checkbox-${key}-${review.id}`}
                             />
@@ -277,7 +299,7 @@ export default function OwnerAdmin() {
                         disabled={!canApprove || reviewMutation.isPending}
                         onClick={() => submitReview(review, "approved")}
                         data-testid={`button-approve-driver-${review.id}`}
-                        title={!canApprove ? "أكمل البنود التسعة وتأكد من قبول الشروط أولًا" : undefined}
+                        title={!canApprove ? "أكمل البنود العشرة وتأكد من قبول الشروط وتوفر صورة المركبة أولًا" : undefined}
                       >
                         {isMutatingThis ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                         {isMutatingThis ? "جارٍ حفظ القرار..." : "اعتماد الكابتن"}

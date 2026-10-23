@@ -9,6 +9,7 @@ import driverReviewRouter from "./driver-review";
 import rideMessagesRouter from "./ride-messages";
 import supportRouter from "./support";
 import openaiSupportRouter from "./openai-support";
+import profilePhotosRouter from "./profile-photos";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(walletRouter);
 router.use(driverReviewRouter);
 router.use(supportRouter);
 router.use(openaiSupportRouter);
+router.use(profilePhotosRouter);
 
 export default router;

@@ -17,6 +17,9 @@ router.get("/rides", async (_req, res): Promise<void> => {
 router.get("/rides/available", async (_req, res): Promise<void> => {
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, res.locals.userId));
   if (profile.role !== "driver" || !profile.onboarded) throw new AppError(403, "كمّل بيانات حساب الكابتن الأول.");
+  if (!profile.captainVehiclePhotoPath || !profile.captainPhotoVerified) {
+    throw new AppError(403, "ارفع صورة ليك مع المركبة وانتظر اعتمادها قبل استقبال الطلبات.");
+  }
   const [active] = await db.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
   const vehicleFilter = profile.vehicleType === "motorcycle"
     ? eq(rides.rideType, "motorcycle")
@@ -104,6 +107,9 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
     const driver = ride.driverId === userId;
     const changes: Partial<typeof rides.$inferInsert> = { updatedAt: new Date() };
     if (action === "accept") {
+      if (profile.role === "driver" && (!profile.captainVehiclePhotoPath || !profile.captainPhotoVerified)) {
+        throw new AppError(403, "ارفع صورة ليك مع المركبة وانتظر اعتمادها قبل قبول الرحلات.");
+      }
       if (!profile.onboarded || profile.role !== "driver" || profile.driverReviewStatus !== "approved"
         || !profile.driverTermsAcceptedAt || customer || profile.province !== ride.province
         || ((profile.vehicleType === "motorcycle") !== (ride.rideType === "motorcycle"))) {

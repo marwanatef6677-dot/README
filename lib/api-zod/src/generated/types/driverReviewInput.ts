@@ -11,6 +11,7 @@ export interface DriverReviewInput {
   decision: DriverReviewInputDecision;
   /** @maxLength 500 */
   note: string;
+  captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;
   vehicleVerified: boolean;

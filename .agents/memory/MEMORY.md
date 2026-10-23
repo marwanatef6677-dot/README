@@ -3,3 +3,4 @@
 - [Pablo captain levels and feedback](pablo-captain-progress.md) — level badges and ride feedback; motorcycle reviews must not ask about air conditioning.
 - [Pablo customer support](pablo-support-bot.md) — guided answers, AI chat, owner-reviewed tickets, in-app staff replies, and phone/WhatsApp; AI must not invent ride facts or promise refunds.
 - [Pablo motorcycle services](pablo-motorcycle-service.md) — motorcycle passenger rides and product delivery are in scope, but detailed motorcycle fares remain unapproved.
+- [Pablo profile photo privacy](pablo-photo-privacy.md) — customer avatars stay private; captains need an owner-verified photo with their vehicle before serving rides.

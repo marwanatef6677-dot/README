@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bike, CarFront, Check, Download, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
-import { getGetProfileQueryKey, useUpdateProfile } from "@workspace/api-client-react";
+import { Bike, CarFront, Check, Download, ImagePlus, Loader2, Lock, MoreVertical, Share, UserRound } from "lucide-react";
+import { getGetProfileQueryKey, getListDriverReviewsQueryKey, useCompleteProfilePhotoUpload, useRequestProfilePhotoUpload, useUpdateProfile } from "@workspace/api-client-react";
 import type { Profile, ProfileInputRole } from "@workspace/api-client-react";
 import { Btn, Monogram, PilotNotice, Skeleton } from "@/components/bits";
 import { fieldCls } from "@/components/booking-form";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const PHONE = /^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$/;
 type Form = { name: string; phone: string; role: ProfileInputRole; province: string; vehicle: string; vehicleType: "car" | "motorcycle"; plate: string; driverTermsAccepted: boolean };
+type FormErrors = Partial<Record<keyof Form | "vehiclePhoto", string>>;
 
 function InstallCard() {
   const { canPrompt, standalone, isIOS, install } = useInstall();
@@ -48,13 +49,18 @@ export default function Account({ profile }: { profile: Profile }) {
   const config = useConfig();
   const summary = useSummary();
   const update = useUpdateProfile();
+  const requestPhotoUpload = useRequestProfilePhotoUpload();
+  const completePhotoUpload = useCompleteProfilePhotoUpload();
   const qc = useQueryClient();
   const invalidate = useInvalidateRides();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [f, setF] = useState<Form>({ name: profile.name, phone: profile.phone, role: profile.role, province: profile.province, vehicle: profile.vehicle, vehicleType: profile.vehicleType, plate: profile.plate, driverTermsAccepted: profile.driverTermsAccepted });
-  const [errs, setErrs] = useState<Partial<Record<keyof Form, string>>>({});
+  const [errs, setErrs] = useState<FormErrors>({});
   const [serverErr, setServerErr] = useState("");
+  const [photoBusy, setPhotoBusy] = useState<"avatar" | "captain_vehicle" | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [photoRevision, setPhotoRevision] = useState(0);
   const filled = useRef(false);
 
   useEffect(() => {
@@ -68,13 +74,14 @@ export default function Account({ profile }: { profile: Profile }) {
 
   function submit(e: React.FormEvent) {
     e.preventDefault(); setServerErr("");
-    const er: typeof errs = {};
+    const er: FormErrors = {};
     const name = f.name.trim(), phone = f.phone.replace(/\s|-/g, "");
     if (name.length < 2 || name.length > 80) er.name = "الاسم لازم يكون من ٢ لـ ٨٠ حرف";
     if (!PHONE.test(phone)) er.phone = "اكتب رقم موبايل مصري صحيح، زي 01012345678";
     if (!f.province) er.province = "اختار محافظتك";
     if (f.role === "driver" && f.vehicle.trim().length < 2) er.vehicle = "اكتب نوع العربية ولونها";
     if (f.role === "driver" && f.plate.trim().length < 2) er.plate = "اكتب رقم اللوحة";
+    if (f.role === "driver" && !profile.hasCaptainVehiclePhoto) er.vehiclePhoto = "ارفع صورة ليك واقف جنب عربيتك أو موتوسيكل قبل تسجيل الكابتن";
     if (f.role === "driver" && !f.driverTermsAccepted) er.driverTermsAccepted = "وافق على إقرار النسخة التجريبية قبل تسجيل الكابتن";
     if (f.vehicle.length > 80) er.vehicle = "أقصى حد ٨٠ حرف";
     if (f.plate.length > 30) er.plate = "أقصى حد ٣٠ حرف";
@@ -88,6 +95,34 @@ export default function Account({ profile }: { profile: Profile }) {
       },
       onError: (err) => setServerErr(errorText(err)),
     });
+  }
+
+  async function uploadPhoto(file: File | undefined, purpose: "avatar" | "captain_vehicle") {
+    if (!file) return;
+    setPhotoError("");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoError("اختار صورة بصيغة JPG أو PNG أو WebP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("حجم الصورة لازم يكون ٥ ميجابايت أو أقل.");
+      return;
+    }
+    setPhotoBusy(purpose);
+    try {
+      const upload = await requestPhotoUpload.mutateAsync({ data: { purpose, name: file.name, size: file.size, contentType: file.type as "image/jpeg" | "image/png" | "image/webp" } });
+      const response = await fetch(upload.uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!response.ok) throw new Error("ماقدرناش نرفع الصورة. حاول تاني.");
+      await completePhotoUpload.mutateAsync({ data: { purpose, objectPath: upload.objectPath } });
+      await qc.invalidateQueries({ queryKey: getGetProfileQueryKey() });
+      if (purpose === "captain_vehicle") await qc.invalidateQueries({ queryKey: getListDriverReviewsQueryKey() });
+      setPhotoRevision((current) => current + 1);
+    } catch (error) {
+      setPhotoError(errorText(error, "ماقدرناش نرفع الصورة. حاول تاني."));
+    } finally {
+      setPhotoBusy(null);
+    }
   }
 
   const Err = ({ k }: { k: keyof Form }) => errs[k] ? <p className="mt-1 text-xs text-destructive">{errs[k]}</p> : null;
@@ -106,6 +141,37 @@ export default function Account({ profile }: { profile: Profile }) {
         <form onSubmit={submit} noValidate className="space-y-5" data-testid="form-profile">
           {locked && <p className="flex items-start gap-2 rounded-2xl bg-accent px-4 py-3 text-sm" data-testid="text-profile-locked"><Lock className="mt-0.5 h-4 w-4 shrink-0" /> عندك رحلة شغالة دلوقتي، فمينفعش تعدّل بياناتك غير لما تخلص أو تتلغي.</p>}
           <fieldset disabled={locked || update.isPending} className="space-y-5 disabled:opacity-60">
+            <section className="rounded-2xl border border-card-border bg-card p-4" data-testid="section-profile-photos">
+              <div className="flex items-start gap-3">
+                {profile.hasAvatarPhoto ? <img src={`/api/storage/profile-photos/me/avatar?v=${photoRevision}`} alt="صورتك الشخصية" className="h-14 w-14 rounded-2xl object-cover" data-testid="img-profile-avatar" /> : <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-muted"><UserRound className="h-6 w-6 text-muted-foreground" /></span>}
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-display font-bold">صور الحساب</h2>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-avatar-privacy">صورة الحساب اختيارية وخاصة بحسابك، ومش بتظهر للطرف التاني.</p>
+                  <label className="press mt-3 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-card-border bg-background px-3 text-sm font-bold" data-testid="label-avatar-upload">
+                    <ImagePlus className="h-4 w-4" /> {profile.hasAvatarPhoto ? "غيّر الصورة" : "ارفع صورة اختيارية"}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy !== null || locked} onChange={(event) => { void uploadPhoto(event.currentTarget.files?.[0], "avatar"); event.currentTarget.value = ""; }} data-testid="input-avatar-photo" />
+                  </label>
+                </div>
+              </div>
+              {f.role === "driver" && <div className="mt-4 border-t border-border/70 pt-4">
+                <div className="flex items-start gap-3">
+                  {profile.hasCaptainVehiclePhoto ? <img src={`/api/storage/profile-photos/me/vehicle?v=${photoRevision}`} alt="صورة الكابتن مع المركبة" className="h-20 w-28 shrink-0 rounded-xl object-cover" data-testid="img-captain-vehicle-photo" /> : <span className="grid h-20 w-28 shrink-0 place-items-center rounded-xl border border-dashed border-border bg-muted"><CarFront className="h-7 w-7 text-muted-foreground" /></span>}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold">صورة الكابتن مع المركبة <span className="text-destructive">*</span></h3>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="text-captain-photo-privacy">الصورة متاحة للإدارة للمراجعة، ولأطراف الرحلة بعد قبولها فقط.</p>
+                    <label className="press mt-2 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#ffd000] px-3 text-sm font-bold text-[#10151d]" data-testid="label-captain-photo-upload">
+                      <ImagePlus className="h-4 w-4" /> {profile.hasCaptainVehiclePhoto ? "غيّر صورة المركبة" : "ارفع صورة مطلوبة"}
+                      <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy !== null || locked} onChange={(event) => { void uploadPhoto(event.currentTarget.files?.[0], "captain_vehicle"); event.currentTarget.value = ""; }} data-testid="input-captain-vehicle-photo" />
+                    </label>
+                    {photoBusy === "captain_vehicle" && <p className="mt-2 text-xs text-muted-foreground" role="status" data-testid="status-captain-photo-upload">جاري رفع الصورة...</p>}
+                  </div>
+                </div>
+                {!profile.hasCaptainVehiclePhoto && <p className="mt-3 text-xs font-semibold text-amber-800" data-testid="text-captain-photo-required">لازم ترفع الصورة قبل حفظ التسجيل ككابتن.</p>}
+              </div>}
+              {photoBusy === "avatar" && <p className="mt-2 text-xs text-muted-foreground" role="status" data-testid="status-avatar-upload">جاري رفع الصورة...</p>}
+              {photoError && <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive" role="alert" data-testid="text-photo-upload-error">{photoError}</p>}
+              <p className="mt-3 text-[11px] text-muted-foreground" data-testid="text-photo-file-requirements">الصور المسموح بها JPG أو PNG أو WebP، بحد أقصى ٥ ميجابايت.</p>
+            </section>
             <div className="grid grid-cols-2 gap-3">
               {([["customer", "راكب", "عايز أطلب مشاوير", UserRound], ["driver", "كابتن", "عندي عربية وهسوق", CarFront]] as const).map(([v, l, d, Icon]) => (
                 <button type="button" key={v} data-testid={`button-role-${v}`} onClick={() => set("role", v)}
@@ -155,7 +221,7 @@ export default function Account({ profile }: { profile: Profile }) {
             )}
           </fieldset>
           {serverErr && <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive" data-testid="text-profile-error">{serverErr}</p>}
-          <Btn type="submit" variant={onboarding ? "yellow" : "dark"} className="h-14 w-full text-lg" data-testid="button-save-profile" disabled={locked || update.isPending}>
+          <Btn type="submit" variant={onboarding ? "yellow" : "dark"} className="h-14 w-full text-lg" data-testid="button-save-profile" disabled={locked || update.isPending || photoBusy !== null || (f.role === "driver" && !profile.hasCaptainVehiclePhoto)}>
             {update.isPending && <Loader2 className="h-5 w-5 animate-spin" />} {onboarding ? "يلا نبدأ" : "احفظ التعديلات"}
           </Btn>
         </form>

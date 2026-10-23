@@ -14,6 +14,8 @@ tags:
     description: Customer support and owner ticket review
   - name: openai
     description: OpenAI support assistant
+  - name: storage
+    description: Private profile photo uploads and serving
 paths:
   /healthz:
     get:
@@ -63,6 +65,92 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Profile"
+  /storage/profile-photos/request-upload:
+    post:
+      operationId: requestProfilePhotoUpload
+      tags: [storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfilePhotoUploadRequest"
+      responses:
+        "200":
+          description: Short-lived private upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfilePhotoUploadResponse"
+  /storage/profile-photos/complete:
+    post:
+      operationId: completeProfilePhotoUpload
+      tags: [storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfilePhotoCompleteRequest"
+      responses:
+        "200":
+          description: Image verified and saved to the current profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfilePhotoCompleteResponse"
+  /storage/profile-photos/me/avatar:
+    get:
+      operationId: getMyAvatarPhoto
+      tags: [storage]
+      responses:
+        "200":
+          description: Private customer profile image
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: No profile image is set
+  /storage/profile-photos/me/vehicle:
+    get:
+      operationId: getMyCaptainVehiclePhoto
+      tags: [storage]
+      responses:
+        "200":
+          description: Private captain-with-vehicle image
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: No captain image is set
+  /storage/admin/drivers/{id}/vehicle-photo:
+    get:
+      operationId: getDriverReviewPhoto
+      tags: [storage]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Private captain-with-vehicle image for owner review
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: Image not found
+  /storage/rides/{id}/driver-photo:
+    get:
+      operationId: getRideDriverPhoto
+      tags: [storage]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Assigned captain image, available only to ride participants
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: Image not found or ride unavailable
   /rides:
     get:
       operationId: listRides
@@ -417,7 +505,7 @@ components:
         seats: { type: integer }
     Profile:
       type: object
-      required: [id, name, phone, role, province, vehicle, vehicleType, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
+      required: [id, name, phone, role, province, vehicle, vehicleType, plate, onboarded, driverReviewStatus, driverTermsAccepted, hasAvatarPhoto, hasCaptainVehiclePhoto, captainPhotoVerified, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
       properties:
         id: { type: string }
         name: { type: string }
@@ -428,6 +516,9 @@ components:
         vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string }
         onboarded: { type: boolean }
+        hasAvatarPhoto: { type: boolean }
+        hasCaptainVehiclePhoto: { type: boolean }
+        captainPhotoVerified: { type: boolean }
         driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
         driverTermsAccepted: { type: boolean }
         walletBalancePiasters: { type: integer }
@@ -447,6 +538,32 @@ components:
         vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string, maxLength: 30 }
         driverTermsAccepted: { type: boolean }
+    ProfilePhotoUploadRequest:
+      type: object
+      required: [purpose, name, size, contentType]
+      properties:
+        purpose: { type: string, enum: [avatar, captain_vehicle] }
+        name: { type: string, minLength: 1, maxLength: 180 }
+        size: { type: integer, minimum: 1, maximum: 5242880 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+    ProfilePhotoUploadResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+    ProfilePhotoCompleteRequest:
+      type: object
+      required: [purpose, objectPath]
+      properties:
+        purpose: { type: string, enum: [avatar, captain_vehicle] }
+        objectPath: { type: string, minLength: 1, maxLength: 500 }
+    ProfilePhotoCompleteResponse:
+      type: object
+      required: [hasAvatarPhoto, hasCaptainVehiclePhoto]
+      properties:
+        hasAvatarPhoto: { type: boolean }
+        hasCaptainVehiclePhoto: { type: boolean }
     RideInput:
       type: object
       required: [pickup, destination, province, rideType, serviceType, pickupLat, pickupLng, destinationLat, destinationLng]
@@ -630,7 +747,7 @@ components:
           items: { $ref: "#/components/schemas/WalletLedgerEntry" }
     DriverReview:
       type: object
-      required: [id, name, phone, province, vehicle, vehicleType, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      required: [id, name, phone, province, vehicle, vehicleType, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, captainVehiclePhotoAvailable, captainPhotoVerified, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
       properties:
         id: { type: string }
         name: { type: string }
@@ -643,6 +760,8 @@ components:
         driverTermsAccepted: { type: boolean }
         driverReviewNote: { type: string }
         driverReviewedAt: { type: [string, "null"] }
+        captainVehiclePhotoAvailable: { type: boolean }
+        captainPhotoVerified: { type: boolean }
         identityVerified: { type: boolean }
         drivingLicenseVerified: { type: boolean }
         vehicleVerified: { type: boolean }
@@ -654,10 +773,11 @@ components:
         randomTestProcessConfirmed: { type: boolean }
     DriverReviewInput:
       type: object
-      required: [decision, note, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      required: [decision, note, captainPhotoVerified, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
       properties:
         decision: { type: string, enum: [approved, rejected, suspended] }
         note: { type: string, maxLength: 500 }
+        captainPhotoVerified: { type: boolean }
         identityVerified: { type: boolean }
         drivingLicenseVerified: { type: boolean }
         vehicleVerified: { type: boolean }

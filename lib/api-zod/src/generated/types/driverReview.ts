@@ -21,6 +21,8 @@ export interface DriverReview {
   driverReviewNote: string;
   /** @nullable */
   driverReviewedAt: string | null;
+  captainVehiclePhotoAvailable: boolean;
+  captainPhotoVerified: boolean;
   identityVerified: boolean;
   drivingLicenseVerified: boolean;
   vehicleVerified: boolean;

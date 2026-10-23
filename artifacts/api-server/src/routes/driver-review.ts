@@ -12,6 +12,7 @@ import { AppError } from "../lib/pablo";
 
 const router: IRouter = Router();
 const checks = [
+  "captainPhotoVerified",
   "identityVerified",
   "drivingLicenseVerified",
   "vehicleVerified",
@@ -36,6 +37,8 @@ function driverReviewJson(profile: typeof profiles.$inferSelect) {
     driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),
     driverReviewNote: profile.driverReviewNote,
     driverReviewedAt: profile.driverReviewedAt?.toISOString() ?? null,
+    captainVehiclePhotoAvailable: Boolean(profile.captainVehiclePhotoPath),
+    captainPhotoVerified: profile.captainPhotoVerified,
     identityVerified: profile.identityVerified,
     drivingLicenseVerified: profile.drivingLicenseVerified,
     vehicleVerified: profile.vehicleVerified,
@@ -70,6 +73,9 @@ router.post("/admin/drivers/:id/review", async (req, res): Promise<void> => {
     if (!driver || driver.role !== "driver") throw new AppError(404, "حساب الكابتن غير موجود.");
     if (decision === "approved" && !driver.driverTermsAcceptedAt) {
       throw new AppError(409, "الكابتن لازم يوافق على الإقرار قبل الاعتماد.");
+    }
+    if (decision === "approved" && !driver.captainVehiclePhotoPath) {
+      throw new AppError(409, "صورة الكابتن مع المركبة مطلوبة قبل الاعتماد.");
     }
     const [result] = await tx.update(profiles).set({
       ...verified,
