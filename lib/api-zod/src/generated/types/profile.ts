@@ -7,6 +7,7 @@
  */
 import type { ProfileDriverReviewStatus } from './profileDriverReviewStatus';
 import type { ProfileRole } from './profileRole';
+import type { ProfileVehicleType } from './profileVehicleType';
 
 export interface Profile {
   id: string;
@@ -15,6 +16,7 @@ export interface Profile {
   role: ProfileRole;
   province: string;
   vehicle: string;
+  vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;

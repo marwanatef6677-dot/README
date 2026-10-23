@@ -33,8 +33,9 @@ router.get("/config", (_req, res) => {
       { id: "economy", name: "اقتصادي", description: "اختيارك للمشاوير اليومية", seats: 4 },
       { id: "family", name: "عائلي", description: "مساحة أكبر ليك ولعيلتك", seats: 6 },
       { id: "premium", name: "مميز", description: "راحة أكتر في كل مشوار", seats: 4 },
+      { id: "motorcycle", name: "موتوسيكل", description: "مشاوير ركاب بالموتوسيكل", seats: 1 },
     ],
-    notice: "نسخة تجريبية للاختبار فقط. الأجرة والعمولة ومحفظة الكابتن متطلبات غير مفعّلة ماليًا. لا يستطيع الكابتن قبول الرحلات قبل اعتماد الإدارة. الخرائط للتجربة، والتتبع بإذن الكابتن أثناء فتح التطبيق. غير مخصصة لنقل ركاب تجاري.",
+    notice: "خدمات الموتوسيكل والتوصيل تجريبية للاختبار فقط. لا تبدأ التشغيل التجاري قبل اعتماد الإدارة ومراجعة التراخيص والتأمين والسياسات اللازمة. الخرائط والتتبع للتجربة، والقبول متاح للكابتن بعد اعتماد الإدارة.",
   }));
 });
 router.get("/profile", requirePabloAuth, async (_req, res): Promise<void> => {
@@ -58,7 +59,8 @@ router.patch("/profile", requirePabloAuth, async (req, res): Promise<void> => {
     if (active) throw new AppError(409, "كمّل أو الغي الرحلة الحالية قبل تعديل بيانات الحساب.");
     const needsReview = data.role === "driver" && (
       existing.role !== "driver" || existing.name !== data.name || existing.phone !== data.phone
-      || existing.province !== data.province || existing.vehicle !== data.vehicle || existing.plate !== data.plate
+      || existing.province !== data.province || existing.vehicle !== data.vehicle
+      || existing.vehicleType !== data.vehicleType || existing.plate !== data.plate
     );
     const [updated] = await tx.update(profiles).set({
       ...profileData,

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { RideInputRideType } from './rideInputRideType';
+import type { RideInputServiceType } from './rideInputServiceType';
 
 export interface RideInput {
   /**
@@ -24,6 +25,13 @@ export interface RideInput {
      */
   province: string;
   rideType: RideInputRideType;
+  serviceType: RideInputServiceType;
+  /** @maxLength 300 */
+  deliveryDescription?: string;
+  /** @maxLength 80 */
+  recipientName?: string;
+  /** @pattern ^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$ */
+  recipientPhone?: string;
   /**
      * @minimum -90
      * @maximum 90

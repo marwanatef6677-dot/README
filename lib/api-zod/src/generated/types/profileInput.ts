@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProfileInputRole } from './profileInputRole';
+import type { ProfileInputVehicleType } from './profileInputVehicleType';
 
 export interface ProfileInput {
   /**
@@ -23,6 +24,7 @@ export interface ProfileInput {
   province: string;
   /** @maxLength 80 */
   vehicle: string;
+  vehicleType: ProfileInputVehicleType;
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;

@@ -20,7 +20,7 @@ export const HealthCheckResponse = zod.object({
 export const GetConfigResponse = zod.object({
   "provinces": zod.array(zod.string()),
   "rideTypes": zod.array(zod.object({
-  "id": zod.enum(['economy', 'family', 'premium']),
+  "id": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
   "name": zod.string(),
   "description": zod.string(),
   "seats": zod.number().int()
@@ -48,6 +48,7 @@ export const GetProfileResponse = zod.object({
   "role": zod.enum(['customer', 'driver']),
   "province": zod.string(),
   "vehicle": zod.string(),
+  "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
@@ -79,6 +80,7 @@ export const UpdateProfileBody = zod.object({
   "role": zod.enum(['customer', 'driver']),
   "province": zod.string().min(updateProfileBodyProvinceMin).max(updateProfileBodyProvinceMax),
   "vehicle": zod.string().max(updateProfileBodyVehicleMax),
+  "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string().max(updateProfileBodyPlateMax),
   "driverTermsAccepted": zod.boolean()
 })
@@ -102,6 +104,7 @@ export const UpdateProfileResponse = zod.object({
   "role": zod.enum(['customer', 'driver']),
   "province": zod.string(),
   "vehicle": zod.string(),
+  "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "onboarded": zod.boolean(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
@@ -139,7 +142,11 @@ export const ListRidesResponseItem = zod.object({
   "pickup": zod.string(),
   "destination": zod.string(),
   "province": zod.string(),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string(),
+  "recipientName": zod.string(),
+  "recipientPhone": zod.string(),
   "status": zod.enum(['pending', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled']),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
@@ -177,6 +184,11 @@ export const createRideBodyDestinationMax = 240;
 export const createRideBodyProvinceMin = 2;
 export const createRideBodyProvinceMax = 50;
 
+export const createRideBodyDeliveryDescriptionMax = 300;
+
+export const createRideBodyRecipientNameMax = 80;
+
+export const createRideBodyRecipientPhoneRegExp = new RegExp('^(01[0125][0-9]{8}|\\+201[0125][0-9]{8})$');
 export const createRideBodyPickupLatMin = -90;
 export const createRideBodyPickupLatMax = 90;
 
@@ -201,7 +213,11 @@ export const CreateRideBody = zod.object({
   "pickup": zod.string().min(createRideBodyPickupMin).max(createRideBodyPickupMax),
   "destination": zod.string().min(createRideBodyDestinationMin).max(createRideBodyDestinationMax),
   "province": zod.string().min(createRideBodyProvinceMin).max(createRideBodyProvinceMax),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string().max(createRideBodyDeliveryDescriptionMax).optional(),
+  "recipientName": zod.string().max(createRideBodyRecipientNameMax).optional(),
+  "recipientPhone": zod.string().regex(createRideBodyRecipientPhoneRegExp).optional(),
   "pickupLat": zod.number().min(createRideBodyPickupLatMin).max(createRideBodyPickupLatMax),
   "pickupLng": zod.number().min(createRideBodyPickupLngMin).max(createRideBodyPickupLngMax),
   "destinationLat": zod.number().min(createRideBodyDestinationLatMin).max(createRideBodyDestinationLatMax),
@@ -235,7 +251,11 @@ export const CreateRideResponse = zod.object({
   "pickup": zod.string(),
   "destination": zod.string(),
   "province": zod.string(),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string(),
+  "recipientName": zod.string(),
+  "recipientPhone": zod.string(),
   "status": zod.enum(['pending', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled']),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
@@ -288,7 +308,11 @@ export const ListAvailableRidesResponseItem = zod.object({
   "pickup": zod.string(),
   "destination": zod.string(),
   "province": zod.string(),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string(),
+  "recipientName": zod.string(),
+  "recipientPhone": zod.string(),
   "status": zod.enum(['pending', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled']),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
@@ -346,7 +370,11 @@ export const GetRideResponse = zod.object({
   "pickup": zod.string(),
   "destination": zod.string(),
   "province": zod.string(),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string(),
+  "recipientName": zod.string(),
+  "recipientPhone": zod.string(),
   "status": zod.enum(['pending', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled']),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
@@ -431,7 +459,11 @@ export const ActOnRideResponse = zod.object({
   "pickup": zod.string(),
   "destination": zod.string(),
   "province": zod.string(),
-  "rideType": zod.enum(['economy', 'family', 'premium']),
+  "rideType": zod.enum(['economy', 'family', 'premium', 'motorcycle']),
+  "serviceType": zod.enum(['passenger', 'delivery']),
+  "deliveryDescription": zod.string(),
+  "recipientName": zod.string(),
+  "recipientPhone": zod.string(),
   "status": zod.enum(['pending', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled']),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
@@ -595,6 +627,7 @@ export const ListDriverReviewsResponseItem = zod.object({
   "phone": zod.string(),
   "province": zod.string(),
   "vehicle": zod.string(),
+  "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
@@ -641,6 +674,7 @@ export const ReviewDriverResponse = zod.object({
   "phone": zod.string(),
   "province": zod.string(),
   "vehicle": zod.string(),
+  "vehicleType": zod.enum(['car', 'motorcycle']),
   "plate": zod.string(),
   "driverReviewStatus": zod.enum(['pending', 'approved', 'rejected', 'suspended']),
   "driverTermsAccepted": zod.boolean(),
@@ -687,6 +721,7 @@ export const ListSupportTicketsResponseItem = zod.object({
   "description": zod.string(),
   "rideId": zod.number().int().nullable(),
   "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "customerReply": zod.string(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -719,6 +754,7 @@ export const CreateSupportTicketResponse = zod.object({
   "description": zod.string(),
   "rideId": zod.number().int().nullable(),
   "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "customerReply": zod.string(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -735,6 +771,7 @@ export const ListAdminSupportTicketsResponseItem = zod.object({
   "rideId": zod.number().int().nullable(),
   "status": zod.enum(['open', 'in_progress', 'resolved']),
   "ownerNote": zod.string(),
+  "customerReply": zod.string(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "customerName": zod.string(),
@@ -752,11 +789,14 @@ export const UpdateAdminSupportTicketParams = zod.object({
 
 export const updateAdminSupportTicketBodyOwnerNoteMax = 1000;
 
+export const updateAdminSupportTicketBodyCustomerReplyMax = 2000;
+
 
 
 export const UpdateAdminSupportTicketBody = zod.object({
   "status": zod.enum(['open', 'in_progress', 'resolved']),
-  "ownerNote": zod.string().max(updateAdminSupportTicketBodyOwnerNoteMax)
+  "ownerNote": zod.string().max(updateAdminSupportTicketBodyOwnerNoteMax),
+  "customerReply": zod.string().max(updateAdminSupportTicketBodyCustomerReplyMax)
 })
 
 export const UpdateAdminSupportTicketResponse = zod.object({
@@ -767,6 +807,7 @@ export const UpdateAdminSupportTicketResponse = zod.object({
   "rideId": zod.number().int().nullable(),
   "status": zod.enum(['open', 'in_progress', 'resolved']),
   "ownerNote": zod.string(),
+  "customerReply": zod.string(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "customerName": zod.string(),

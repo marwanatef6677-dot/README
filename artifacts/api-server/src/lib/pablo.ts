@@ -18,6 +18,8 @@ export function rideJson(ride: RideRecord, queue = false, showCommission = false
     commissionState: showCommission ? ride.commissionState : null,
     promoCommissionWaived: showCommission ? ride.promoCommissionWaived : false,
     notes: queue ? "" : ride.notes,
+    recipientName: queue ? "" : ride.recipientName,
+    recipientPhone: queue ? "" : ride.recipientPhone,
     createdAt: ride.createdAt.toISOString(),
     updatedAt: ride.updatedAt.toISOString(),
     feedbackSubmittedAt: ride.feedbackSubmittedAt?.toISOString() ?? null,

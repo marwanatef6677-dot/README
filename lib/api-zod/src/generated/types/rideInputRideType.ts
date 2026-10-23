@@ -13,4 +13,5 @@ export const RideInputRideType = {
   economy: 'economy',
   family: 'family',
   premium: 'premium',
+  motorcycle: 'motorcycle',
 } as const;

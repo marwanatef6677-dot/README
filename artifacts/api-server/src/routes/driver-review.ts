@@ -30,6 +30,7 @@ function driverReviewJson(profile: typeof profiles.$inferSelect) {
     phone: profile.phone,
     province: profile.province,
     vehicle: profile.vehicle,
+    vehicleType: profile.vehicleType,
     plate: profile.plate,
     driverReviewStatus: profile.driverReviewStatus,
     driverTermsAccepted: Boolean(profile.driverTermsAcceptedAt),

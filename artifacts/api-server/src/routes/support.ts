@@ -24,6 +24,7 @@ function customerTicketJson(ticket: typeof supportTickets.$inferSelect) {
     description: ticket.description,
     rideId: ticket.rideId,
     status: ticket.status,
+      customerReply: ticket.customerReply,
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
   };
@@ -104,6 +105,7 @@ router.patch("/admin/support-tickets/:id", async (req, res): Promise<void> => {
   const [ticket] = await db.update(supportTickets).set({
     status: parsed.data.status,
     ownerNote: parsed.data.ownerNote.trim(),
+    customerReply: parsed.data.customerReply.trim(),
     updatedAt: new Date(),
   }).where(eq(supportTickets.id, params.data.id)).returning();
   if (!ticket) throw new AppError(404, "البلاغ غير موجود.");

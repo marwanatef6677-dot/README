@@ -11,4 +11,6 @@ export interface SupportTicketUpdate {
   status: SupportTicketUpdateStatus;
   /** @maxLength 1000 */
   ownerNote: string;
+  /** @maxLength 2000 */
+  customerReply: string;
 }

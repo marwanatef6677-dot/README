@@ -18,17 +18,37 @@ router.get("/rides/available", async (_req, res): Promise<void> => {
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, res.locals.userId));
   if (profile.role !== "driver" || !profile.onboarded) throw new AppError(403, "كمّل بيانات حساب الكابتن الأول.");
   const [active] = await db.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
-  const records = active ? [] : await db.select().from(rides).where(and(eq(rides.status, "pending"), eq(rides.province, profile.province), ne(rides.customerId, profile.id))).orderBy(desc(rides.createdAt)).limit(100);
+  const vehicleFilter = profile.vehicleType === "motorcycle"
+    ? eq(rides.rideType, "motorcycle")
+    : ne(rides.rideType, "motorcycle");
+  const records = active ? [] : await db.select().from(rides).where(and(
+    eq(rides.status, "pending"),
+    eq(rides.province, profile.province),
+    ne(rides.customerId, profile.id),
+    vehicleFilter,
+  )).orderBy(desc(rides.createdAt)).limit(100);
   res.json(ListAvailableRidesResponse.parse(records.map(r => rideJson(r, true))));
 });
 router.post("/rides", async (req, res): Promise<void> => {
   const normalized = Object.fromEntries(Object.entries(req.body ?? {}).map(([k,v]) => [k, typeof v === "string" ? v.trim() : v]));
   const parsed = CreateRideBody.safeParse(normalized);
   if (!parsed.success) throw new AppError(400, "راجع مكان الركوب والوجهة والبيانات المطلوبة.");
-  const { fareAdjustmentPiasters = 0, ...rideData } = parsed.data;
+  const {
+    fareAdjustmentPiasters = 0,
+    deliveryDescription = "",
+    recipientName = "",
+    recipientPhone = "",
+    ...rideData
+  } = parsed.data;
   if (!provinces.includes(rideData.province)) throw new AppError(400, "اختار محافظة من القائمة.");
   if (rideData.pickup === rideData.destination) throw new AppError(400, "مكان الركوب والوجهة لازم يكونوا مختلفين.");
   if (Math.abs(rideData.pickupLat - rideData.destinationLat) + Math.abs(rideData.pickupLng - rideData.destinationLng) < 0.0001) throw new AppError(400, "اختار نقطتين مختلفتين للركوب والوصول.");
+  if (rideData.serviceType === "delivery" && rideData.rideType !== "motorcycle") {
+    throw new AppError(400, "توصيل الطلبات متاح بالموتوسيكل فقط.");
+  }
+  if (rideData.serviceType === "delivery" && (!deliveryDescription || !recipientName || !recipientPhone)) {
+    throw new AppError(400, "اكتب وصف الطلب واسم المستلم ورقم هاتفه.");
+  }
   const route = await getRoutePreview(rideData);
   const routeDistanceMeters = Math.round(route.distanceMeters);
   const routeDurationSeconds = Math.round(route.durationSeconds);
@@ -44,6 +64,9 @@ router.post("/rides", async (req, res): Promise<void> => {
     if (active) throw new AppError(409, "عندك رحلة حالية. كمّلها أو الغيها قبل طلب رحلة جديدة.");
     const [ride] = await tx.insert(rides).values({
       ...rideData,
+      deliveryDescription: rideData.serviceType === "delivery" ? deliveryDescription : "",
+      recipientName: rideData.serviceType === "delivery" ? recipientName : "",
+      recipientPhone: rideData.serviceType === "delivery" ? recipientPhone : "",
       customerId: profile.id,
       customerName: profile.name,
       customerPhone: profile.phone,
@@ -82,7 +105,8 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
     const changes: Partial<typeof rides.$inferInsert> = { updatedAt: new Date() };
     if (action === "accept") {
       if (!profile.onboarded || profile.role !== "driver" || profile.driverReviewStatus !== "approved"
-        || !profile.driverTermsAcceptedAt || customer || profile.province !== ride.province) {
+        || !profile.driverTermsAcceptedAt || customer || profile.province !== ride.province
+        || ((profile.vehicleType === "motorcycle") !== (ride.rideType === "motorcycle"))) {
         throw new AppError(403, "قبول الرحلات متاح للكابتن بعد مراجعة واعتماد أوراقه وموافقته على الشروط.");
       }
       if (ride.status !== "pending") throw new AppError(409, "الطلب اتقبل أو اتلغى بالفعل.");

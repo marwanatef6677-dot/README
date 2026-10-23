@@ -8,6 +8,7 @@
 import type { RideCheckInStatus } from './rideCheckInStatus';
 import type { RideCommissionState } from './rideCommissionState';
 import type { RideRideType } from './rideRideType';
+import type { RideServiceType } from './rideServiceType';
 import type { RideStatus } from './rideStatus';
 
 export interface Ride {
@@ -30,6 +31,10 @@ export interface Ride {
   destination: string;
   province: string;
   rideType: RideRideType;
+  serviceType: RideServiceType;
+  deliveryDescription: string;
+  recipientName: string;
+  recipientPhone: string;
   status: RideStatus;
   createdAt: string;
   updatedAt: string;

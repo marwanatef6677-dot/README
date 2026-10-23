@@ -404,13 +404,13 @@ components:
       type: object
       required: [id, name, description, seats]
       properties:
-        id: { type: string, enum: [economy, family, premium] }
+        id: { type: string, enum: [economy, family, premium, motorcycle] }
         name: { type: string }
         description: { type: string }
         seats: { type: integer }
     Profile:
       type: object
-      required: [id, name, phone, role, province, vehicle, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
+      required: [id, name, phone, role, province, vehicle, vehicleType, plate, onboarded, driverReviewStatus, driverTermsAccepted, walletBalancePiasters, driverCompletedRides, driverRating, driverLevel, ridesToNextLevel]
       properties:
         id: { type: string }
         name: { type: string }
@@ -418,6 +418,7 @@ components:
         role: { type: string, enum: [customer, driver] }
         province: { type: string }
         vehicle: { type: string }
+        vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string }
         onboarded: { type: boolean }
         driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
@@ -429,23 +430,28 @@ components:
         ridesToNextLevel: { type: integer, minimum: 0, maximum: 10 }
     ProfileInput:
       type: object
-      required: [name, phone, role, province, vehicle, plate, driverTermsAccepted]
+      required: [name, phone, role, province, vehicle, vehicleType, plate, driverTermsAccepted]
       properties:
         name: { type: string, minLength: 2, maxLength: 80 }
         phone: { type: string, pattern: '^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$' }
         role: { type: string, enum: [customer, driver] }
         province: { type: string, minLength: 2, maxLength: 50 }
         vehicle: { type: string, maxLength: 80 }
+        vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string, maxLength: 30 }
         driverTermsAccepted: { type: boolean }
     RideInput:
       type: object
-      required: [pickup, destination, province, rideType, pickupLat, pickupLng, destinationLat, destinationLng]
+      required: [pickup, destination, province, rideType, serviceType, pickupLat, pickupLng, destinationLat, destinationLng]
       properties:
         pickup: { type: string, minLength: 3, maxLength: 240 }
         destination: { type: string, minLength: 3, maxLength: 240 }
         province: { type: string, minLength: 2, maxLength: 50 }
-        rideType: { type: string, enum: [economy, family, premium] }
+        rideType: { type: string, enum: [economy, family, premium, motorcycle] }
+        serviceType: { type: string, enum: [passenger, delivery] }
+        deliveryDescription: { type: string, maxLength: 300 }
+        recipientName: { type: string, maxLength: 80 }
+        recipientPhone: { type: string, pattern: '^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$' }
         pickupLat: { type: number, minimum: -90, maximum: 90 }
         pickupLng: { type: number, minimum: -180, maximum: 180 }
         destinationLat: { type: number, minimum: -90, maximum: 90 }
@@ -482,7 +488,7 @@ components:
         message: { type: string, minLength: 1, maxLength: 1000 }
     Ride:
       type: object
-      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, estimatedFarePiasters, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, serviceType, deliveryDescription, recipientName, recipientPhone, status, createdAt, updatedAt, notes, rating, checkInStatus, captainRating, drivingRating, cleanlinessRating, comfortRating, airConditioningRating, feedbackNote, feedbackSubmittedAt, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, estimatedFarePiasters, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
       properties:
         id: { type: integer }
         customerId: { type: string }
@@ -496,7 +502,11 @@ components:
         pickup: { type: string }
         destination: { type: string }
         province: { type: string }
-        rideType: { type: string, enum: [economy, family, premium] }
+        rideType: { type: string, enum: [economy, family, premium, motorcycle] }
+        serviceType: { type: string, enum: [passenger, delivery] }
+        deliveryDescription: { type: string }
+        recipientName: { type: string }
+        recipientPhone: { type: string }
         status: { type: string, enum: [pending, accepted, arrived, in_progress, completed, cancelled] }
         createdAt: { type: string }
         updatedAt: { type: string }
@@ -611,13 +621,14 @@ components:
           items: { $ref: "#/components/schemas/WalletLedgerEntry" }
     DriverReview:
       type: object
-      required: [id, name, phone, province, vehicle, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
+      required: [id, name, phone, province, vehicle, vehicleType, plate, driverReviewStatus, driverTermsAccepted, driverReviewNote, driverReviewedAt, identityVerified, drivingLicenseVerified, vehicleVerified, workPermitVerified, socialInsuranceVerified, backgroundCheckCompleted, vehicleRequirementsVerified, operatorLicenseVerified, randomTestProcessConfirmed]
       properties:
         id: { type: string }
         name: { type: string }
         phone: { type: string }
         province: { type: string }
         vehicle: { type: string }
+        vehicleType: { type: string, enum: [car, motorcycle] }
         plate: { type: string }
         driverReviewStatus: { type: string, enum: [pending, approved, rejected, suspended] }
         driverTermsAccepted: { type: boolean }
@@ -672,13 +683,14 @@ components:
         rideId: { type: [integer, "null"], minimum: 1 }
     SupportTicketUpdate:
       type: object
-      required: [status, ownerNote]
+      required: [status, ownerNote, customerReply]
       properties:
         status: { type: string, enum: [open, in_progress, resolved] }
         ownerNote: { type: string, maxLength: 1000 }
+        customerReply: { type: string, maxLength: 2000 }
     SupportTicket:
       type: object
-      required: [id, category, subject, description, rideId, status, createdAt, updatedAt]
+      required: [id, category, subject, description, rideId, status, customerReply, createdAt, updatedAt]
       properties:
         id: { type: integer }
         category: { type: string, enum: [ride, lost_item, payment, account, safety, other] }
@@ -686,11 +698,12 @@ components:
         description: { type: string }
         rideId: { type: [integer, "null"] }
         status: { type: string, enum: [open, in_progress, resolved] }
+        customerReply: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     SupportTicketAdmin:
       type: object
-      required: [id, category, subject, description, rideId, status, ownerNote, createdAt, updatedAt, customerName, customerPhone]
+      required: [id, category, subject, description, rideId, status, ownerNote, customerReply, createdAt, updatedAt, customerName, customerPhone]
       properties:
         id: { type: integer }
         category: { type: string, enum: [ride, lost_item, payment, account, safety, other] }
@@ -699,6 +712,7 @@ components:
         rideId: { type: [integer, "null"] }
         status: { type: string, enum: [open, in_progress, resolved] }
         ownerNote: { type: string }
+        customerReply: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         customerName: { type: string }

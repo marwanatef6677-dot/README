@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { DriverReviewDriverReviewStatus } from './driverReviewDriverReviewStatus';
+import type { DriverReviewVehicleType } from './driverReviewVehicleType';
 
 export interface DriverReview {
   id: string;
@@ -13,6 +14,7 @@ export interface DriverReview {
   phone: string;
   province: string;
   vehicle: string;
+  vehicleType: DriverReviewVehicleType;
   plate: string;
   driverReviewStatus: DriverReviewDriverReviewStatus;
   driverTermsAccepted: boolean;

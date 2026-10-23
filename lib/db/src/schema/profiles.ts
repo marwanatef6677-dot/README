@@ -8,6 +8,7 @@ export const profiles = pgTable("pablo_profiles", {
   role: text("role").notNull().default("customer"),
   province: text("province").notNull().default("القاهرة"),
   vehicle: text("vehicle").notNull().default(""),
+  vehicleType: text("vehicle_type").notNull().default("car"),
   plate: text("plate").notNull().default(""),
   onboarded: boolean("onboarded").notNull().default(false),
   walletBalancePiasters: integer("wallet_balance_piasters").notNull().default(0),

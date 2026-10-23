@@ -17,6 +17,7 @@ export interface SupportTicketAdmin {
   rideId: number | null;
   status: SupportTicketAdminStatus;
   ownerNote: string;
+  customerReply: string;
   createdAt: Date;
   updatedAt: Date;
   customerName: string;

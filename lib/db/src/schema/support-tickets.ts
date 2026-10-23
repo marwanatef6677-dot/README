@@ -14,6 +14,7 @@ export const supportTickets = pgTable(
     description: text("description").notNull(),
     status: text("status").notNull().default("open"),
     ownerNote: text("owner_note").notNull().default(""),
+  customerReply: text("customer_reply").notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   },

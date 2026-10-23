@@ -16,6 +16,7 @@ export const RideTypeId = {
   economy: 'economy',
   family: 'family',
   premium: 'premium',
+  motorcycle: 'motorcycle',
 } as const;
 
 export interface RideType {
@@ -39,6 +40,14 @@ export const ProfileRole = {
   driver: 'driver',
 } as const;
 
+export type ProfileVehicleType = typeof ProfileVehicleType[keyof typeof ProfileVehicleType];
+
+
+export const ProfileVehicleType = {
+  car: 'car',
+  motorcycle: 'motorcycle',
+} as const;
+
 export type ProfileDriverReviewStatus = typeof ProfileDriverReviewStatus[keyof typeof ProfileDriverReviewStatus];
 
 
@@ -56,6 +65,7 @@ export interface Profile {
   role: ProfileRole;
   province: string;
   vehicle: string;
+  vehicleType: ProfileVehicleType;
   plate: string;
   onboarded: boolean;
   driverReviewStatus: ProfileDriverReviewStatus;
@@ -89,6 +99,14 @@ export const ProfileInputRole = {
   driver: 'driver',
 } as const;
 
+export type ProfileInputVehicleType = typeof ProfileInputVehicleType[keyof typeof ProfileInputVehicleType];
+
+
+export const ProfileInputVehicleType = {
+  car: 'car',
+  motorcycle: 'motorcycle',
+} as const;
+
 export interface ProfileInput {
   /**
      * @minLength 2
@@ -105,6 +123,7 @@ export interface ProfileInput {
   province: string;
   /** @maxLength 80 */
   vehicle: string;
+  vehicleType: ProfileInputVehicleType;
   /** @maxLength 30 */
   plate: string;
   driverTermsAccepted: boolean;
@@ -117,6 +136,15 @@ export const RideInputRideType = {
   economy: 'economy',
   family: 'family',
   premium: 'premium',
+  motorcycle: 'motorcycle',
+} as const;
+
+export type RideInputServiceType = typeof RideInputServiceType[keyof typeof RideInputServiceType];
+
+
+export const RideInputServiceType = {
+  passenger: 'passenger',
+  delivery: 'delivery',
 } as const;
 
 export interface RideInput {
@@ -136,6 +164,13 @@ export interface RideInput {
      */
   province: string;
   rideType: RideInputRideType;
+  serviceType: RideInputServiceType;
+  /** @maxLength 300 */
+  deliveryDescription?: string;
+  /** @maxLength 80 */
+  recipientName?: string;
+  /** @pattern ^(01[0125][0-9]{8}|\+201[0125][0-9]{8})$ */
+  recipientPhone?: string;
   /**
      * @minimum -90
      * @maximum 90
@@ -247,6 +282,15 @@ export const RideRideType = {
   economy: 'economy',
   family: 'family',
   premium: 'premium',
+  motorcycle: 'motorcycle',
+} as const;
+
+export type RideServiceType = typeof RideServiceType[keyof typeof RideServiceType];
+
+
+export const RideServiceType = {
+  passenger: 'passenger',
+  delivery: 'delivery',
 } as const;
 
 export type RideStatus = typeof RideStatus[keyof typeof RideStatus];
@@ -307,6 +351,10 @@ export interface Ride {
   destination: string;
   province: string;
   rideType: RideRideType;
+  serviceType: RideServiceType;
+  deliveryDescription: string;
+  recipientName: string;
+  recipientPhone: string;
   status: RideStatus;
   createdAt: string;
   updatedAt: string;
@@ -512,6 +560,14 @@ export interface Wallet {
   ledger: WalletLedgerEntry[];
 }
 
+export type DriverReviewVehicleType = typeof DriverReviewVehicleType[keyof typeof DriverReviewVehicleType];
+
+
+export const DriverReviewVehicleType = {
+  car: 'car',
+  motorcycle: 'motorcycle',
+} as const;
+
 export type DriverReviewDriverReviewStatus = typeof DriverReviewDriverReviewStatus[keyof typeof DriverReviewDriverReviewStatus];
 
 
@@ -528,6 +584,7 @@ export interface DriverReview {
   phone: string;
   province: string;
   vehicle: string;
+  vehicleType: DriverReviewVehicleType;
   plate: string;
   driverReviewStatus: DriverReviewDriverReviewStatus;
   driverTermsAccepted: boolean;
@@ -638,6 +695,8 @@ export interface SupportTicketUpdate {
   status: SupportTicketUpdateStatus;
   /** @maxLength 1000 */
   ownerNote: string;
+  /** @maxLength 2000 */
+  customerReply: string;
 }
 
 export type SupportTicketCategory = typeof SupportTicketCategory[keyof typeof SupportTicketCategory];
@@ -669,6 +728,7 @@ export interface SupportTicket {
   /** @nullable */
   rideId: number | null;
   status: SupportTicketStatus;
+  customerReply: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -703,6 +763,7 @@ export interface SupportTicketAdmin {
   rideId: number | null;
   status: SupportTicketAdminStatus;
   ownerNote: string;
+  customerReply: string;
   createdAt: string;
   updatedAt: string;
   customerName: string;

@@ -16,6 +16,7 @@ export interface SupportTicket {
   /** @nullable */
   rideId: number | null;
   status: SupportTicketStatus;
+  customerReply: string;
   createdAt: Date;
   updatedAt: Date;
 }
