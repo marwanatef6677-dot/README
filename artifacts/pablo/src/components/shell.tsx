@@ -56,7 +56,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </header>
       <main>{children}</main>
       <Show when="signed-in">
-        <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-3 rounded-[1.6rem] bg-[#10151d] p-1.5 shadow-[0_12px_40px_-10px_rgba(16,21,29,.6)] md:hidden">
+        <nav className={cn("fixed inset-x-3 bottom-3 z-40 grid rounded-[1.6rem] bg-[#10151d] p-1.5 shadow-[0_12px_40px_-10px_rgba(16,21,29,.6)] md:hidden", profile?.role === "customer" ? "grid-cols-4" : "grid-cols-3")}>
           {nav.map((n) => {
             const on = active(n.href);
             return (
@@ -66,6 +66,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          {profile?.role === "customer" && <CustomerSupport placement="mobile-nav" />}
         </nav>
       </Show>
     </div>
