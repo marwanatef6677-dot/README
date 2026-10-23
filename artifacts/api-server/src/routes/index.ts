@@ -7,6 +7,8 @@ import trackingRouter from "./tracking";
 import walletRouter from "./wallet";
 import driverReviewRouter from "./driver-review";
 import rideMessagesRouter from "./ride-messages";
+import supportRouter from "./support";
+import openaiSupportRouter from "./openai-support";
 
 const router: IRouter = Router();
 
@@ -18,5 +20,7 @@ router.use(ridesRouter);
 router.use(rideMessagesRouter);
 router.use(walletRouter);
 router.use(driverReviewRouter);
+router.use(supportRouter);
+router.use(openaiSupportRouter);
 
 export default router;

@@ -464,6 +464,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .pb-car span { font: 900 16px 'Alexandria', sans-serif; color: #ffd000; }
 .pb-car-stale { opacity: .45; filter: grayscale(1); }
 
+/* Support is a quiet, human corner of Pablo: warm paper, ink, and one clear signal yellow. */
+.support-panel-enter { animation: support-enter .22s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes support-enter { from { opacity: 0; transform: translateY(12px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.support-scroll { scrollbar-width: thin; scrollbar-color: hsl(var(--foreground)/.18) transparent; }
+.support-scroll::-webkit-scrollbar { width: 6px; }
+.support-scroll::-webkit-scrollbar-thumb { border-radius: 99px; background: hsl(var(--foreground)/.18); }
+@media (prefers-reduced-motion: reduce) { .support-panel-enter { animation: none; } }
+
 /* First-visit welcome: an editorial Cairo wayfinding poster, distinct from booking. */
 .welcome-page {
   --welcome-ink: #15232a;

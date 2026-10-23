@@ -22,3 +22,4 @@ export * from "./rides";
 export * from "./ride-messages";
 export * from "./locations";
 export * from "./wallet";
+export * from "./support-tickets";

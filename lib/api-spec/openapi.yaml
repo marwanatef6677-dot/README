@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: support
+    description: Customer support and owner ticket review
+  - name: openai
+    description: OpenAI support assistant
 paths:
   /healthz:
     get:
@@ -250,6 +254,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DriverReview"
+  /openai/support-chat:
+    post:
+      operationId: sendOpenaiSupportChat
+      tags: [openai]
+      summary: Stream a support assistant response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportChatInput"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+  /support/tickets:
+    get:
+      operationId: listSupportTickets
+      tags: [support]
+      summary: List the signed-in customer's support tickets
+      responses:
+        "200":
+          description: Customer's support tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SupportTicket" }
+    post:
+      operationId: createSupportTicket
+      tags: [support]
+      summary: Create a support ticket for the signed-in customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportTicketInput"
+      responses:
+        "201":
+          description: Support ticket created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicket"
+  /admin/support-tickets:
+    get:
+      operationId: listAdminSupportTickets
+      tags: [support]
+      summary: List support tickets for the authorized owner
+      responses:
+        "200":
+          description: Support ticket queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SupportTicketAdmin" }
+  /admin/support-tickets/{id}:
+    patch:
+      operationId: updateAdminSupportTicket
+      tags: [support]
+      summary: Update a support ticket status or owner note
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportTicketUpdate"
+      responses:
+        "200":
+          description: Updated support ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicketAdmin"
   /wallet:
     get:
       operationId: getWallet
@@ -564,6 +647,62 @@ components:
         vehicleRequirementsVerified: { type: boolean }
         operatorLicenseVerified: { type: boolean }
         randomTestProcessConfirmed: { type: boolean }
+    SupportChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string, minLength: 1, maxLength: 1200 }
+    SupportChatInput:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          maxItems: 12
+          items: { $ref: "#/components/schemas/SupportChatMessage" }
+    SupportTicketInput:
+      type: object
+      required: [category, subject, description, rideId]
+      properties:
+        category: { type: string, enum: [ride, lost_item, payment, account, safety, other] }
+        subject: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, minLength: 10, maxLength: 2000 }
+        rideId: { type: [integer, "null"], minimum: 1 }
+    SupportTicketUpdate:
+      type: object
+      required: [status, ownerNote]
+      properties:
+        status: { type: string, enum: [open, in_progress, resolved] }
+        ownerNote: { type: string, maxLength: 1000 }
+    SupportTicket:
+      type: object
+      required: [id, category, subject, description, rideId, status, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        category: { type: string, enum: [ride, lost_item, payment, account, safety, other] }
+        subject: { type: string }
+        description: { type: string }
+        rideId: { type: [integer, "null"] }
+        status: { type: string, enum: [open, in_progress, resolved] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SupportTicketAdmin:
+      type: object
+      required: [id, category, subject, description, rideId, status, ownerNote, createdAt, updatedAt, customerName, customerPhone]
+      properties:
+        id: { type: integer }
+        category: { type: string, enum: [ride, lost_item, payment, account, safety, other] }
+        subject: { type: string }
+        description: { type: string }
+        rideId: { type: [integer, "null"] }
+        status: { type: string, enum: [open, in_progress, resolved] }
+        ownerNote: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        customerName: { type: string }
+        customerPhone: { type: string }
     FawryNotificationInput:
       type: object
       additionalProperties: true

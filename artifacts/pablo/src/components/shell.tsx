@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Show, useClerk } from "@clerk/react";
 import { CarFront, History, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { Wordmark } from "@/components/bits";
+import { CustomerSupport } from "@/components/customer-support";
 import { useProfile } from "@/hooks/use-pablo";
 import { basePath } from "@/lib/pablo";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ function useNav() {
 export function Shell({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
   const nav = useNav();
+  const { data: profile } = useProfile();
   const { signOut } = useClerk();
   const active = (h: string) => loc === h || loc.startsWith(h + "/");
   return (
@@ -35,6 +37,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 </Link>
               ))}
             </nav>
+            {profile?.role === "customer" && <CustomerSupport />}
             <button data-testid="button-logout" onClick={() => signOut({ redirectUrl: basePath || "/" })} className="press inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">خروج</span>
             </button>

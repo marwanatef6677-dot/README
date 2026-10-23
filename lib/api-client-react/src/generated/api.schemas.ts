@@ -569,5 +569,145 @@ export interface DriverReviewInput {
   randomTestProcessConfirmed: boolean;
 }
 
+export type SupportChatMessageRole = typeof SupportChatMessageRole[keyof typeof SupportChatMessageRole];
+
+
+export const SupportChatMessageRole = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+
+export interface SupportChatMessage {
+  role: SupportChatMessageRole;
+  /**
+     * @minLength 1
+     * @maxLength 1200
+     */
+  content: string;
+}
+
+export interface SupportChatInput {
+  /**
+     * @minItems 1
+     * @maxItems 12
+     */
+  messages: SupportChatMessage[];
+}
+
+export type SupportTicketInputCategory = typeof SupportTicketInputCategory[keyof typeof SupportTicketInputCategory];
+
+
+export const SupportTicketInputCategory = {
+  ride: 'ride',
+  lost_item: 'lost_item',
+  payment: 'payment',
+  account: 'account',
+  safety: 'safety',
+  other: 'other',
+} as const;
+
+export interface SupportTicketInput {
+  category: SupportTicketInputCategory;
+  /**
+     * @minLength 3
+     * @maxLength 120
+     */
+  subject: string;
+  /**
+     * @minLength 10
+     * @maxLength 2000
+     */
+  description: string;
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  rideId: number | null;
+}
+
+export type SupportTicketUpdateStatus = typeof SupportTicketUpdateStatus[keyof typeof SupportTicketUpdateStatus];
+
+
+export const SupportTicketUpdateStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
+} as const;
+
+export interface SupportTicketUpdate {
+  status: SupportTicketUpdateStatus;
+  /** @maxLength 1000 */
+  ownerNote: string;
+}
+
+export type SupportTicketCategory = typeof SupportTicketCategory[keyof typeof SupportTicketCategory];
+
+
+export const SupportTicketCategory = {
+  ride: 'ride',
+  lost_item: 'lost_item',
+  payment: 'payment',
+  account: 'account',
+  safety: 'safety',
+  other: 'other',
+} as const;
+
+export type SupportTicketStatus = typeof SupportTicketStatus[keyof typeof SupportTicketStatus];
+
+
+export const SupportTicketStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
+} as const;
+
+export interface SupportTicket {
+  id: number;
+  category: SupportTicketCategory;
+  subject: string;
+  description: string;
+  /** @nullable */
+  rideId: number | null;
+  status: SupportTicketStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SupportTicketAdminCategory = typeof SupportTicketAdminCategory[keyof typeof SupportTicketAdminCategory];
+
+
+export const SupportTicketAdminCategory = {
+  ride: 'ride',
+  lost_item: 'lost_item',
+  payment: 'payment',
+  account: 'account',
+  safety: 'safety',
+  other: 'other',
+} as const;
+
+export type SupportTicketAdminStatus = typeof SupportTicketAdminStatus[keyof typeof SupportTicketAdminStatus];
+
+
+export const SupportTicketAdminStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
+} as const;
+
+export interface SupportTicketAdmin {
+  id: number;
+  category: SupportTicketAdminCategory;
+  subject: string;
+  description: string;
+  /** @nullable */
+  rideId: number | null;
+  status: SupportTicketAdminStatus;
+  ownerNote: string;
+  createdAt: string;
+  updatedAt: string;
+  customerName: string;
+  customerPhone: string;
+}
+
 export interface FawryNotificationInput { [key: string]: unknown }
 

@@ -658,6 +658,122 @@ export const ReviewDriverResponse = zod.object({
 })
 
 
+/**
+ * @summary Stream a support assistant response
+ */
+export const sendOpenaiSupportChatBodyMessagesItemContentMax = 1200;
+
+export const sendOpenaiSupportChatBodyMessagesMax = 12;
+
+
+
+export const SendOpenaiSupportChatBody = zod.object({
+  "messages": zod.array(zod.object({
+  "role": zod.enum(['user', 'assistant']),
+  "content": zod.string().min(1).max(sendOpenaiSupportChatBodyMessagesItemContentMax)
+})).min(1).max(sendOpenaiSupportChatBodyMessagesMax)
+})
+
+export const SendOpenaiSupportChatResponse = zod.unknown()
+
+
+/**
+ * @summary List the signed-in customer's support tickets
+ */
+export const ListSupportTicketsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "category": zod.enum(['ride', 'lost_item', 'payment', 'account', 'safety', 'other']),
+  "subject": zod.string(),
+  "description": zod.string(),
+  "rideId": zod.number().int().nullable(),
+  "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListSupportTicketsResponse = zod.array(ListSupportTicketsResponseItem)
+
+
+/**
+ * @summary Create a support ticket for the signed-in customer
+ */
+export const createSupportTicketBodySubjectMin = 3;
+export const createSupportTicketBodySubjectMax = 120;
+
+export const createSupportTicketBodyDescriptionMin = 10;
+export const createSupportTicketBodyDescriptionMax = 2000;
+
+
+
+
+export const CreateSupportTicketBody = zod.object({
+  "category": zod.enum(['ride', 'lost_item', 'payment', 'account', 'safety', 'other']),
+  "subject": zod.string().min(createSupportTicketBodySubjectMin).max(createSupportTicketBodySubjectMax),
+  "description": zod.string().min(createSupportTicketBodyDescriptionMin).max(createSupportTicketBodyDescriptionMax),
+  "rideId": zod.number().int().min(1).nullable()
+})
+
+export const CreateSupportTicketResponse = zod.object({
+  "id": zod.number().int(),
+  "category": zod.enum(['ride', 'lost_item', 'payment', 'account', 'safety', 'other']),
+  "subject": zod.string(),
+  "description": zod.string(),
+  "rideId": zod.number().int().nullable(),
+  "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List support tickets for the authorized owner
+ */
+export const ListAdminSupportTicketsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "category": zod.enum(['ride', 'lost_item', 'payment', 'account', 'safety', 'other']),
+  "subject": zod.string(),
+  "description": zod.string(),
+  "rideId": zod.number().int().nullable(),
+  "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "ownerNote": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string()
+})
+export const ListAdminSupportTicketsResponse = zod.array(ListAdminSupportTicketsResponseItem)
+
+
+/**
+ * @summary Update a support ticket status or owner note
+ */
+export const UpdateAdminSupportTicketParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const updateAdminSupportTicketBodyOwnerNoteMax = 1000;
+
+
+
+export const UpdateAdminSupportTicketBody = zod.object({
+  "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "ownerNote": zod.string().max(updateAdminSupportTicketBodyOwnerNoteMax)
+})
+
+export const UpdateAdminSupportTicketResponse = zod.object({
+  "id": zod.number().int(),
+  "category": zod.enum(['ride', 'lost_item', 'payment', 'account', 'safety', 'other']),
+  "subject": zod.string(),
+  "description": zod.string(),
+  "rideId": zod.number().int().nullable(),
+  "status": zod.enum(['open', 'in_progress', 'resolved']),
+  "ownerNote": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string()
+})
+
+
 export const GetWalletResponse = zod.object({
   "balancePiasters": zod.number().int(),
   "completedTrips": zod.number().int(),

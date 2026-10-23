@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { Btn, EmptyState, ErrorState, PilotNotice, Skeleton } from "@/components/bits";
+import { SupportTicketsAdmin } from "@/components/support-tickets-admin";
 import { errorText } from "@/lib/pablo";
 
 const CHECKLIST = [
@@ -158,6 +159,8 @@ export default function OwnerAdmin() {
       <div className="mb-7">
         <PilotNotice text="دي واجهة مراجعة إدارية تجريبية فقط، ومش شهادة أو اعتماد قانوني. الموافقة هنا لا تعني جاهزية تشغيل فعلية؛ مفيش رحلات حقيقية أو مدفوعات في النسخة دي." />
       </div>
+
+      <SupportTicketsAdmin />
 
       <section aria-labelledby="review-queue-heading">
         <div className="mb-4 flex items-end justify-between gap-3">
