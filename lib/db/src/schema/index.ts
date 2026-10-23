@@ -20,3 +20,4 @@
 export * from "./profiles";
 export * from "./rides";
 export * from "./locations";
+export * from "./wallet";

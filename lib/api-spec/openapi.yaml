@@ -190,6 +190,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Summary"
+  /wallet:
+    get:
+      operationId: getWallet
+      responses:
+        "200":
+          description: Captain wallet balance and recent movements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+  /wallet/topups:
+    post:
+      operationId: createWalletTopup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletTopupInput"
+      responses:
+        "201":
+          description: FawryPay top-up request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletTopup"
+  /wallet/topups/{id}:
+    get:
+      operationId: getWalletTopup
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Top-up status (owner only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletTopup"
+  /fawry/notify:
+    post:
+      operationId: fawryPaymentNotification
+      description: Validates FawryPay's signed server notification and applies a top-up once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Notification acknowledged
 components:
   schemas:
     HealthStatus:
@@ -257,7 +309,7 @@ components:
         rating: { type: integer, minimum: 1, maximum: 5 }
     Ride:
       type: object
-      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, pickupLat, pickupLng, destinationLat, destinationLng]
+      required: [id, customerId, driverId, customerName, driverName, driverPhone, customerPhone, vehicle, plate, pickup, destination, province, rideType, status, createdAt, updatedAt, notes, rating, pickupLat, pickupLng, destinationLat, destinationLng, routeDistanceMeters, routeDurationSeconds, farePiasters, commissionPiasters, commissionState, promoCommissionWaived]
       properties:
         id: { type: integer }
         customerId: { type: string }
@@ -281,6 +333,12 @@ components:
         pickupLng: { type: [number, "null"] }
         destinationLat: { type: [number, "null"] }
         destinationLng: { type: [number, "null"] }
+        routeDistanceMeters: { type: [integer, "null"] }
+        routeDurationSeconds: { type: [integer, "null"] }
+        farePiasters: { type: [integer, "null"] }
+        commissionPiasters: { type: [integer, "null"] }
+        commissionState: { type: [string, "null"], enum: [reserved, retained, refunded, waived, "null"] }
+        promoCommissionWaived: { type: boolean }
     RouteInput:
       type: object
       required: [pickupLat, pickupLng, destinationLat, destinationLng]
@@ -332,4 +390,40 @@ components:
         completed: { type: integer }
         active: { type: integer }
         cancelled: { type: integer }
+    WalletTopupInput:
+      type: object
+      required: [amountPiasters, paymentMethod]
+      properties:
+        amountPiasters: { type: integer, minimum: 1000, maximum: 1000000 }
+        paymentMethod: { type: string, enum: [PayAtFawry, MWALLET] }
+    WalletTopup:
+      type: object
+      required: [id, amountPiasters, paymentMethod, status, providerReference, qrData, expiresAt]
+      properties:
+        id: { type: integer }
+        amountPiasters: { type: integer }
+        paymentMethod: { type: string, enum: [PayAtFawry, MWALLET] }
+        status: { type: string, enum: [pending, paid, expired, failed] }
+        providerReference: { type: [string, "null"] }
+        qrData: { type: [string, "null"] }
+        expiresAt: { type: [string, "null"] }
+    WalletLedgerEntry:
+      type: object
+      required: [kind, amountPiasters, balanceAfterPiasters, note, createdAt]
+      properties:
+        kind: { type: string, enum: [topup, commission, customer_cancel_refund, promo_refund] }
+        amountPiasters: { type: integer }
+        balanceAfterPiasters: { type: integer }
+        note: { type: string }
+        createdAt: { type: string }
+    Wallet:
+      type: object
+      required: [balancePiasters, completedTrips, freeTripsRemaining, ledger]
+      properties:
+        balancePiasters: { type: integer }
+        completedTrips: { type: integer }
+        freeTripsRemaining: { type: integer }
+        ledger:
+          type: array
+          items: { $ref: "#/components/schemas/WalletLedgerEntry" }
 
