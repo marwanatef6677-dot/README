@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ComponentType, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { ClerkProvider, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, Show, useAuth, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { arSA } from "@clerk/localizations";
@@ -19,7 +19,8 @@ import Book from "@/pages/book";
 import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
 import Account from "@/pages/account";
-import { SignInPage, SignUpPage } from "@/pages/auth";
+import OwnerAdminPage from "@/pages/owner-admin";
+import { OwnerSignInPage, SignInPage, SignUpPage } from "@/pages/auth";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: true, staleTime: 2000 } } });
 
@@ -147,9 +148,17 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
+function OwnerRoute() {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded) return <div className="mx-auto max-w-6xl px-4 py-10"><Skeleton className="h-40" /></div>;
+  if (!isSignedIn) return <Redirect to="/owner/sign-in" />;
+  return <OwnerAdminPage />;
+}
+
 function Routes() {
   return (
     <Switch>
+      <Route path="/owner/sign-in/*?" component={OwnerSignInPage} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route>
@@ -161,6 +170,7 @@ function Routes() {
               <Route path="/trips">{() => <Protected page={Trips} />}</Route>
               <Route path="/trips/:id">{() => <Protected page={TripDetail} />}</Route>
               <Route path="/account">{() => <Protected page={Account} allowOnboarding />}</Route>
+              <Route path="/owner" component={OwnerRoute} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

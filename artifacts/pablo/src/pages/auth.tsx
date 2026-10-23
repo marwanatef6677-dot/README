@@ -33,3 +33,21 @@ export function SignInPage() {
 export function SignUpPage() {
   return <AuthFrame title="مشوارك الجاي يبدأ من هنا."><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} fallbackRedirectUrl={`${basePath}/account`} /></AuthFrame>;
 }
+
+export function OwnerSignInPage() {
+  return (
+    <AuthFrame title="دخول المالك لإدارة بابلو.">
+      <div className="w-[440px] max-w-full">
+        <p className="mb-4 rounded-2xl border border-[#10151d]/10 bg-white/70 px-4 py-3 text-sm leading-relaxed text-[#525c6b]">
+          استخدم البريد المصرّح به للمالك. تسجيل الدخول وحده لا يمنح صلاحية الإدارة.
+        </p>
+        <SignIn
+          routing="path"
+          path={`${basePath}/owner/sign-in`}
+          signUpUrl={`${basePath}/sign-up`}
+          fallbackRedirectUrl={`${basePath}/owner`}
+        />
+      </div>
+    </AuthFrame>
+  );
+}

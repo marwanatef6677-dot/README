@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Show, useClerk } from "@clerk/react";
-import { CarFront, History, LogOut, UserRound } from "lucide-react";
+import { CarFront, History, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { Wordmark } from "@/components/bits";
 import { useProfile } from "@/hooks/use-pablo";
 import { basePath } from "@/lib/pablo";
@@ -38,9 +38,13 @@ export function Shell({ children }: { children: ReactNode }) {
             <button data-testid="button-logout" onClick={() => signOut({ redirectUrl: basePath || "/" })} className="press inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">خروج</span>
             </button>
+            <Link href="/owner" aria-label="إدارة بابلو" title="دخول المالك" data-testid="link-owner-admin" className="press inline-flex items-center gap-1.5 rounded-full border border-foreground/10 px-3 py-2 text-sm font-semibold hover:bg-foreground/5">
+              <ShieldCheck className="h-4 w-4" /><span className="hidden sm:inline">الإدارة</span>
+            </Link>
           </Show>
           <Show when="signed-out">
             <div className="flex items-center gap-2">
+              <Link href="/owner/sign-in" data-testid="link-owner-signin" className="rounded-full px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-foreground/5 hover:text-foreground">دخول المالك</Link>
               <Link href="/sign-in" data-testid="link-signin" className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-foreground/5">دخول</Link>
               <Link href="/sign-up" data-testid="link-signup" className="press rounded-full bg-[#10151d] px-4 py-2 text-sm font-semibold text-[#ffd000]">حساب جديد</Link>
             </div>
