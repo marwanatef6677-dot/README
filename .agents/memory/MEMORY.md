@@ -6,3 +6,4 @@
 - [Pablo customer support](pablo-support-bot.md) — guided answers, AI chat, owner-reviewed tickets, in-app staff replies, and phone/WhatsApp; AI must not invent ride facts or promise refunds.
 - [Pablo motorcycle services](pablo-motorcycle-service.md) — motorcycle passenger rides and product delivery are in scope, but detailed motorcycle fares remain unapproved.
 - [Pablo profile photo visibility](pablo-photo-privacy.md) — all signed-in Pablo users may view account photos; captains still need an owner-verified vehicle photo.
+- [Pablo FawryPay onboarding](pablo-fawrypay.md) — the merchant application is pending; do not present top-ups as live until approval is confirmed.
