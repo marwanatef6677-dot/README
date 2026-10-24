@@ -28,3 +28,17 @@ mtime_ms = 1792750573168
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/35f0b0d4-2e63-4eb8-8c2d-50f54ac0b3b6/54127679-6c2a-4ea5-8430-9916e20d20a1"
 storage_version_token = "1792750616837855"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "g_FhPlAbMuoN4ULUmV7zJ"
+uri = "file://generated-artifacts/Pablo-App-Catalog-Ar.pdf"
+type = "pdf"
+title = "كتالوج تطبيق بابلو"
+description = "ملف PDF من ٧ صفحات يشرح خدمات التطبيق والميزات المنفذة وما يحتاج إلى استكمال قبل التشغيل التجاري."
+logical_id = "6b256ebd-d731-4d2c-9534-ed1b8eabc716"
+content_hash = "sha256:91d54693c93b48004bd7be34cb2160d3cb2286c3696b6729e980faa8e431de31"
+size = 225238
+mtime_ms = 1792831517136
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/6b256ebd-d731-4d2c-9534-ed1b8eabc716/40fcbc1c-1644-40ca-96d9-3629e6974446"
+storage_version_token = "1792831523872045"
+content_type = "application/pdf"
