@@ -8,6 +8,7 @@ import { Redirect, Route, Switch, useLocation, Router as WouterRouter } from "wo
 import type { Profile } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AppStartupSplash } from "@/components/app-startup-splash";
+import { InstallPrompt } from "@/components/install-prompt";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Shell } from "@/components/shell";
@@ -217,6 +218,7 @@ function ClerkProviderWithRoutes() {
           <Routes />
           <Toaster />
           <AppStartupSplash />
+          <InstallPrompt />
         </TooltipProvider>
       </QueryClientProvider>
     </ClerkProvider>

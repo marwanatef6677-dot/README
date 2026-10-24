@@ -8,3 +8,4 @@
 - [Pablo profile photo visibility](pablo-photo-privacy.md) — all signed-in Pablo users may view account photos; captains still need an owner-verified vehicle photo.
 - [Pablo FawryPay onboarding](pablo-fawrypay.md) — the merchant application is pending; do not present top-ups as live until approval is confirmed.
 - [Pablo location selection](pablo-location-selection.md) — pickup and destination must support place search, manual map pins, and editable typed addresses.
+- [Pablo install prompt](pablo-install-prompt.md) — show install help on every Android/iPhone browser visit until installed; hide it in standalone mode.
