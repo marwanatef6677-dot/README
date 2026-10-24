@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bike, Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Users, X } from "lucide-react";
-import { useCreateRide, usePreviewRoute } from "@workspace/api-client-react";
-import type { RideTypeId, RoutePreview, RouteInputServiceType } from "@workspace/api-client-react";
+import { Bike, Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Search, Users, X } from "lucide-react";
+import { useCreateRide, usePreviewRoute, useSearchMapPlaces } from "@workspace/api-client-react";
+import type { MapPlaceSearchResult, RideTypeId, RoutePreview, RouteInputServiceType } from "@workspace/api-client-react";
 import { PabloMap, type LatLng } from "@/components/pablo-map";
 import { useConfig, useInvalidateRides } from "@/hooks/use-pablo";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,11 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const [geoMsg, setGeoMsg] = useState("");
   const [serverErr, setServerErr] = useState("");
   const [fareAdjustmentPiasters, setFareAdjustmentPiasters] = useState(() => loadDraft().fareAdjustmentPiasters ?? 0);
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [placeResults, setPlaceResults] = useState<MapPlaceSearchResult[]>([]);
+  const [placeSearchError, setPlaceSearchError] = useState("");
+  const placeSearch = useSearchMapPlaces();
+  const autoAddress = useRef<{ pickup: string | null; destination: string | null }>({ pickup: null, destination: null });
   const serviceType: RouteInputServiceType = d.serviceType ?? "passenger";
   const isDelivery = serviceType === "delivery";
   const minimumFarePiasters = d.rideType === "motorcycle" ? MIN_FARE_MOTORCYCLE_PIASTERS : MIN_FARE_CAR_PIASTERS;
@@ -51,20 +56,69 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const destM = useMemo(() => dest, [d.destinationLat, d.destinationLng]); // eslint-disable-line react-hooks/exhaustive-deps
   const coordLabel = (p: LatLng) => `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
 
-  function placePin(which: "pickup" | "destination", p: LatLng) {
+  function placePin(which: "pickup" | "destination", p: LatLng, searchedAddress?: string) {
+    const currentAddress = which === "pickup" ? d.pickup : d.destination;
+    const previousAutoAddress = autoAddress.current[which];
+    const nextAddress = searchedAddress?.slice(0, 240)
+      ?? (previousAutoAddress && currentAddress === previousAutoAddress ? "" : currentAddress);
+    autoAddress.current[which] = searchedAddress ? nextAddress : null;
     if (which === "pickup") {
-      setD((x) => ({ ...x, pickupLat: p.lat, pickupLng: p.lng, pickup: x.pickup.trim() ? x.pickup : `نقطة على الخريطة (${coordLabel(p)})` }));
+      setD((x) => ({ ...x, pickupLat: p.lat, pickupLng: p.lng, pickup: nextAddress }));
       setErrs((e) => ({ ...e, pickup: undefined, pickupLat: undefined }));
-      if (d.destinationLat == null) setMode("destination");
+      if (d.destinationLat == null) {
+        setMode("destination");
+        setPlaceQuery("");
+        setPlaceResults([]);
+        setPlaceSearchError("");
+      }
     } else {
-      setD((x) => ({ ...x, destinationLat: p.lat, destinationLng: p.lng, destination: x.destination.trim() ? x.destination : `نقطة على الخريطة (${coordLabel(p)})` }));
+      setD((x) => ({ ...x, destinationLat: p.lat, destinationLng: p.lng, destination: nextAddress }));
       setErrs((e) => ({ ...e, destination: undefined, destinationLat: undefined }));
     }
   }
   function clearPin(which: "pickup" | "destination") {
-    if (which === "pickup") { setD((x) => ({ ...x, pickupLat: undefined, pickupLng: undefined })); setGeo("idle"); setGeoMsg(""); }
-    else setD((x) => ({ ...x, destinationLat: undefined, destinationLng: undefined }));
+    if (which === "pickup") {
+      const nextAddress = autoAddress.current.pickup === d.pickup ? "" : d.pickup;
+      setD((x) => ({ ...x, pickupLat: undefined, pickupLng: undefined, pickup: nextAddress }));
+      autoAddress.current.pickup = null;
+      setGeo("idle"); setGeoMsg("");
+    } else {
+      const nextAddress = autoAddress.current.destination === d.destination ? "" : d.destination;
+      setD((x) => ({ ...x, destinationLat: undefined, destinationLng: undefined, destination: nextAddress }));
+      autoAddress.current.destination = null;
+    }
     setMode(which);
+  }
+  function changeAddress(which: "pickup" | "destination", value: string) {
+    if (autoAddress.current[which] && autoAddress.current[which] !== value) autoAddress.current[which] = null;
+    set(which, value);
+  }
+
+  function searchForPlace() {
+    const query = placeQuery.trim();
+    if (query.length < 3) {
+      setPlaceResults([]);
+      setPlaceSearchError("اكتب اسم مكان من ٣ حروف على الأقل.");
+      return;
+    }
+    setPlaceSearchError("");
+    setPlaceResults([]);
+    placeSearch.mutate({
+      data: { query, ...(d.province ? { province: d.province } : {}) },
+    }, {
+      onSuccess: (results) => {
+        setPlaceResults(results);
+        if (results.length === 0) setPlaceSearchError("ملقيناش المكان. جرّب اسمًا أقصر أو اكتبه يدويًا وحدد الدبوس.");
+      },
+      onError: (error) => setPlaceSearchError(errorText(error, "البحث مش متاح دلوقتي. اكتب العنوان يدويًا أو حدد الدبوس على الخريطة.")),
+    });
+  }
+
+  function choosePlace(place: MapPlaceSearchResult) {
+    placePin(mode, { lat: place.latitude, lng: place.longitude }, place.label);
+    setPlaceQuery("");
+    setPlaceResults([]);
+    setPlaceSearchError("");
   }
 
   // Route preview: debounced, stale responses ignored via sequence id.
@@ -113,8 +167,8 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
 
   function validate() {
     const e: typeof errs = {};
-    if (d.pickup.trim().length < 3) e.pickup = "اكتب نقطة الركوب (٣ حروف على الأقل)";
-    if (d.destination.trim().length < 3) e.destination = "اكتب رايح فين (٣ حروف على الأقل)";
+    if (d.pickup.trim().length < 3) e.pickup = "اكتب عنوان الركوب يدويًا أو اختار عنوانًا من البحث";
+    if (d.destination.trim().length < 3) e.destination = "اكتب عنوان الوجهة يدويًا أو اختار عنوانًا من البحث";
     if (d.pickupLat == null || d.pickupLng == null) e.pickupLat = "حط دبوس الركوب على الخريطة";
     if (d.destinationLat == null || d.destinationLng == null) e.destinationLat = "حط دبوس الوصول على الخريطة";
     if (!d.province) e.province = "اختار المحافظة";
@@ -175,18 +229,49 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
       <div className="overflow-hidden rounded-[2rem] bg-[#10151d] p-2 shadow-[0_24px_60px_-30px_rgba(16,21,29,.7)]">
         <div className="flex gap-1.5 p-1.5" role="radiogroup" aria-label="بتحدد إيه على الخريطة">
           {(["pickup", "destination"] as const).map((k) => (
-            <button key={k} type="button" role="radio" aria-checked={mode === k} data-testid={`button-mode-${k}`} onClick={() => setMode(k)}
+            <button key={k} type="button" role="radio" aria-checked={mode === k} data-testid={`button-mode-${k}`} onClick={() => { setMode(k); setPlaceQuery(""); setPlaceResults([]); setPlaceSearchError(""); }}
               className={cn("press flex flex-1 items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-bold transition-colors", mode === k ? "bg-[#ffd000] text-[#10151d]" : "text-[#f6f1e4]/70 hover:bg-[#f6f1e4]/5")}>
               {k === "pickup" ? <MapPin className="h-4 w-4" /> : <Flag className="h-4 w-4" />}
-              {k === "pickup" ? "حدد الركوب" : "حدد الوصول"}
+              {k === "pickup" ? "نقطة الركوب" : "الوجهة"}
               {(k === "pickup" ? pick : dest) && <span className="h-1.5 w-1.5 rounded-full bg-current" />}
             </button>
           ))}
         </div>
+        <div className="space-y-2 px-2 pb-2" data-testid="place-search">
+          <div className="flex gap-2">
+            <input
+              value={placeQuery}
+              onChange={(event) => { setPlaceQuery(event.target.value); setPlaceSearchError(""); setPlaceResults([]); }}
+              onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); searchForPlace(); } }}
+              maxLength={160}
+              aria-label={mode === "pickup" ? "ابحث عن مكان الركوب" : "ابحث عن الوجهة"}
+              placeholder={mode === "pickup" ? "ابحث عن مكان الركوب بالاسم" : "ابحث عن الوجهة بالاسم"}
+              className="h-11 min-w-0 flex-1 rounded-xl border border-[#f6f1e4]/15 bg-[#f6f1e4]/10 px-3 text-sm text-[#f6f1e4] outline-none placeholder:text-[#f6f1e4]/45 focus:border-[#ffd000]"
+              data-testid="input-place-search"
+            />
+            <button type="button" onClick={searchForPlace} disabled={placeSearch.isPending || placeQuery.trim().length < 3}
+              className="press inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[#ffd000] px-3 text-sm font-bold text-[#10151d] disabled:opacity-50" data-testid="button-place-search">
+              {placeSearch.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              بحث
+            </button>
+          </div>
+          <p className="text-[10px] leading-relaxed text-[#f6f1e4]/55">اسم المكان اللي بتبحث عنه بيتبعت إلى OpenStreetMap لعرض النتائج. اختار نتيجة لملء العنوان والدبوس، أو حدد المكان واكتب العنوان بنفسك.</p>
+          {placeSearchError && <p className="text-xs text-[#ffd000]" role="status" data-testid="text-place-search-error">{placeSearchError}</p>}
+          {placeResults.length > 0 && (
+            <div className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-[#f6f1e4]/15 bg-[#171d25] p-1" role="listbox" aria-label="نتائج البحث" data-testid="list-place-search-results">
+              {placeResults.map((place) => (
+                <button key={place.id} type="button" role="option" aria-selected="false" onClick={() => choosePlace(place)}
+                  className="press block w-full rounded-lg px-3 py-2 text-right text-xs leading-relaxed text-[#f6f1e4] hover:bg-[#f6f1e4]/10" data-testid={`button-place-result-${place.id}`}>
+                  {place.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="relative">
           <PabloMap pickup={pickM} destination={destM} route={route.s === "ok" ? route.data?.coordinates : null} picking onPick={(p) => placePin(mode, p)} className="h-[340px] rounded-[1.5rem] border-0 md:h-[380px]" />
           <p className="pointer-events-none absolute inset-x-3 top-3 z-[500] mx-auto w-fit rounded-full bg-[#10151d]/90 px-3 py-1.5 text-center text-xs font-semibold text-[#f6f1e4]">
-            اضغط على الخريطة عشان تحط {mode === "pickup" ? <span className="text-[#ffd000]">نقطة الركوب</span> : <span className="text-[#ffd000]">نقطة الوصول</span>}
+            اضغط على الخريطة لتحديد {mode === "pickup" ? <span className="text-[#ffd000]">نقطة الركوب</span> : <span className="text-[#ffd000]">الوجهة</span>}
           </p>
           <button type="button" data-testid="button-locate" onClick={locate} disabled={geo === "busy"} aria-label="استخدم مكاني كنقطة ركوب"
             className="press absolute bottom-7 left-3 z-[500] inline-flex items-center gap-1.5 rounded-full bg-[#ffd000] px-3.5 py-2.5 text-xs font-bold text-[#10151d] shadow-lg disabled:opacity-60">
@@ -243,9 +328,9 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
             <div key={k} className={k === "destination" ? "mt-4" : ""}>
               <label className="flex items-center gap-3">
                 <span className={cn("z-10 h-3.5 w-3.5 shrink-0", k === "pickup" ? "rounded-full border-[3px] border-[#10151d] bg-[#ffd000]" : "rounded-[4px] bg-[#10151d]")} />
-                <input data-testid={`input-${k}`} className={cn(fieldCls, "border-0 bg-muted/60")} maxLength={240}
-                  placeholder={k === "pickup" ? "وصف نقطة الركوب: مثلاً قدام محطة مترو الدقي" : "وصف الوجهة"}
-                  value={d[k]} onChange={(e) => set(k, e.target.value)} />
+                <input data-testid={`input-${k}`} aria-label={k === "pickup" ? "عنوان نقطة الركوب يدويًا" : "عنوان الوجهة يدويًا"} className={cn(fieldCls, "border-0 bg-muted/60")} maxLength={240}
+                  placeholder={k === "pickup" ? "اكتب عنوان الركوب يدويًا، مثلاً أمام محطة مترو الدقي" : "اكتب عنوان وجهتك يدويًا"}
+                  value={d[k]} onChange={(e) => changeAddress(k, e.target.value)} />
               </label>
               <div className="mr-7 mt-1.5 flex flex-wrap items-center gap-2 text-[11px]">
                 {p ? (

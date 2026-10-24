@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { rateLimit } from "express-rate-limit";
-import { PreviewRouteBody, PreviewRouteResponse } from "@workspace/api-zod";
+import { PreviewRouteBody, PreviewRouteResponse, SearchMapPlacesBody, SearchMapPlacesResponse } from "@workspace/api-zod";
 import { AppError } from "../lib/pablo";
+import { searchMapPlaces } from "../lib/geocoding";
 import { calculateFarePiasters, getRoutePreview } from "../lib/routing";
 
 const router: IRouter = Router();
@@ -10,6 +11,18 @@ const limiter = rateLimit({
   message: { error: "طلبات الخريطة كتير. استنى دقيقة وحاول تاني." },
   // Shared-proxy IP is deliberately used conservatively for this pilot.
   validate: { xForwardedForHeader: false },
+});
+const placeSearchLimiter = rateLimit({
+  windowMs: 60_000, limit: 30, standardHeaders: "draft-8", legacyHeaders: false,
+  message: { error: "طلبات البحث كتير. استنى دقيقة أو حدد المكان يدويًا على الخريطة." },
+  validate: { xForwardedForHeader: false },
+});
+router.post("/maps/search", placeSearchLimiter, async (req, res): Promise<void> => {
+  const parsed = SearchMapPlacesBody.safeParse(req.body);
+  if (!parsed.success) throw new AppError(400, "اكتب اسم مكان من ٣ حروف على الأقل.");
+  const places = await searchMapPlaces(parsed.data.query, parsed.data.province);
+  res.setHeader("Cache-Control", "private, no-store");
+  res.json(SearchMapPlacesResponse.parse(places));
 });
 router.post("/routes/preview", limiter, async (req, res): Promise<void> => {
   const parsed = PreviewRouteBody.safeParse(req.body);

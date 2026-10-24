@@ -7,6 +7,7 @@ import { arSA } from "@clerk/localizations";
 import { Redirect, Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 import type { Profile } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { AppStartupSplash } from "@/components/app-startup-splash";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Shell } from "@/components/shell";
@@ -19,6 +20,7 @@ import Welcome from "@/pages/welcome";
 import Book from "@/pages/book";
 import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
+import Partner from "@/pages/partner";
 import Account from "@/pages/account";
 import CustomerTerms from "@/pages/customer-terms";
 import DriverTerms from "@/pages/driver-terms";
@@ -183,6 +185,7 @@ function Routes() {
               <Route path="/" component={HomeRedirect} />
               <Route path="/book">{() => <Protected page={Book} requireCustomerTerms />}</Route>
               <Route path="/trips">{() => <Protected page={Trips} />}</Route>
+              <Route path="/partner">{() => <Protected page={Partner} requireCustomerTerms />}</Route>
               <Route path="/trips/:id">{() => <Protected page={TripDetail} />}</Route>
               <Route path="/account">{() => <Protected page={Account} allowOnboarding />}</Route>
               <Route path="/owner" component={OwnerRoute} />
@@ -213,6 +216,7 @@ function ClerkProviderWithRoutes() {
         <TooltipProvider>
           <Routes />
           <Toaster />
+          <AppStartupSplash />
         </TooltipProvider>
       </QueryClientProvider>
     </ClerkProvider>

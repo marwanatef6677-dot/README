@@ -744,6 +744,40 @@ export const PreviewRouteResponse = zod.object({
 })
 
 
+/**
+ * Explicit place search for Egypt; this is not an autocomplete endpoint.
+ */
+export const searchMapPlacesBodyQueryMin = 3;
+export const searchMapPlacesBodyQueryMax = 160;
+
+export const searchMapPlacesBodyProvinceMax = 80;
+
+
+
+export const SearchMapPlacesBody = zod.object({
+  "query": zod.string().min(searchMapPlacesBodyQueryMin).max(searchMapPlacesBodyQueryMax),
+  "province": zod.string().max(searchMapPlacesBodyProvinceMax).optional()
+})
+
+export const searchMapPlacesResponseLabelMax = 240;
+
+export const searchMapPlacesResponseLatitudeMin = -90;
+export const searchMapPlacesResponseLatitudeMax = 90;
+
+export const searchMapPlacesResponseLongitudeMin = -180;
+export const searchMapPlacesResponseLongitudeMax = 180;
+
+
+
+export const SearchMapPlacesResponseItem = zod.object({
+  "id": zod.string(),
+  "label": zod.string().max(searchMapPlacesResponseLabelMax),
+  "latitude": zod.number().min(searchMapPlacesResponseLatitudeMin).max(searchMapPlacesResponseLatitudeMax),
+  "longitude": zod.number().min(searchMapPlacesResponseLongitudeMin).max(searchMapPlacesResponseLongitudeMax)
+})
+export const SearchMapPlacesResponse = zod.array(SearchMapPlacesResponseItem)
+
+
 export const GetRideLocationParams = zod.object({
   "id": zod.coerce.number().int()
 })

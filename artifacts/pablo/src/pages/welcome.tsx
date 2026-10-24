@@ -97,6 +97,32 @@ export default function Welcome({ onContinue }: WelcomeProps) {
               {routePoints.slice(1, -1).map((point, index) => (
                 <circle key={index} cx={point.x} cy={point.y} r="3.5" className="map-route-stop" />
               ))}
+              <motion.g
+                aria-hidden="true"
+                className="welcome-route-car welcome-route-car-lead"
+                initial={reduceMotion ? false : { x: 72, y: 68 }}
+                animate={{ x: reduceMotion ? 366 : [72, 128, 182, 239, 302, 366], y: reduceMotion ? 164 : [68, 104, 84, 136, 114, 164] }}
+                transition={{ duration: 2.1, delay: reduceMotion ? 0 : 0.15, ease: "easeInOut" }}
+              >
+                <rect x="-11" y="-6" width="22" height="12" rx="4" className="route-car-shell" />
+                <path d="m-5-5 2-3h6l3 3" className="route-car-window" />
+                <circle cx="-6.5" cy="6" r="2" className="route-car-wheel" />
+                <circle cx="6.5" cy="6" r="2" className="route-car-wheel" />
+                <path d="M9-2h3v4H9" className="route-car-light" />
+              </motion.g>
+              <motion.g
+                aria-hidden="true"
+                className="welcome-route-car welcome-route-car-follow"
+                initial={reduceMotion ? false : { x: 128, y: 104 }}
+                animate={{ x: reduceMotion ? 302 : [128, 182, 239, 302], y: reduceMotion ? 114 : [104, 84, 136, 114] }}
+                transition={{ duration: 1.65, delay: reduceMotion ? 0 : 0.58, ease: "easeInOut" }}
+              >
+                <rect x="-9" y="-5" width="18" height="10" rx="3.5" className="route-car-shell route-car-shell-secondary" />
+                <path d="m-4-4 2-2h4l2 2" className="route-car-window" />
+                <circle cx="-5.5" cy="5" r="1.7" className="route-car-wheel" />
+                <circle cx="5.5" cy="5" r="1.7" className="route-car-wheel" />
+                <path d="M7-2h3v3H7" className="route-car-light" />
+              </motion.g>
             </svg>
 
             <div className="map-label map-label-market">وسط البلد</div>

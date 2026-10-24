@@ -578,6 +578,34 @@ export interface Ride {
   promoCommissionWaived: boolean;
 }
 
+export interface MapPlaceSearchInput {
+  /**
+     * @minLength 3
+     * @maxLength 160
+     */
+  query: string;
+  /** @maxLength 80 */
+  province?: string;
+}
+
+export interface MapPlaceSearchResult {
+  id: string;
+  /** @maxLength 240 */
+  label: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     */
+  latitude: number;
+  /**
+     * @minimum -180
+     * @maximum 180
+     */
+  longitude: number;
+}
+
+export type MapPlaceSearchResponse = MapPlaceSearchResult[];
+
 export type RouteInputRideType = typeof RouteInputRideType[keyof typeof RouteInputRideType];
 
 

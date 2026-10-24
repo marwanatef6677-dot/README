@@ -513,6 +513,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .map-route-underlay { stroke: rgba(247,201,40,.15); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
 .map-route { stroke: #f7c928; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 7 7; }
 .map-route-stop { fill: #f4f0e6; }
+.welcome-route-car { filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.route-car-shell { fill: #f7c928; stroke: #172a31; stroke-width: 1.5; }
+.route-car-shell-secondary { fill: #dd7253; }
+.route-car-window { fill: none; stroke: #172a31; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.route-car-wheel { fill: #172a31; stroke: #f4f0e6; stroke-width: .8; }
+.route-car-light { fill: #f4f0e6; }
 .map-label { position: absolute; color: rgba(244,240,230,.43); font-size: 11px; font-weight: 600; }
 .map-label-market { top: 42%; right: 18%; }
 .map-label-river { top: 60%; left: 18%; color: #81b4b0; }

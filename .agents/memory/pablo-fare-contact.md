@@ -7,6 +7,8 @@ Pablo's fare is EGP 20 to start, plus EGP 10 per kilometer and EGP 1 per minute,
 
 Customer-captain chat and phone contact become available after a captain accepts. Do not expose a customer's phone number in the public driver queue.
 
-**Why:** The owner reaffirmed the original fare formula and requested customer-adjustable offers that captains choose to accept. Restricting contact to the assigned captain protects customer phone privacy.
+The bottom navigation includes “الشريك” as a direct entry to conversations for rides assigned to the signed-in customer or captain.
 
-**How to apply:** Keep the minimum fare at EGP 40, base commission on the accepted offer, and keep customer contact details hidden until assignment.
+**Why:** The owner reaffirmed the original fare formula and requested customer-adjustable offers that captains choose to accept. Restricting contact to the assigned captain protects customer phone privacy; the dedicated chat tab makes this approved conversation easy to find.
+
+**How to apply:** Keep the minimum fare at EGP 40, base commission on the accepted offer, and keep chat and customer contact limited to the assigned captain.

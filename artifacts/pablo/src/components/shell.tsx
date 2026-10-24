@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Show, useClerk } from "@clerk/react";
-import { CarFront, History, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { CarFront, History, LogOut, MessageCircle, ShieldCheck, UserRound } from "lucide-react";
 import { Wordmark } from "@/components/bits";
 import { CustomerSupport } from "@/components/customer-support";
 import { useProfile } from "@/hooks/use-pablo";
@@ -13,6 +13,7 @@ function useNav() {
   return [
     { href: "/book", label: profile?.role === "driver" ? "الطلبات" : "اطلب", icon: CarFront, id: "book" },
     { href: "/trips", label: "رحلاتي", icon: History, id: "trips" },
+    { href: "/partner", label: "الشريك", icon: MessageCircle, id: "partner" },
     { href: "/account", label: "حسابي", icon: UserRound, id: "account" },
   ];
 }
@@ -56,7 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </header>
       <main>{children}</main>
       <Show when="signed-in">
-        <nav className={cn("fixed inset-x-3 bottom-3 z-40 grid rounded-[1.6rem] bg-[#10151d] p-1.5 shadow-[0_12px_40px_-10px_rgba(16,21,29,.6)] md:hidden", profile?.role === "customer" ? "grid-cols-4" : "grid-cols-3")}>
+        <nav className={cn("fixed inset-x-3 bottom-3 z-40 grid rounded-[1.6rem] bg-[#10151d] p-1.5 shadow-[0_12px_40px_-10px_rgba(16,21,29,.6)] md:hidden", profile?.role === "customer" ? "grid-cols-5" : "grid-cols-4")}>
           {nav.map((n) => {
             const on = active(n.href);
             return (

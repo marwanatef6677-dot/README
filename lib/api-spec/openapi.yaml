@@ -360,6 +360,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RoutePreview"
+  /maps/search:
+    post:
+      operationId: searchMapPlaces
+      description: Explicit place search for Egypt; this is not an autocomplete endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MapPlaceSearchInput"
+      responses:
+        "200":
+          description: Matching map places in Egypt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapPlaceSearchResponse"
   /rides/{id}/location:
     get:
       operationId: getRideLocation
@@ -781,6 +798,24 @@ components:
         commissionPiasters: { type: [integer, "null"] }
         commissionState: { type: [string, "null"], enum: [reserved, retained, refunded, waived, "null"] }
         promoCommissionWaived: { type: boolean }
+    MapPlaceSearchInput:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string, minLength: 3, maxLength: 160 }
+        province: { type: string, maxLength: 80 }
+    MapPlaceSearchResult:
+      type: object
+      required: [id, label, latitude, longitude]
+      properties:
+        id: { type: string }
+        label: { type: string, maxLength: 240 }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+    MapPlaceSearchResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/MapPlaceSearchResult"
     RouteInput:
       type: object
       required: [pickupLat, pickupLng, destinationLat, destinationLng, rideType, serviceType]
