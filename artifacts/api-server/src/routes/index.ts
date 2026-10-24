@@ -12,6 +12,7 @@ import openaiSupportRouter from "./openai-support";
 import profilePhotosRouter from "./profile-photos";
 import driverDocumentsRouter from "./driver-documents";
 import pabloFeedbackRouter from "./pablo-feedback";
+import rewardsRouter from "./rewards";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(openaiSupportRouter);
 router.use(profilePhotosRouter);
 router.use(driverDocumentsRouter);
 router.use(pabloFeedbackRouter);
+router.use(rewardsRouter);
 
 export default router;

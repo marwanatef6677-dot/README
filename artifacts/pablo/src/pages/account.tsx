@@ -6,7 +6,7 @@ import { Bike, CarFront, Check, Download, ImagePlus, Loader2, Lock, MoreVertical
 import {
   getGetProfileQueryKey, getListDriverReviewsQueryKey,
   useCompleteDriverDocumentUpload, useCompleteProfilePhotoUpload,
-  useRequestDriverDocumentUpload, useRequestProfilePhotoUpload, useUpdateProfile,
+  useGetWallet, useRequestDriverDocumentUpload, useRequestProfilePhotoUpload, useUpdateProfile,
 } from "@workspace/api-client-react";
 import type { DriverDocumentUploadRequestDocumentType } from "@workspace/api-client-react";
 import type { Profile, ProfileInputRole } from "@workspace/api-client-react";
@@ -54,6 +54,43 @@ function InstallCard() {
           ) : (
             <p className="flex items-start gap-2"><MoreVertical className="mt-0.5 h-4 w-4 shrink-0" /> في Chrome: افتح القايمة (التلات نقط فوق)، واختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p>
           )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function CaptainWallet() {
+  const wallet = useGetWallet();
+  if (wallet.isLoading) return <Skeleton className="h-40 rounded-3xl" />;
+  if (wallet.isError || !wallet.data) {
+    return <div className="rounded-3xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">مش قادرين نجيب رصيد المحفظة دلوقتي.</div>;
+  }
+
+  return (
+    <section className="rounded-3xl border border-card-border bg-card p-4" data-testid="section-captain-wallet">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs text-muted-foreground">رصيد محفظة الكابتن</p>
+          <p className="mt-1 font-num text-2xl font-black">{(wallet.data.balancePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</p>
+        </div>
+        <span className="rounded-full bg-[#ffd000]/25 px-2.5 py-1 text-[10px] font-bold">عمولات وتعويضات</span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">الرصيد يغطي عمولات الرحلات ويشمل تعويض بابلو عن أكواد الخصم بعد اكتمال الرحلة. لا يمكن سحبه نقدًا.</p>
+      {wallet.data.ledger.length > 0 && (
+        <div className="mt-4 space-y-2 border-t border-border pt-3">
+          <p className="text-xs font-bold">آخر الحركات</p>
+          {wallet.data.ledger.slice(0, 5).map((entry, index) => (
+            <div key={`${entry.createdAt}-${index}`} className="flex items-start justify-between gap-3 text-xs">
+              <div className="min-w-0">
+                <p className="font-medium">{entry.note}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">{new Date(entry.createdAt).toLocaleDateString("ar-EG")}</p>
+              </div>
+              <strong className={entry.amountPiasters >= 0 ? "shrink-0 font-num text-emerald-700" : "shrink-0 font-num text-destructive"}>
+                {entry.amountPiasters > 0 ? "+" : ""}{(entry.amountPiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} ج
+              </strong>
+            </div>
+          ))}
         </div>
       )}
     </section>
@@ -380,6 +417,7 @@ export default function Account({ profile }: { profile: Profile }) {
             <p className="font-semibold">حالة اعتماد الكابتن</p>
             <p className="mt-1 text-muted-foreground">{profile.driverReviewStatus === "approved" ? "تم اعتماد الحساب." : profile.driverReviewStatus === "rejected" ? "الطلب مرفوض؛ راجع الإدارة." : profile.driverReviewStatus === "suspended" ? "الحساب موقوف مؤقتًا." : "الحساب بانتظار مراجعة الإدارة. قبول الرحلات الحقيقية غير متاح قبل الاعتماد."}</p>
           </div>}
+          {profile.role === "driver" && <CaptainWallet />}
           <PilotNotice compact text="نسخة تجريبية فقط: لا تستخدمها لنقل ركاب حقيقيين أو لتحصيل أموال. المدفوعات والتشغيل التجاري غير مفعّلين." />
           <InstallCard />
         </aside>

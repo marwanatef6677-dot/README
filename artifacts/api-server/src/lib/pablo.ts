@@ -43,6 +43,9 @@ export function rideJson(ride: RideRecord, queue = false, showCommission = false
     commissionPiasters: showCommission ? ride.commissionPiasters : null,
     commissionState: showCommission ? ride.commissionState : null,
     promoCommissionWaived: showCommission ? ride.promoCommissionWaived : false,
+    customerPayPiasters: ride.farePiasters == null
+      ? null
+      : Math.max(0, ride.farePiasters - ride.customerDiscountPiasters),
     notes: queue ? "" : ride.notes,
     recipientName: queue ? "" : ride.recipientName,
     recipientPhone: queue ? "" : ride.recipientPhone,

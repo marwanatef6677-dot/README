@@ -274,6 +274,72 @@ export interface DriverDocumentCompleteResponse {
   uploaded: boolean;
 }
 
+export type WeeklyWheelLastSpinOutcome = typeof WeeklyWheelLastSpinOutcome[keyof typeof WeeklyWheelLastSpinOutcome];
+
+
+export const WeeklyWheelLastSpinOutcome = {
+  win: 'win',
+  no_win: 'no_win',
+} as const;
+
+export interface WeeklyWheelLastSpin {
+  outcome: WeeklyWheelLastSpinOutcome;
+  /**
+     * @minimum 3
+     * @maximum 30
+     * @nullable
+     */
+  discountPercent: number | null;
+  /** @nullable */
+  promoCode: string | null;
+  spunAt: string;
+  /** @nullable */
+  expiresAt: string | null;
+  redeemed: boolean;
+}
+
+export interface WeeklyWheelPromo {
+  promoCode: string;
+  /**
+     * @minimum 3
+     * @maximum 30
+     */
+  discountPercent: number;
+  expiresAt: string;
+}
+
+export interface WeeklyWheelState {
+  canSpin: boolean;
+  /** @nullable */
+  nextSpinAt: string | null;
+  lastSpin: WeeklyWheelLastSpin | null;
+  activePromo: WeeklyWheelPromo | null;
+}
+
+export type WeeklyWheelSpinResultOutcome = typeof WeeklyWheelSpinResultOutcome[keyof typeof WeeklyWheelSpinResultOutcome];
+
+
+export const WeeklyWheelSpinResultOutcome = {
+  win: 'win',
+  no_win: 'no_win',
+} as const;
+
+export interface WeeklyWheelSpinResult {
+  outcome: WeeklyWheelSpinResultOutcome;
+  /**
+     * @minimum 3
+     * @maximum 30
+     * @nullable
+     */
+  discountPercent: number | null;
+  /** @nullable */
+  promoCode: string | null;
+  spunAt: string;
+  /** @nullable */
+  expiresAt: string | null;
+  nextSpinAt: string;
+}
+
 export type RideInputRideType = typeof RideInputRideType[keyof typeof RideInputRideType];
 
 
@@ -343,6 +409,8 @@ export interface RideInput {
      * @maximum 1000000
      */
   fareAdjustmentPiasters?: number;
+  /** @maxLength 40 */
+  promoCode?: string;
 }
 
 export type RideActionAction = typeof RideActionAction[keyof typeof RideActionAction];
@@ -571,6 +639,18 @@ export interface Ride {
   estimatedFarePiasters: number | null;
   /** @nullable */
   farePiasters: number | null;
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  customerDiscountPercent: number;
+  /** @minimum 0 */
+  customerDiscountPiasters: number;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  customerPayPiasters: number | null;
   /** @nullable */
   commissionPiasters: number | null;
   /** @nullable */
@@ -770,6 +850,7 @@ export const WalletLedgerEntryKind = {
   commission: 'commission',
   customer_cancel_refund: 'customer_cancel_refund',
   promo_refund: 'promo_refund',
+  customer_promo_subsidy: 'customer_promo_subsidy',
 } as const;
 
 export interface WalletLedgerEntry {

@@ -14,4 +14,5 @@ export const WalletLedgerEntryKind = {
   commission: 'commission',
   customer_cancel_refund: 'customer_cancel_refund',
   promo_refund: 'promo_refund',
+  customer_promo_subsidy: 'customer_promo_subsidy',
 } as const;

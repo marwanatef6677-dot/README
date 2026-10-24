@@ -26,6 +26,7 @@ import Account from "@/pages/account";
 import CustomerTerms from "@/pages/customer-terms";
 import DriverTerms from "@/pages/driver-terms";
 import OwnerAdminPage from "@/pages/owner-admin";
+import WeeklyWheel from "@/pages/weekly-wheel";
 import { OwnerSignInPage, SignInPage, SignUpPage } from "@/pages/auth";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: true, staleTime: 2000 } } });
@@ -185,6 +186,7 @@ function Routes() {
             <Switch>
               <Route path="/" component={HomeRedirect} />
               <Route path="/book">{() => <Protected page={Book} requireCustomerTerms />}</Route>
+              <Route path="/rewards/weekly-wheel">{() => <Protected page={WeeklyWheel} requireCustomerTerms />}</Route>
               <Route path="/trips">{() => <Protected page={Trips} />}</Route>
               <Route path="/partner">{() => <Protected page={Partner} requireCustomerTerms />}</Route>
               <Route path="/trips/:id">{() => <Protected page={TripDetail} />}</Route>

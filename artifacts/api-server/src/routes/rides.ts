@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ne, sql } from "drizzle-orm";
-import { db, profiles, rides, rideLocations, walletLedger } from "@workspace/db";
+import { and, desc, eq, gt, isNull, ne, sql } from "drizzle-orm";
+import { db, profiles, rides, rideLocations, walletLedger, weeklyWheelSpins } from "@workspace/db";
 import { CreateRideBody, CreateRideResponse, ListRidesResponse, ListAvailableRidesResponse, GetRideParams, GetRideResponse, ActOnRideParams, ActOnRideBody, ActOnRideResponse } from "@workspace/api-zod";
 import { requirePabloAuth } from "../middlewares/auth";
 import {
@@ -42,6 +42,7 @@ router.post("/rides", async (req, res): Promise<void> => {
   if (!parsed.success) throw new AppError(400, "راجع مكان الركوب والوجهة والبيانات المطلوبة.");
   const {
     fareAdjustmentPiasters = 0,
+    promoCode = "",
     deliveryDescription = "",
     recipientName = "",
     recipientPhone = "",
@@ -52,6 +53,9 @@ router.post("/rides", async (req, res): Promise<void> => {
   if (Math.abs(rideData.pickupLat - rideData.destinationLat) + Math.abs(rideData.pickupLng - rideData.destinationLng) < 0.0001) throw new AppError(400, "اختار نقطتين مختلفتين للركوب والوصول.");
   if (rideData.serviceType === "delivery" && rideData.rideType !== "motorcycle") {
     throw new AppError(400, "توصيل الطلبات متاح بالموتوسيكل فقط.");
+  }
+  if (promoCode && rideData.serviceType !== "passenger") {
+    throw new AppError(400, "كود العجلة متاح لمشاوير الركاب فقط.");
   }
   if (rideData.serviceType === "delivery" && (!deliveryDescription || !recipientName || !recipientPhone)) {
     throw new AppError(400, "اكتب وصف الطلب واسم المستلم ورقم هاتفه.");
@@ -70,6 +74,29 @@ router.post("/rides", async (req, res): Promise<void> => {
     if (!hasCurrentCustomerTerms(profile)) throw new AppError(403, "وافق على شروط العميل وأكد أن عمرك ١٨ سنة أو أكثر قبل طلب الرحلة.");
     const [active] = await tx.select({ id: rides.id }).from(rides).where(activeFor(profile.id)).limit(1);
     if (active) throw new AppError(409, "عندك رحلة حالية. كمّلها أو الغيها قبل طلب رحلة جديدة.");
+    let promoSpinId: number | null = null;
+    let customerDiscountPercent = 0;
+    let customerDiscountPiasters = 0;
+    if (promoCode) {
+      const [spin] = await tx.select().from(weeklyWheelSpins).where(and(
+        eq(weeklyWheelSpins.profileId, profile.id),
+        eq(weeklyWheelSpins.promoCode, promoCode.toUpperCase()),
+        eq(weeklyWheelSpins.outcome, "win"),
+        isNull(weeklyWheelSpins.redeemedAt),
+        gt(weeklyWheelSpins.expiresAt, new Date()),
+      )).for("update");
+      if (!spin || spin.discountPercent == null) {
+        throw new AppError(400, "كود الخصم مش صحيح أو انتهت صلاحيته أو اتستخدم قبل كده.");
+      }
+      const [reserved] = await tx.select({ id: rides.id }).from(rides).where(and(
+        eq(rides.promoSpinId, spin.id),
+        ne(rides.status, "cancelled"),
+      )).limit(1);
+      if (reserved) throw new AppError(409, "الكود مرتبط بطلب حالي. لو الطلب اتلغى، جرّب استخدامه مرة تانية.");
+      promoSpinId = spin.id;
+      customerDiscountPercent = spin.discountPercent;
+      customerDiscountPiasters = Math.round(farePiasters * customerDiscountPercent / 100);
+    }
     const [ride] = await tx.insert(rides).values({
       ...rideData,
       deliveryDescription: rideData.serviceType === "delivery" ? deliveryDescription : "",
@@ -82,6 +109,9 @@ router.post("/rides", async (req, res): Promise<void> => {
       routeDurationSeconds,
       estimatedFarePiasters,
       farePiasters,
+      promoSpinId,
+      customerDiscountPercent,
+      customerDiscountPiasters,
     }).returning();
     return ride;
   });
@@ -206,22 +236,47 @@ router.post("/rides/:id/action", async (req, res): Promise<void> => {
         const transition = transitions[action];
         if (!transition || ride.status !== transition[0]) throw new AppError(409, "حالة الرحلة اتغيرت. حدّث الصفحة وحاول تاني.");
         changes.status = transition[1];
-        if (action === "complete" && ride.commissionState === "reserved" && ride.commissionPiasters && ride.promoCommissionWaived) {
-          const [captain] = await tx.select().from(profiles).where(eq(profiles.id, userId)).for("update");
-          const balance = captain.walletBalancePiasters + ride.commissionPiasters;
-          await tx.update(profiles).set({ walletBalancePiasters: balance }).where(eq(profiles.id, captain.id));
-          await tx.insert(walletLedger).values({
-            profileId: captain.id,
-            rideId: ride.id,
-            idempotencyKey: `ride:${ride.id}:promo-refund`,
-            kind: "promo_refund",
-            amountPiasters: ride.commissionPiasters,
-            balanceAfterPiasters: balance,
-            note: "إعفاء العمولة عن إحدى أول رحلتين مكتملتين",
-          }).onConflictDoNothing();
-          changes.commissionState = "waived";
-        } else if (action === "complete" && ride.commissionState === "reserved") {
-          changes.commissionState = "retained";
+        if (action === "complete") {
+          let walletBalance = profile.walletBalancePiasters;
+          if (ride.commissionState === "reserved" && ride.commissionPiasters && ride.promoCommissionWaived) {
+            walletBalance += ride.commissionPiasters;
+            await tx.insert(walletLedger).values({
+              profileId: userId,
+              rideId: ride.id,
+              idempotencyKey: `ride:${ride.id}:promo-refund`,
+              kind: "promo_refund",
+              amountPiasters: ride.commissionPiasters,
+              balanceAfterPiasters: walletBalance,
+              note: "إعفاء العمولة عن إحدى أول رحلتين مكتملتين",
+            }).onConflictDoNothing();
+            changes.commissionState = "waived";
+          } else if (ride.commissionState === "reserved") {
+            changes.commissionState = "retained";
+          }
+          if (ride.promoSpinId && ride.customerDiscountPiasters > 0) {
+            const [spin] = await tx.select().from(weeklyWheelSpins)
+              .where(eq(weeklyWheelSpins.id, ride.promoSpinId)).for("update");
+            if (!spin || spin.redeemedAt) {
+              throw new AppError(409, "تعذر تسوية كود الخصم. حدّث الصفحة وتواصل مع الدعم قبل تسجيل نهاية الرحلة.");
+            }
+            walletBalance += ride.customerDiscountPiasters;
+            await tx.insert(walletLedger).values({
+              profileId: userId,
+              rideId: ride.id,
+              idempotencyKey: `ride:${ride.id}:customer-promo-subsidy`,
+              kind: "customer_promo_subsidy",
+              amountPiasters: ride.customerDiscountPiasters,
+              balanceAfterPiasters: walletBalance,
+              note: `تعويض بابلو عن خصم ${ride.customerDiscountPercent}% للراكب`,
+            }).onConflictDoNothing();
+            await tx.update(weeklyWheelSpins).set({
+              redeemedAt: new Date(),
+              redeemedRideId: ride.id,
+            }).where(and(eq(weeklyWheelSpins.id, spin.id), isNull(weeklyWheelSpins.redeemedAt)));
+          }
+          if (walletBalance !== profile.walletBalancePiasters) {
+            await tx.update(profiles).set({ walletBalancePiasters: walletBalance }).where(eq(profiles.id, userId));
+          }
         }
       }
     }

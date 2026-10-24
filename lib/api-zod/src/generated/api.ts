@@ -284,6 +284,13 @@ export const listRidesResponseAirConditioningRatingMax = 5;
 
 export const listRidesResponsePabloRatingMax = 5;
 
+export const listRidesResponseCustomerDiscountPercentMin = 0;
+export const listRidesResponseCustomerDiscountPercentMax = 30;
+
+export const listRidesResponseCustomerDiscountPiastersMin = 0;
+
+export const listRidesResponseCustomerPayPiastersMin = 0;
+
 
 
 export const ListRidesResponseItem = zod.object({
@@ -327,6 +334,9 @@ export const ListRidesResponseItem = zod.object({
   "routeDurationSeconds": zod.number().int().nullable(),
   "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
+  "customerDiscountPercent": zod.number().int().min(listRidesResponseCustomerDiscountPercentMin).max(listRidesResponseCustomerDiscountPercentMax),
+  "customerDiscountPiasters": zod.number().int().min(listRidesResponseCustomerDiscountPiastersMin),
+  "customerPayPiasters": zod.number().int().min(listRidesResponseCustomerPayPiastersMin).nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
@@ -366,6 +376,8 @@ export const createRideBodyFareAdjustmentPiastersMin = -1000000;
 export const createRideBodyFareAdjustmentPiastersMax = 1000000;
 export const createRideBodyFareAdjustmentPiastersMultipleOf = 500;
 
+export const createRideBodyPromoCodeMax = 40;
+
 
 
 export const CreateRideBody = zod.object({
@@ -382,7 +394,8 @@ export const CreateRideBody = zod.object({
   "destinationLat": zod.number().min(createRideBodyDestinationLatMin).max(createRideBodyDestinationLatMax),
   "destinationLng": zod.number().min(createRideBodyDestinationLngMin).max(createRideBodyDestinationLngMax),
   "notes": zod.string().max(createRideBodyNotesMax).optional(),
-  "fareAdjustmentPiasters": zod.number().int().min(createRideBodyFareAdjustmentPiastersMin).max(createRideBodyFareAdjustmentPiastersMax).multipleOf(createRideBodyFareAdjustmentPiastersMultipleOf).optional()
+  "fareAdjustmentPiasters": zod.number().int().min(createRideBodyFareAdjustmentPiastersMin).max(createRideBodyFareAdjustmentPiastersMax).multipleOf(createRideBodyFareAdjustmentPiastersMultipleOf).optional(),
+  "promoCode": zod.string().max(createRideBodyPromoCodeMax).optional()
 })
 
 export const createRideResponseCaptainRatingMax = 5;
@@ -396,6 +409,13 @@ export const createRideResponseComfortRatingMax = 5;
 export const createRideResponseAirConditioningRatingMax = 5;
 
 export const createRideResponsePabloRatingMax = 5;
+
+export const createRideResponseCustomerDiscountPercentMin = 0;
+export const createRideResponseCustomerDiscountPercentMax = 30;
+
+export const createRideResponseCustomerDiscountPiastersMin = 0;
+
+export const createRideResponseCustomerPayPiastersMin = 0;
 
 
 
@@ -440,6 +460,9 @@ export const CreateRideResponse = zod.object({
   "routeDurationSeconds": zod.number().int().nullable(),
   "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
+  "customerDiscountPercent": zod.number().int().min(createRideResponseCustomerDiscountPercentMin).max(createRideResponseCustomerDiscountPercentMax),
+  "customerDiscountPiasters": zod.number().int().min(createRideResponseCustomerDiscountPiastersMin),
+  "customerPayPiasters": zod.number().int().min(createRideResponseCustomerPayPiastersMin).nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
@@ -457,6 +480,13 @@ export const listAvailableRidesResponseComfortRatingMax = 5;
 export const listAvailableRidesResponseAirConditioningRatingMax = 5;
 
 export const listAvailableRidesResponsePabloRatingMax = 5;
+
+export const listAvailableRidesResponseCustomerDiscountPercentMin = 0;
+export const listAvailableRidesResponseCustomerDiscountPercentMax = 30;
+
+export const listAvailableRidesResponseCustomerDiscountPiastersMin = 0;
+
+export const listAvailableRidesResponseCustomerPayPiastersMin = 0;
 
 
 
@@ -501,6 +531,9 @@ export const ListAvailableRidesResponseItem = zod.object({
   "routeDurationSeconds": zod.number().int().nullable(),
   "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
+  "customerDiscountPercent": zod.number().int().min(listAvailableRidesResponseCustomerDiscountPercentMin).max(listAvailableRidesResponseCustomerDiscountPercentMax),
+  "customerDiscountPiasters": zod.number().int().min(listAvailableRidesResponseCustomerDiscountPiastersMin),
+  "customerPayPiasters": zod.number().int().min(listAvailableRidesResponseCustomerPayPiastersMin).nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
@@ -523,6 +556,13 @@ export const getRideResponseComfortRatingMax = 5;
 export const getRideResponseAirConditioningRatingMax = 5;
 
 export const getRideResponsePabloRatingMax = 5;
+
+export const getRideResponseCustomerDiscountPercentMin = 0;
+export const getRideResponseCustomerDiscountPercentMax = 30;
+
+export const getRideResponseCustomerDiscountPiastersMin = 0;
+
+export const getRideResponseCustomerPayPiastersMin = 0;
 
 
 
@@ -567,6 +607,9 @@ export const GetRideResponse = zod.object({
   "routeDurationSeconds": zod.number().int().nullable(),
   "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
+  "customerDiscountPercent": zod.number().int().min(getRideResponseCustomerDiscountPercentMin).max(getRideResponseCustomerDiscountPercentMax),
+  "customerDiscountPiasters": zod.number().int().min(getRideResponseCustomerDiscountPiastersMin),
+  "customerPayPiasters": zod.number().int().min(getRideResponseCustomerPayPiastersMin).nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
@@ -623,6 +666,13 @@ export const actOnRideResponseAirConditioningRatingMax = 5;
 
 export const actOnRideResponsePabloRatingMax = 5;
 
+export const actOnRideResponseCustomerDiscountPercentMin = 0;
+export const actOnRideResponseCustomerDiscountPercentMax = 30;
+
+export const actOnRideResponseCustomerDiscountPiastersMin = 0;
+
+export const actOnRideResponseCustomerPayPiastersMin = 0;
+
 
 
 export const ActOnRideResponse = zod.object({
@@ -666,6 +716,9 @@ export const ActOnRideResponse = zod.object({
   "routeDurationSeconds": zod.number().int().nullable(),
   "estimatedFarePiasters": zod.number().int().nullable(),
   "farePiasters": zod.number().int().nullable(),
+  "customerDiscountPercent": zod.number().int().min(actOnRideResponseCustomerDiscountPercentMin).max(actOnRideResponseCustomerDiscountPercentMax),
+  "customerDiscountPiasters": zod.number().int().min(actOnRideResponseCustomerDiscountPiastersMin),
+  "customerPayPiasters": zod.number().int().min(actOnRideResponseCustomerPayPiastersMin).nullable(),
   "commissionPiasters": zod.number().int().nullable(),
   "commissionState": zod.union([zod.literal('reserved'),zod.literal('retained'),zod.literal('refunded'),zod.literal('waived'),zod.literal('null'),zod.literal(null)]).nullable(),
   "promoCommissionWaived": zod.boolean()
@@ -1045,12 +1098,54 @@ export const UpdateAdminSupportTicketResponse = zod.object({
 })
 
 
+export const getWeeklyWheelResponseLastSpinOneDiscountPercentMin = 3;
+export const getWeeklyWheelResponseLastSpinOneDiscountPercentMax = 30;
+
+export const getWeeklyWheelResponseActivePromoOneDiscountPercentMin = 3;
+export const getWeeklyWheelResponseActivePromoOneDiscountPercentMax = 30;
+
+
+
+export const GetWeeklyWheelResponse = zod.object({
+  "canSpin": zod.boolean(),
+  "nextSpinAt": zod.string().nullable(),
+  "lastSpin": zod.union([zod.object({
+  "outcome": zod.enum(['win', 'no_win']),
+  "discountPercent": zod.number().int().min(getWeeklyWheelResponseLastSpinOneDiscountPercentMin).max(getWeeklyWheelResponseLastSpinOneDiscountPercentMax).nullable(),
+  "promoCode": zod.string().nullable(),
+  "spunAt": zod.string(),
+  "expiresAt": zod.string().nullable(),
+  "redeemed": zod.boolean()
+}),zod.null()]),
+  "activePromo": zod.union([zod.object({
+  "promoCode": zod.string(),
+  "discountPercent": zod.number().int().min(getWeeklyWheelResponseActivePromoOneDiscountPercentMin).max(getWeeklyWheelResponseActivePromoOneDiscountPercentMax),
+  "expiresAt": zod.string()
+}),zod.null()])
+})
+
+
+export const spinWeeklyWheelResponseDiscountPercentMin = 3;
+export const spinWeeklyWheelResponseDiscountPercentMax = 30;
+
+
+
+export const SpinWeeklyWheelResponse = zod.object({
+  "outcome": zod.enum(['win', 'no_win']),
+  "discountPercent": zod.number().int().min(spinWeeklyWheelResponseDiscountPercentMin).max(spinWeeklyWheelResponseDiscountPercentMax).nullable(),
+  "promoCode": zod.string().nullable(),
+  "spunAt": zod.string(),
+  "expiresAt": zod.string().nullable(),
+  "nextSpinAt": zod.string()
+})
+
+
 export const GetWalletResponse = zod.object({
   "balancePiasters": zod.number().int(),
   "completedTrips": zod.number().int(),
   "freeTripsRemaining": zod.number().int(),
   "ledger": zod.array(zod.object({
-  "kind": zod.enum(['topup', 'commission', 'customer_cancel_refund', 'promo_refund']),
+  "kind": zod.enum(['topup', 'commission', 'customer_cancel_refund', 'promo_refund', 'customer_promo_subsidy']),
   "amountPiasters": zod.number().int(),
   "balanceAfterPiasters": zod.number().int(),
   "note": zod.string(),

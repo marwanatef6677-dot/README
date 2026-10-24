@@ -83,6 +83,9 @@ export function RideCard({ ride, i = 0, action, viewerRole }: { ride: Ride; i?: 
     : viewerRole === "customer" && ride.driverId
       ? { name: ride.driverName ?? "الكابتن", src: `/api/storage/profiles/${encodeURIComponent(ride.driverId)}/vehicle`, alt: "صورة الكابتن مع المركبة" }
       : null;
+  const fareToDisplay = viewerRole === "customer"
+    ? ride.customerPayPiasters ?? ride.farePiasters
+    : ride.farePiasters;
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04, duration: 0.3 }}
       className="group relative rounded-3xl border border-card-border bg-card p-4 shadow-[0_1px_0_hsl(var(--foreground)/.04)] transition-transform hover:-translate-y-0.5" data-testid={`card-ride-${ride.id}`}>
@@ -103,10 +106,18 @@ export function RideCard({ ride, i = 0, action, viewerRole }: { ride: Ride; i?: 
       <RouteLine from={ride.pickup} to={ride.destination} />
       {ride.serviceType === "delivery" && ride.deliveryDescription && <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-xs leading-5" data-testid={`text-delivery-description-${ride.id}`}>الطلب: {ride.deliveryDescription}</p>}
       {ride.serviceType === "delivery" && (ride.recipientName || ride.recipientPhone) && <p className="mt-2 text-xs text-muted-foreground" data-testid={`text-delivery-recipient-${ride.id}`}>{ride.recipientName ? `المستلم: ${ride.recipientName}` : ""}{ride.recipientName && ride.recipientPhone ? " · " : ""}{ride.recipientPhone ? `موبايل: ${ride.recipientPhone}` : ""}</p>}
-      {ride.farePiasters != null && (
+      {fareToDisplay != null && (
         <div className="mt-3 flex items-center justify-between rounded-xl bg-[#ffd000]/15 px-3 py-2" data-testid={`ride-fare-${ride.id}`}>
-          <span className="text-xs text-muted-foreground">السعر المعروض للكابتن</span>
-          <strong className="font-num text-sm font-black text-foreground">{(ride.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+          <span className="text-xs text-muted-foreground">{viewerRole === "customer" ? "هتدفع للكابتن نقدًا" : "السعر الكامل المعروض للكابتن"}</span>
+          <strong className="font-num text-sm font-black text-foreground">{(fareToDisplay / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+          {viewerRole === "customer" && (ride.customerDiscountPiasters ?? 0) > 0 && ride.farePiasters != null && (
+            <span className="w-full text-[11px] text-emerald-700">خصم بابلو {ride.customerDiscountPercent}% · قبل الخصم {(ride.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</span>
+          )}
+          {viewerRole === "driver" && (ride.customerDiscountPiasters ?? 0) > 0 && (
+            <span className="w-full text-[11px] leading-relaxed text-emerald-700">
+              الراكب يدفع {((ride.customerPayPiasters ?? ride.farePiasters ?? 0) / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه نقدًا؛ بابلو تعوضك {(ride.customerDiscountPiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه في المحفظة بعد اكتمال الرحلة.
+            </span>
+          )}
         </div>
       )}
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-dashed border-border pt-3 text-xs text-muted-foreground">

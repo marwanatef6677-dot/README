@@ -139,10 +139,17 @@ export default function TripDetail({ profile }: { profile: Profile }) {
       </div>
       {r.farePiasters != null && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#ffd000]/40 bg-[#ffd000]/10 px-4 py-3" data-testid="trip-fare-summary">
-          <span className="text-sm font-semibold">العرض اللي شافه الكابتن</span>
-          <strong className="font-num text-lg font-black">{(r.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+          <span className="text-sm font-semibold">{r.status === "cancelled" ? "السعر قبل الإلغاء" : "المبلغ النقدي للراكب"}</span>
+          <strong className="font-num text-lg font-black">{((r.customerPayPiasters ?? r.farePiasters) / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</strong>
+          {(r.customerDiscountPiasters ?? 0) > 0 && (
+            <p className="w-full text-xs leading-relaxed text-emerald-700">
+              {isCustomer
+                ? `خصم بابلو ${r.customerDiscountPercent}%؛ السعر قبل الخصم ${(r.farePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه.`
+                : `الراكب يدفع هذا المبلغ نقدًا، وبابلو تعوضك ${(r.customerDiscountPiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه في محفظتك بعد اكتمال الرحلة.`}
+            </p>
+          )}
           {r.estimatedFarePiasters != null && r.estimatedFarePiasters !== r.farePiasters && (
-            <span className="w-full text-xs text-muted-foreground">السعر الأساسي: {(r.estimatedFarePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</span>
+            <span className="w-full text-xs text-muted-foreground">السعر التقديري الأساسي: {(r.estimatedFarePiasters / 100).toLocaleString("ar-EG", { maximumFractionDigits: 2 })} جنيه</span>
           )}
         </div>
       )}

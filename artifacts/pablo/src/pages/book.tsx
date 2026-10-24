@@ -105,6 +105,10 @@ function CustomerBook({ profile }: { profile: Profile }) {
             <p className="mt-1 text-sm leading-relaxed text-foreground/75">أول مشوار يبدأ من الخريطة: اختار نقطة الركوب، وبعدها حدّد المكان اللي رايح له. هنحسب لك الطريق ونبعت طلبك لكباتن محافظتك.</p>
           </div>
         )}
+        <Link href="/rewards/weekly-wheel" className="press mt-4 flex items-center justify-between gap-3 rounded-2xl border border-[#ffd000]/45 bg-[#ffd000]/15 p-4" data-testid="link-weekly-wheel">
+          <span><span className="block font-display font-bold">عجلة الخصم الأسبوعية</span><span className="mt-1 block text-xs text-muted-foreground">لفة كل ٧ أيام، وكود الخصم لمشوار ركاب واحد.</span></span>
+          <Trophy className="h-5 w-5 shrink-0 text-[#9b7600]" />
+        </Link>
         <div className="mt-6">
           {rides.isLoading ? <ListSkeleton n={1} /> : active ? (
             <div className="space-y-3"><p className="text-sm text-muted-foreground">عندك رحلة شغالة. مينفعش تطلب رحلة تانية غير لما دي تخلص أو تتلغي.</p><ActiveBanner ride={active} viewer="customer" /></div>

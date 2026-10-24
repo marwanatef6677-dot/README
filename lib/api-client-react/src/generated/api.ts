@@ -59,7 +59,9 @@ import type {
   TrackingState,
   Wallet,
   WalletTopup,
-  WalletTopupInput
+  WalletTopupInput,
+  WeeklyWheelSpinResult,
+  WeeklyWheelState
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -3338,6 +3340,169 @@ export const useUpdateAdminSupportTicket = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateAdminSupportTicketMutationOptions(options), queryClient);
+    }
+
+export const getGetWeeklyWheelUrl = () => {
+
+
+
+
+  return `/api/rewards/weekly-wheel`
+}
+
+export const getWeeklyWheel = async ( options?: Parameters<typeof customFetch>[1]): Promise<WeeklyWheelState> => {
+
+  return customFetch<WeeklyWheelState>(getGetWeeklyWheelUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWeeklyWheelQueryKey = () => {
+    return [
+    `/api/rewards/weekly-wheel`
+    ] as const;
+    }
+
+
+export const getGetWeeklyWheelQueryOptions = <TData = Awaited<ReturnType<typeof getWeeklyWheel>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWeeklyWheelQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeeklyWheel>>> = ({ signal }) => getWeeklyWheel({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWeeklyWheelQueryResult = NonNullable<Awaited<ReturnType<typeof getWeeklyWheel>>>
+export type GetWeeklyWheelQueryError = ErrorType<unknown>
+
+
+export function useGetWeeklyWheel<TData = Awaited<ReturnType<typeof getWeeklyWheel>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWeeklyWheel>>,
+          TError,
+          Awaited<ReturnType<typeof getWeeklyWheel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWeeklyWheel<TData = Awaited<ReturnType<typeof getWeeklyWheel>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWeeklyWheel>>,
+          TError,
+          Awaited<ReturnType<typeof getWeeklyWheel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWeeklyWheel<TData = Awaited<ReturnType<typeof getWeeklyWheel>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetWeeklyWheel<TData = Awaited<ReturnType<typeof getWeeklyWheel>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWeeklyWheel>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWeeklyWheelQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSpinWeeklyWheelUrl = () => {
+
+
+
+
+  return `/api/rewards/weekly-wheel/spin`
+}
+
+export const spinWeeklyWheel = async ( options?: Parameters<typeof customFetch>[1]): Promise<WeeklyWheelSpinResult> => {
+
+  return customFetch<WeeklyWheelSpinResult>(getSpinWeeklyWheelUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSpinWeeklyWheelMutationKey = () => ['spinWeeklyWheel'] as const;
+
+export const getSpinWeeklyWheelMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof spinWeeklyWheel>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof spinWeeklyWheel>>, TError,void, TContext> => {
+
+const mutationKey = getSpinWeeklyWheelMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof spinWeeklyWheel>>, void> = () => {
+
+
+          return  spinWeeklyWheel(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SpinWeeklyWheelMutationResult = NonNullable<Awaited<ReturnType<typeof spinWeeklyWheel>>>
+
+    export type SpinWeeklyWheelMutationError = ErrorType<unknown>
+
+
+    export const useSpinWeeklyWheel = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof spinWeeklyWheel>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof spinWeeklyWheel>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSpinWeeklyWheelMutationOptions(options), queryClient);
     }
 
 export const getGetWalletUrl = () => {

@@ -59,4 +59,6 @@ export interface RideInput {
      * @maximum 1000000
      */
   fareAdjustmentPiasters?: number;
+  /** @maxLength 40 */
+  promoCode?: string;
 }

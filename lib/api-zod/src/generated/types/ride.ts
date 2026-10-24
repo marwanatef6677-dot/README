@@ -99,6 +99,18 @@ export interface Ride {
   estimatedFarePiasters: number | null;
   /** @nullable */
   farePiasters: number | null;
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  customerDiscountPercent: number;
+  /** @minimum 0 */
+  customerDiscountPiasters: number;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  customerPayPiasters: number | null;
   /** @nullable */
   commissionPiasters: number | null;
   /** @nullable */

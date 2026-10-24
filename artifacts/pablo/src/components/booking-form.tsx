@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bike, Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Search, Users, X } from "lucide-react";
-import { useCreateRide, usePreviewRoute, useSearchMapPlaces } from "@workspace/api-client-react";
+import { Bike, Car, Crown, Crosshair, Flag, Loader2, MapPin, RotateCw, Search, Sparkles, Users, X } from "lucide-react";
+import { useCreateRide, useGetWeeklyWheel, usePreviewRoute, useSearchMapPlaces } from "@workspace/api-client-react";
 import type { MapPlaceSearchResult, RideTypeId, RoutePreview, RouteInputServiceType } from "@workspace/api-client-react";
 import { PabloMap, type LatLng } from "@/components/pablo-map";
 import { useConfig, useInvalidateRides } from "@/hooks/use-pablo";
@@ -32,6 +32,8 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const [geoMsg, setGeoMsg] = useState("");
   const [serverErr, setServerErr] = useState("");
   const [fareAdjustmentPiasters, setFareAdjustmentPiasters] = useState(() => loadDraft().fareAdjustmentPiasters ?? 0);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoError, setPromoError] = useState("");
   const [placeQuery, setPlaceQuery] = useState("");
   const [placeResults, setPlaceResults] = useState<MapPlaceSearchResult[]>([]);
   const [placeSearchError, setPlaceSearchError] = useState("");
@@ -39,6 +41,11 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   const autoAddress = useRef<{ pickup: string | null; destination: string | null }>({ pickup: null, destination: null });
   const serviceType: RouteInputServiceType = d.serviceType ?? "passenger";
   const isDelivery = serviceType === "delivery";
+  const wheel = useGetWeeklyWheel({ query: { enabled: signedIn && !isDelivery } });
+  const activePromo = wheel.data?.activePromo;
+  const matchingPromo = !isDelivery && activePromo && promoCode.trim().toUpperCase() === activePromo.promoCode
+    ? activePromo
+    : null;
   const minimumFarePiasters = d.rideType === "motorcycle" ? MIN_FARE_MOTORCYCLE_PIASTERS : MIN_FARE_CAR_PIASTERS;
   const restored = useRef(!!loadDraft().pickup || !!loadDraft().destination);
 
@@ -149,6 +156,12 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   }, [routeKey, fareKey, retry]);
   useEffect(() => () => { seq.current++; }, []);
 
+  const offeredFarePiasters = routePreviewFare();
+  const promoDiscountPiasters = matchingPromo && offeredFarePiasters != null
+    ? Math.round(offeredFarePiasters * matchingPromo.discountPercent / 100)
+    : 0;
+  const customerPayPiasters = offeredFarePiasters == null ? null : offeredFarePiasters - promoDiscountPiasters;
+
   function locate() {
     if (!("geolocation" in navigator)) { setGeo("err"); setGeoMsg("المتصفح ده مش بيدعم تحديد المكان. حط الدبوس على الخريطة بنفسك."); return; }
     setGeo("busy"); setGeoMsg("");
@@ -191,6 +204,10 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
       return;
     }
     if (!signedIn) { saveDraft({ ...d, fareAdjustmentPiasters }); setLocation("/sign-in"); return; }
+    if (promoCode.trim() && !matchingPromo) {
+      setPromoError("الكود غير صحيح أو انتهت صلاحيته. راجع كودك في عجلة الخصم.");
+      return;
+    }
     if (d.pickupLat == null || d.pickupLng == null || d.destinationLat == null || d.destinationLng == null) return;
     create.mutate({
       data: {
@@ -199,11 +216,18 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
         ...(d.notes.trim() ? { notes: d.notes.trim() } : {}),
         pickupLat: d.pickupLat, pickupLng: d.pickupLng, destinationLat: d.destinationLat, destinationLng: d.destinationLng,
         fareAdjustmentPiasters,
+        ...(matchingPromo ? { promoCode: matchingPromo.promoCode } : {}),
       },
     }, {
       onSuccess: (ride) => {
         clearDraft(); invalidate(ride.id);
-        toast({ title: "الطلب اتبعت", description: `السعر المعروض على الكابتن: ${formatEgp(ride.farePiasters ?? route.data!.estimatedFarePiasters)}. هنبلغك هنا لو قبله.` });
+        const due = ride.customerPayPiasters ?? ride.farePiasters ?? route.data!.estimatedFarePiasters;
+        toast({
+          title: "الطلب اتبعت",
+          description: ride.customerDiscountPiasters > 0
+            ? `هتدفع للكابتن نقدًا ${formatEgp(due)} بعد خصم ${formatEgp(ride.customerDiscountPiasters)} من بابلو.`
+            : `السعر المعروض على الكابتن: ${formatEgp(ride.farePiasters ?? route.data!.estimatedFarePiasters)}.`,
+        });
         setLocation(`/trips/${ride.id}`);
       },
       onError: (err) => setServerErr(errorText(err)),
@@ -211,6 +235,10 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
   }
 
   const types = config.data?.rideTypes;
+  function routePreviewFare() {
+    if (route.s !== "ok" || !route.data) return null;
+    return route.data.estimatedFarePiasters + fareAdjustmentPiasters;
+  }
   return (
     <form onSubmit={submit} className="space-y-5" noValidate data-testid="form-booking">
       {restored.current && signedIn && (
@@ -221,6 +249,7 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
           <button type="button" key={option.value} role="radio" aria-checked={serviceType === option.value} data-testid={`button-service-${option.value}`} onClick={() => {
             setD((current) => ({ ...current, serviceType: option.value, rideType: option.value === "delivery" ? "motorcycle" : current.rideType === "motorcycle" ? "economy" : current.rideType }));
             setFareAdjustmentPiasters(0);
+            if (option.value === "delivery") { setPromoCode(""); setPromoError(""); }
           }} className={cn("rounded-xl px-3 py-3 text-right transition-colors", serviceType === option.value ? "bg-[#10151d] text-[#ffd000]" : "text-foreground/65 hover:bg-card")}>
             <span className="block text-sm font-bold">{option.label}</span><span className={cn("mt-1 block text-[10px]", serviceType === option.value ? "text-white/65" : "text-muted-foreground")}>{option.hint}</span>
           </button>
@@ -306,6 +335,19 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
                     className="press h-10 rounded-xl border border-[#f6f1e4]/20 px-3 text-sm font-bold disabled:opacity-40">+ ٥ جنيه</button>
                 </div>
                 <p className="mt-2 text-[11px] text-[#f6f1e4]/65">تقدر تعدّل العرض كل مرة بـ٥ جنيهات. الكابتن هيشوف السعر ويقرر يقبل الرحلة أو يسيبها، والتخفيض لا ينزل عن الحد الأدنى.</p>
+                {matchingPromo && customerPayPiasters != null && (
+                  <div className="mt-3 rounded-xl border border-[#278b72]/50 bg-[#278b72]/15 p-3 text-sm" data-testid="promo-price-summary">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>خصم بابلو {matchingPromo.discountPercent}%</span>
+                      <strong className="font-num">− {formatEgp(promoDiscountPiasters)}</strong>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between gap-3 font-bold">
+                      <span>هتدفع للكابتن نقدًا</span>
+                      <strong className="font-num text-[#ffd000]">{formatEgp(customerPayPiasters)}</strong>
+                    </div>
+                    <p className="mt-1 text-[10px] text-[#f6f1e4]/65">بابلو تتحمل قيمة الخصم، والكابتن يحصل على تعويضه في محفظته بعد اكتمال الرحلة.</p>
+                  </div>
+                )}
               </div>
               <span className="block text-[11px] text-[#f6f1e4]/55">وقت السواقة تقدير عام من بيانات الطرق، مش معاد وصول كابتن ومش محسوب فيه الزحمة.</span>
             </div>
@@ -388,6 +430,38 @@ export function BookingForm({ signedIn, defaultProvince }: { signedIn: boolean; 
           <div><label className="mb-1 block text-sm font-semibold">موبايل المستلم</label><input data-testid="input-recipient-phone" dir="ltr" inputMode="tel" className={cn(fieldCls, "text-right font-num")} value={d.recipientPhone ?? ""} onChange={(e) => set("recipientPhone", e.target.value)} placeholder="01012345678" />{errs.recipientPhone && <p className="mt-1 text-xs text-destructive">{errs.recipientPhone}</p>}</div>
         </div>
       </section>}
+
+      {signedIn && !isDelivery && (
+        <section className="space-y-3 rounded-3xl border border-card-border bg-card p-4" data-testid="section-promo-code">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 className="font-display font-bold">برومو كود</h3>
+              <p className="mt-1 text-xs text-muted-foreground">اكتب الكود اللي كسبته من عجلة الخصم عشان يظهر السعر بعد الخصم.</p>
+            </div>
+            <Link href="/rewards/weekly-wheel" className="press inline-flex items-center gap-1.5 rounded-full bg-[#ffd000]/25 px-3 py-2 text-xs font-bold text-foreground" data-testid="link-book-wheel">
+              <Sparkles className="h-3.5 w-3.5" /> {activePromo ? "عرض كودك" : "لف العجلة"}
+            </Link>
+          </div>
+          <label className="block">
+            <span className="sr-only">اكتب برومو كود الخصم</span>
+            <input
+              value={promoCode}
+              onChange={(event) => { setPromoCode(event.target.value.toUpperCase()); setPromoError(""); }}
+              dir="ltr"
+              autoCapitalize="characters"
+              autoComplete="off"
+              maxLength={40}
+              className={cn(fieldCls, "font-num font-bold tracking-wider")}
+              placeholder="PABLO-..."
+              data-testid="input-promo-code"
+            />
+          </label>
+          {promoError && <p role="alert" className="text-xs text-destructive" data-testid="text-promo-error">{promoError}</p>}
+          {promoCode.trim() && !matchingPromo && !promoError && <p className="text-xs text-amber-700">الكود غير نشط أو مش تابع لحسابك. راجعه من صفحة عجلة الخصم.</p>}
+          {matchingPromo && <p className="text-xs text-emerald-700" data-testid="text-promo-applied">الكود صالح لخصم {matchingPromo.discountPercent}% على رحلة ركاب واحدة.</p>}
+          {!promoCode.trim() && <p className="text-xs text-muted-foreground">الخصم اختياري، ومش بيتطبق تلقائيًا؛ لازم تدخل الكود بنفسك.</p>}
+        </section>
+      )}
 
       <div>
         <label className="mb-1.5 block text-sm font-semibold">ملاحظات للكابتن <span className="font-normal text-muted-foreground">(اختياري)</span></label>

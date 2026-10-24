@@ -23,3 +23,4 @@ export * from "./ride-messages";
 export * from "./locations";
 export * from "./wallet";
 export * from "./support-tickets";
+export * from "./weekly-wheel";

@@ -1,6 +1,8 @@
-import { pgTable, text, serial, timestamp, integer, doublePrecision, boolean, index } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { pgTable, text, serial, timestamp, integer, doublePrecision, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { profiles } from "./profiles";
+import { weeklyWheelSpins } from "./weekly-wheel";
 
 export const rides = pgTable("pablo_rides", {
   id: serial("id").primaryKey(),
@@ -30,6 +32,9 @@ export const rides = pgTable("pablo_rides", {
   routeDurationSeconds: integer("route_duration_seconds"),
   estimatedFarePiasters: integer("estimated_fare_piasters"),
   farePiasters: integer("fare_piasters"),
+  promoSpinId: integer("promo_spin_id").references(() => weeklyWheelSpins.id),
+  customerDiscountPercent: integer("customer_discount_percent").notNull().default(0),
+  customerDiscountPiasters: integer("customer_discount_piasters").notNull().default(0),
   commissionPiasters: integer("commission_piasters"),
   commissionState: text("commission_state"),
   promoCommissionWaived: boolean("promo_commission_waived").notNull().default(false),
@@ -50,6 +55,8 @@ export const rides = pgTable("pablo_rides", {
   index("pablo_rides_customer_idx").on(t.customerId),
   index("pablo_rides_driver_idx").on(t.driverId),
   index("pablo_rides_queue_idx").on(t.status, t.province),
+  uniqueIndex("pablo_rides_active_promo_spin_idx").on(t.promoSpinId)
+    .where(sql`${t.promoSpinId} is not null and ${t.status} <> 'cancelled'`),
 ]);
 export const insertRideSchema = createInsertSchema(rides).omit({ id: true, createdAt: true, updatedAt: true });
 export type RideRecord = typeof rides.$inferSelect;
