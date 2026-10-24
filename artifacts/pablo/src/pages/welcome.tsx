@@ -43,7 +43,7 @@ export default function Welcome({ onContinue }: WelcomeProps) {
             </motion.h1>
 
             <motion.p {...appear(0.25)} className="welcome-description" data-testid="text-welcome-description">
-              اطلب ركبتك وإنت في فرشتك 👌🏻
+              اطلب رحلتك وإنت في فرشتك 👌🏻
               <br />
               مع بابلو، سلامتك تهمنا علشان مفيش أوفر مننا.
             </motion.p>
