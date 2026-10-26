@@ -56,3 +56,17 @@ mtime_ms = 1793048819536
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/1ff866b6-e3ac-42a4-ad10-6e55a0e485e0/e2d3d4eb-cac8-4469-9218-20c4d6b155b5"
 storage_version_token = "1793048826459807"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "4-OHkHHFa7jhOAr_mdq25"
+uri = "file://generated-artifacts/Pablo-Source-Code-Reading-Copy.pdf"
+type = "pdf"
+title = "كود تطبيق بابلو — PDF للقراءة"
+description = "نسخة PDF من ملفات المصدر النصية، 289 صفحة، للقراءة فقط. ملف ZIP يظل النسخة المناسبة للتشغيل والتعديل."
+logical_id = "b770a674-2d80-444b-9233-580e85c35d28"
+content_hash = "sha256:fb42b03be5fdf17dfc8b04cf999eb967a581f78845c7d6b6a9a66aa5b0755bd1"
+size = 1832763
+mtime_ms = 1793049648144
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/b770a674-2d80-444b-9233-580e85c35d28/55a0e02f-2950-4b3a-a1f7-b746ffb89d2c"
+storage_version_token = "1793049666538173"
+content_type = "application/pdf"
