@@ -42,3 +42,17 @@ mtime_ms = 1792831517136
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/6b256ebd-d731-4d2c-9534-ed1b8eabc716/40fcbc1c-1644-40ca-96d9-3629e6974446"
 storage_version_token = "1792831523872045"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "27IbPZwAelRwlZEY6J-Cy"
+uri = "file://generated-artifacts/Pablo-source-code.zip"
+type = "unspecified"
+title = "كود تطبيق بابلو — ZIP"
+description = "حزمة المصدر لواجهة بابلو وخادم API والحزم المشتركة، مع دليل التشغيل. لا تتضمن أسرارًا أو مفاتيح دخول."
+logical_id = "1ff866b6-e3ac-42a4-ad10-6e55a0e485e0"
+content_hash = "sha256:d0fb1d3e78a19390e7eb341627b73dec294722090f825b1a9487c045c71231e5"
+size = 465306
+mtime_ms = 1793048819536
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/1ff866b6-e3ac-42a4-ad10-6e55a0e485e0/e2d3d4eb-cac8-4469-9218-20c4d6b155b5"
+storage_version_token = "1793048826459807"
+content_type = "application/octet-stream"
