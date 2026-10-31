@@ -70,3 +70,17 @@ mtime_ms = 1793049648144
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/b770a674-2d80-444b-9233-580e85c35d28/55a0e02f-2950-4b3a-a1f7-b746ffb89d2c"
 storage_version_token = "1793049666538173"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "71enrrKrJVD2xiBzyw2Dg"
+uri = "file://.local/outputs/----------------------------.pptx"
+type = "slides"
+title = "بابلو — فكرة ومميزات التطبيق (PowerPoint)"
+description = "نسخة PowerPoint قابلة للتنزيل من عرض بابلو، من ١٢ شريحة."
+logical_id = "60c6d852-4622-4b70-b236-6ca1b589ca94"
+content_hash = "sha256:748628b5538a5cb4397c90082125e9e97f29b4bb9ea7563d8ca1c83a2311954c"
+size = 13427802
+mtime_ms = 1793473096542
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/60c6d852-4622-4b70-b236-6ca1b589ca94/cefb3cfd-c186-41d2-94a2-08bdc8a4d005"
+storage_version_token = "1793473097258850"
+content_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
