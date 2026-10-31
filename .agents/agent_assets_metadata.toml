@@ -84,3 +84,17 @@ mtime_ms = 1793473096542
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/60c6d852-4622-4b70-b236-6ca1b589ca94/cefb3cfd-c186-41d2-94a2-08bdc8a4d005"
 storage_version_token = "1793473097258850"
 content_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+
+[[outputs]]
+id = "xPdij8-1YodlYZe4QsgSc"
+uri = "file://.local/outputs/----------------------------.pdf"
+type = "pdf"
+title = "بابلو — فكرة ومميزات التطبيق (PDF)"
+description = "نسخة PDF من عرض بابلو، من ١٢ شريحة، مناسبة للفتح والمشاركة على الموبايل."
+logical_id = "ef90b310-e8d2-46a5-9566-c406800427c4"
+content_hash = "sha256:9ca83642eeea4681e81f771ce5858d080c6201774f923b11d7ba1e82eecafdbd"
+size = 2103814
+mtime_ms = 1793473705263
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:6f112d47-9041-4a45-a6a0-5b62e6775ca0/ef90b310-e8d2-46a5-9566-c406800427c4/05b0cb13-d162-432b-b867-7d1cdbb83067"
+storage_version_token = "1793473705785195"
+content_type = "application/pdf"
