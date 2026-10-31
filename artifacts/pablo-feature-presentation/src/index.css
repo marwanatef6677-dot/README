@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-primary: var(--slide-primary);
+  --color-accent: var(--slide-accent);
+  --color-bg: var(--slide-bg);
+  --color-text: var(--slide-text);
+  --color-muted: var(--slide-muted);
+  --font-display: var(--font-display-family);
+  --font-body: var(--font-body-family);
+}
+
+:root {
+  --slide-primary: #1E3A5F;
+  --slide-accent: #0D9488;
+  --slide-highlight: #FFD000;
+  --slide-coral: #DD7253;
+  --slide-bg: #FAFBFC;
+  --slide-text: #14233D;
+  --slide-muted: #64748B;
+  --font-display-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+  --font-body-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+  color-scheme: light;
+}
+
+html, body, #root { width: 100%; height: 100%; margin: 0; }
+body { background: var(--slide-bg); color: var(--slide-text); font-family: var(--font-body-family); }
+.slide { width: 100vw; height: 100vh; overflow: hidden; }
+.slide-viewer { touch-action: none; user-select: none; -webkit-user-select: none; }
+.blob { position: absolute; pointer-events: none; opacity: .62; }
+.blob-teal { background: #0D94881a; border-radius: 38% 62% 71% 29% / 42% 38% 62% 58%; }
+.blob-gold { background: #FFD00020; border-radius: 60% 40% 32% 68% / 47% 63% 37% 53%; }
+.blob-coral { background: #DD72531a; border-radius: 52% 48% 67% 33% / 39% 52% 48% 61%; }
+.soft-grid { background-image: linear-gradient(#1E3A5F08 1px, transparent 1px), linear-gradient(90deg, #1E3A5F08 1px, transparent 1px); background-size: 3.2vw 3.2vw; }

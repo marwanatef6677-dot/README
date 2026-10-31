@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/pablo-feature-presentation/"
+title = "بابلو — فكرة التطبيق ومميزاته"
+description = "عرض عربي من ١٢ شريحة يشرح فكرة بابلو وخدمات الرحلات والتوصيل والتسعير وتجربة العميل والكابتن، مع بيان المرحلة التجريبية ومتطلبات الإطلاق."
+version = "1.0.0"
+id = "artifacts/pablo-feature-presentation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/pablo-feature-presentation/" ]
+localPort = 19177
+
+[services.development]
+run = "pnpm --filter @workspace/pablo-feature-presentation run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pablo-feature-presentation", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/pablo-feature-presentation/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19177"
+BASE_PATH = "/pablo-feature-presentation/"

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "a1000000-0000-4000-8000-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide1.tsx",
+    "title": "بابلو — مشوارك أسهل",
+    "description": "غلاف العرض التعريفي لتطبيق بابلو.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide2.tsx",
+    "title": "الفكرة في جملة واحدة",
+    "description": "الفكرة الأساسية للمنصة.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide3.tsx",
+    "title": "من اختيار الموقع إلى إرسال الطلب",
+    "description": "خطوات اختيار الموقع وإرسال الطلب.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide4.tsx",
+    "title": "خدمات وأسعار تجريبية واضحة",
+    "description": "الخدمات والتسعير التجريبي.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide5.tsx",
+    "title": "رحلة أوضح للعميل",
+    "description": "حالة الطلب والتواصل والدفع.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide6.tsx",
+    "title": "الموتوسيكل للركاب والمنتجات",
+    "description": "خدمات الموتوسيكل والتوصيل.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide7.tsx",
+    "title": "اعتماد الكابتن قبل قبول الرحلات",
+    "description": "مراجعة بيانات ومستندات الكابتن.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide8.tsx",
+    "title": "عمولة ومحفظة ومستويات للكابتن",
+    "description": "العمولة والمحفظة وتدرج المستوى.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/Slide9.tsx",
+    "title": "عجلة خصم أسبوعية للعميل",
+    "description": "الخصومات الأسبوعية وآلية التعويض.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000010",
+    "position": 10,
+    "filepath": "src/pages/slides/Slide10.tsx",
+    "title": "دعم وتقييم بعد الرحلة",
+    "description": "الدعم والتقييمات داخل التطبيق.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000011",
+    "position": 11,
+    "filepath": "src/pages/slides/Slide11.tsx",
+    "title": "النسخة الحالية وما قبل الإطلاق",
+    "description": "حالة النسخة التجريبية ومتطلبات ما قبل الإطلاق.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1000000-0000-4000-8000-000000000012",
+    "position": 12,
+    "filepath": "src/pages/slides/Slide12.tsx",
+    "title": "شكرًا لكم",
+    "description": "ختام العرض.",
+    "speakerNotes": ""
+  }
+]
